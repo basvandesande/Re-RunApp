@@ -1,0 +1,60 @@
+﻿namespace Re_RunApp.Core;
+
+public class HeartRate
+{
+    private readonly string _deviceIdFile = "heartrate_device_id.txt";
+    private readonly Guid _optionalService = Guid.Parse("0000180D-0000-1000-8000-00805F9B34FB"); // Heart Rate Service UUID
+    private readonly Guid _measureCharacteristic = Guid.Parse("00002A37-0000-1000-8000-00805F9B34FB");
+
+    InTheHand.Bluetooth.BluetoothDevice? _device = null;
+
+    public bool Enabled { get; set; } = true;
+
+    public int CurrentRate { get; private set; }
+
+
+    public event Action<int>? OnHeartPulse;
+
+    public async Task Init()
+    {
+        if (!Enabled) return;
+
+        _device = await Runtime.GetOrRequestDeviceAsync(_deviceIdFile, _optionalService);
+
+        if (_device != null && _device.Gatt.IsConnected)
+        {
+            // Get the Heart Rate Service
+            var heartRateService = await _device.Gatt.GetPrimaryServiceAsync(_optionalService);
+            if (heartRateService != null)
+            {
+
+                // Get the Heart Rate Measurement characteristic
+                var heartRateCharacteristic = await heartRateService.GetCharacteristicAsync(_measureCharacteristic); // Heart Rate Measurement UUID
+                if (heartRateCharacteristic != null)
+                {
+
+                    Enabled = true;
+                    heartRateCharacteristic.CharacteristicValueChanged += (sender, args) =>
+                    {
+                        var data = args.Value;
+                        if (data != null && data.Length > 1)
+                        {
+                            // Parse the heart rate value (first byte contains flags, second byte contains the heart rate)
+                            CurrentRate = data[1];
+
+                            // raise new event....
+                            OnHeartPulse?.Invoke(CurrentRate);
+                        }
+                    };
+
+                    await heartRateCharacteristic.StartNotificationsAsync();
+                    Console.WriteLine("Subscribed to heart rate notifications.");
+                }
+                else
+                {
+                    Enabled = false;
+                }
+            }
+        }
+    }
+}

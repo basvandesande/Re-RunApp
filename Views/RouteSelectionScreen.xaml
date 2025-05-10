@@ -1,0 +1,58 @@
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             x:Class="Re_RunApp.Views.RouteSelectionScreen"
+             Title="Select Route">
+    <Grid RowDefinitions="7*,3*,Auto"
+          Margin="20,0,20,0"> <!-- 20 eenheden marge links en rechts -->
+        <!-- ListView met routes -->
+        <ListView x:Name="RouteListView"
+                  Grid.Row="0"
+                  SelectionMode="Single"
+                  ItemSelected="OnRouteSelected">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <ViewCell>
+                        <StackLayout Orientation="Horizontal" Padding="10">
+                            <Label Text="{Binding FileName}" 
+                                   FontSize="16" 
+                                   VerticalOptions="Center" />
+                        </StackLayout>
+                    </ViewCell>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+        <!-- Grid voor route details en video -->
+        <Grid x:Name="DetailsGrid" Grid.Row="1" ColumnDefinitions="*,2*">
+            <!-- Route details -->
+            <StackLayout Padding="10">
+                <Label Text="Route Details" FontSize="20" FontAttributes="Bold" />
+                <Label x:Name="TitleLabel" Text="Title: " FontSize="16" />
+                <Label x:Name="DistanceLabel" Text="Distance: " FontSize="16" />
+                <Label x:Name="ElevationLabel" Text="Elevation: " FontSize="16" />
+            </StackLayout>
+
+            <!-- Video -->
+            <toolkit:MediaElement x:Name="RouteVideo"
+                                  Grid.Column="1"
+                                  ShouldAutoPlay="True"
+                                  Aspect="AspectFill"
+                                  ShouldLoopPlayback="True"
+                                  ShouldShowPlaybackControls="False"
+                                  ShouldMute="True"
+                                  HorizontalOptions="End"
+                                  VerticalOptions="Center"
+                                  Margin="0,0,20,0" />
+        </Grid>
+
+        <!-- Next-knop -->
+        <Button x:Name="NextButton"
+                Grid.Row="2"
+                Text="Next"
+                Clicked="OnNextClicked"
+                HorizontalOptions="Fill"
+                Margin="0,10,0,10"
+                HeightRequest="50"  />
+    </Grid>
+</ContentPage>

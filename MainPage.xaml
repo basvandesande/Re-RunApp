@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Re_RunApp.MainPage">
+    <Grid>
+        <!-- Background Image -->
+        <Image Source="lake.jpg" Aspect="AspectFill" />
+
+        <!-- Title and Subtitle -->
+        <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center">
+            <Label Text="Re-Run" 
+                   HorizontalTextAlignment="Center" 
+                   TextColor="#000E1C"
+                   FontSize="Header" />
+            <Label Text="Relive the runs you did before on your treadmill" 
+                   HorizontalTextAlignment="Center" 
+                   TextColor="#FFFFFF"
+                   FontSize="Subtitle" />
+        </VerticalStackLayout>
+
+        <!-- Button at the bottom -->
+        <Button Text="Start" 
+                Clicked="OnStartClicked" 
+                VerticalOptions="End" 
+                HorizontalOptions="Fill" 
+                Margin="20,0,20,20" 
+                BackgroundColor="#F97C00"
+                HeightRequest="50" 
+                FontSize="Large" />
+    </Grid>
+</ContentPage>
