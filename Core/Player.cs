@@ -89,7 +89,7 @@ internal class Player
     private async Task BackgroundLoop(CancellationToken token)
     {
         int index = 0;
-        int maxIndex = _gpx.Tracks.Length - 1;
+        int maxIndex = _gpx.Tracks.Length;
         Track current = _gpx.Tracks[index];
         Track previous = _gpx.Tracks[index];
 
@@ -110,11 +110,8 @@ internal class Player
 
                     index++;
 
-                    if (index > maxIndex)
+                    if (index >= maxIndex)
                     {
-                        // todo: test if this is correct (has every track in the gpx file the new statistics?)
-                        UpdateGpxStatistics(maxIndex, startTime);
-
                         Console.WriteLine("End of track reached.");
                         await _treadmill.StopAsync();
                         break;

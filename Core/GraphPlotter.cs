@@ -8,7 +8,7 @@ using OxyPlot.SkiaSharp;
 
 internal class GraphPlotter
 {
-    public void PlotGraph(GpxProcessor gpx, string outputFile)
+    public Stream PlotGraph(GpxProcessor gpx)
     {
         double maxDistance = (double)(gpx.Tracks.Last().TotalDistanceInMeters / 1000) * 1000;
         if (maxDistance < 1000) maxDistance = 1000;
@@ -85,11 +85,12 @@ internal class GraphPlotter
         //                                          (double)gpx.Tracks[randomIndex].EndElevation));
         //plotModel.Series.Add(scatterSeries);
 
-        using (var stream = new FileStream(outputFile, FileMode.Create))
-        {
-            var pngExporter = new PngExporter { Width = 1500, Height = 1000 };
-            pngExporter.Export(plotModel, stream);
-        }
+        
+        var stream = new MemoryStream();
+        var pngExporter = new PngExporter { Width = 1500, Height = 1000 };
+        pngExporter.Export(plotModel, stream);
+        stream.Seek(0, SeekOrigin.Begin);
+        return stream;
     }
 }
 
