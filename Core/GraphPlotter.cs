@@ -87,7 +87,7 @@ internal class GraphPlotter
 
         
         var stream = new MemoryStream();
-        var pngExporter = new PngExporter { Width = 1500, Height = 1000 };
+        var pngExporter = new PngExporter { Width = 1920, Height = 1080 };
         pngExporter.Export(plotModel, stream);
         stream.Seek(0, SeekOrigin.Begin);
         return stream;
