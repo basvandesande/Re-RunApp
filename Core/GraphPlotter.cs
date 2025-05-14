@@ -8,7 +8,7 @@ using OxyPlot.SkiaSharp;
 
 internal class GraphPlotter
 {
-    public Stream PlotGraph(GpxProcessor gpx)
+    public Stream PlotGraph(GpxProcessor gpx, int height=1080, int width=1920)
     {
         double maxDistance = (double)(gpx.Tracks.Last().TotalDistanceInMeters / 1000) * 1000;
         if (maxDistance < 1000) maxDistance = 1000;
@@ -18,7 +18,7 @@ internal class GraphPlotter
         int elevationScale = maxElevation > 100 ? 100 : 10;
 
         var plotModel = new PlotModel { Title = "Re-Run Virtual Run" };
-        plotModel.Background = OxyColors.White;
+        plotModel.Background = OxyColors.LightBlue;
 
         Random random = new Random();
         int randomIndex = random.Next(0, gpx.Tracks.Length - 1);
@@ -46,14 +46,17 @@ internal class GraphPlotter
         var areaSeries = new AreaSeries
         {
             Title = "Elevation",
-            Color = OxyColors.Green,
-            Fill = OxyColors.LightGreen,
+            Color = OxyColors.White,
+            Fill = OxyColors.SandyBrown,
             StrokeThickness = 10
         };
 
         foreach (var track in gpx.Tracks)
         {
+            areaSeries.Color = GetColorForPercentage(track.InclinationInDegrees);
             areaSeries.Points.Add(new DataPoint((double)track.TotalDistanceInMeters, (double)track.EndElevation));
+       
+        // todo fix coloring
         }
         plotModel.Series.Add(areaSeries);
 
@@ -69,28 +72,27 @@ internal class GraphPlotter
             plotModel.Annotations.Add(verticalLine);
         }
 
-        // to do: not needed for output image
-        // Create a scatter series for the red point
-        //var scatterSeries = new ScatterSeries
-        //{
-        //    MarkerType = MarkerType.Diamond,
-        //    MarkerStroke = OxyColors.Red,
-        //    MarkerFill = OxyColors.Orange,
-        //    MarkerSize = 10
-        //};
-
-        //// Add the red point  
-        //// TODO: make this a real point not a random one
-        //scatterSeries.Points.Add(new ScatterPoint((double)gpx.Tracks[randomIndex].TotalDistanceInMeters, 
-        //                                          (double)gpx.Tracks[randomIndex].EndElevation));
-        //plotModel.Series.Add(scatterSeries);
-
         
         var stream = new MemoryStream();
-        var pngExporter = new PngExporter { Width = 1920, Height = 1080 };
+        var pngExporter = new PngExporter { Width = width, Height = height };
         pngExporter.Export(plotModel, stream);
         stream.Seek(0, SeekOrigin.Begin);
         return stream;
     }
+
+    private OxyColor GetColorForPercentage(decimal percentage)
+    {
+        if (percentage < 5)
+            return OxyColors.White;
+        else if (percentage < 8)
+            return OxyColors.Yellow;
+        else if (percentage < 10)
+            return OxyColors.Orange;
+        else if (percentage < 12)
+            return OxyColors.Red;
+        else
+            return OxyColors.DarkRed;
+    }
+
 }
 

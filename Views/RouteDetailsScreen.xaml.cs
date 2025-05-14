@@ -6,6 +6,8 @@ public partial class RouteDetailsScreen : ContentPage
 {
     private readonly string _gpxFilePath;
 
+    private bool _graphGenerated = false;
+
     public RouteDetailsScreen(string gpxFilePath)
     {
         InitializeComponent();
@@ -26,12 +28,16 @@ public partial class RouteDetailsScreen : ContentPage
         TotalDistanceLabel.Text = $"Total Distance: {gpxProcessor.TotalDistanceInMeters / 1000:F1} km";
         TotalElevationLabel.Text = $"Total Elevation: {gpxProcessor.TotalElevationInMeters:F0} m";
 
-        // Generate elevation graph using GraphPlotter
-        var graphPlotter = new GraphPlotter();
-        var elevationBitmap = graphPlotter.PlotGraph(gpxProcessor);
+        //// get the width and height of the grid row
+        //var gridWidth = ElevationGraphImage.Width;
+        //var gridHeight = ElevationGraphImage.Height;
 
-        // Convert the bitmap to an ImageSource
-        ElevationGraphImage.Source = ImageSource.FromStream(() => elevationBitmap);
+        //// Generate elevation graph using GraphPlotter
+        //var graphPlotter = new GraphPlotter();
+        //var elevationBitmap = graphPlotter.PlotGraph(gpxProcessor, (int)gridHeight, (int)gridWidth);
+
+        //// Convert the bitmap to an ImageSource
+        //ElevationGraphImage.Source = ImageSource.FromStream(() => elevationBitmap);
     }
 
     private async void OnStartClicked(object sender, EventArgs e)
@@ -154,6 +160,28 @@ public partial class RouteDetailsScreen : ContentPage
                 Speed11to12Label.Text = speedSettings["11-12%"].ToString("F1", System.Globalization.CultureInfo.InvariantCulture);
                 Speed13to15Label.Text = speedSettings["13-15%"].ToString("F1", System.Globalization.CultureInfo.InvariantCulture);
             }
+        }
+    }
+    protected override void OnSizeAllocated(double width, double height)
+    {
+        base.OnSizeAllocated(width, height);
+
+        if (ElevationGraphImage.Width > 0 && ElevationGraphImage.Height > 0)
+        {
+            // Generate elevation graph using the actual width and height
+            var gpxProcessor = new GpxProcessor();
+            gpxProcessor.LoadGpxData(_gpxFilePath);
+            gpxProcessor.GetRun();
+
+            var graphPlotter = new GraphPlotter();
+            var elevationBitmap = graphPlotter.PlotGraph(gpxProcessor, (int)ElevationGraphImage.Height, (int)ElevationGraphImage.Width);
+
+            // Set the ImageSource
+            ElevationGraphImage.Source = ImageSource.FromStream(() => elevationBitmap);
+
+            // Optionally, prevent redundant calls by setting a flag
+            if (_graphGenerated) return;
+            _graphGenerated = true;
         }
     }
 }
