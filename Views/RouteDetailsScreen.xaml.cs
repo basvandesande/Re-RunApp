@@ -26,18 +26,10 @@ public partial class RouteDetailsScreen : ContentPage
         // Set route details
         RouteNameLabel.Text = $"Name: {gpxProcessor.Gpx.trk.name}";
         TotalDistanceLabel.Text = $"Total Distance: {gpxProcessor.TotalDistanceInMeters / 1000:F1} km";
-        TotalElevationLabel.Text = $"Total Elevation: {gpxProcessor.TotalElevationInMeters:F0} m";
-
-        //// get the width and height of the grid row
-        //var gridWidth = ElevationGraphImage.Width;
-        //var gridHeight = ElevationGraphImage.Height;
-
-        //// Generate elevation graph using GraphPlotter
-        //var graphPlotter = new GraphPlotter();
-        //var elevationBitmap = graphPlotter.PlotGraph(gpxProcessor, (int)gridHeight, (int)gridWidth);
-
-        //// Convert the bitmap to an ImageSource
-        //ElevationGraphImage.Source = ImageSource.FromStream(() => elevationBitmap);
+        TotalElevationLabel.Text = $"Total Elevation: {(gpxProcessor.FindMaximumElevation() - gpxProcessor.FindMinimumElevation()):F0} m";
+        TotalAscendLabel.Text = $"Total Ascend: {gpxProcessor.TotalElevationInMeters:F0}  m";
+        
+      
     }
 
     private async void OnStartClicked(object sender, EventArgs e)

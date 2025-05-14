@@ -14,6 +14,7 @@
                 <Label x:Name="RouteNameLabel" Text="Name: " FontSize="18" />
                 <Label x:Name="TotalDistanceLabel" Text="Total Distance: " FontSize="18" />
                 <Label x:Name="TotalElevationLabel" Text="Total Elevation: " FontSize="18" />
+                <Label x:Name="TotalAscendLabel" Text="Total Ascend: " FontSize="18" />
             </StackLayout>
 
             <!-- Speed Settings -->
