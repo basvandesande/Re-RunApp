@@ -5,8 +5,6 @@ using Re_RunApp.Core;
 public partial class RouteDetailsScreen : ContentPage
 {
     private readonly string _gpxFilePath;
-    private Treadmill _treadmill = new Treadmill();
-
     private bool _graphGenerated = false;
 
     public RouteDetailsScreen(string gpxFilePath)
@@ -23,21 +21,25 @@ public partial class RouteDetailsScreen : ContentPage
     {
         base.OnAppearing();
         
-        var connected =  Task.Run<bool>(async () => { return await _treadmill.ConnectToDevice(false); });
+        var connected =  Task.Run<bool>(async () => { return await Runtime.Treadmill.ConnectToDevice(false); });
 
         StartButton.IsEnabled = connected.Result;
     }
 
     private void OnConnectTreadmillClicked(object sender, EventArgs e)
     {
-        var connected = Task.Run<bool>(async () => { return await _treadmill.ConnectToDevice(true); });
+        Runtime.Treadmill.DeleteDeviceIdFile();
+
+        var connected = Task.Run<bool>(async () => { return await Runtime.Treadmill.ConnectToDevice(true); });
         StartButton.IsEnabled = connected.Result;
     }
 
     private void OnConnectHeartRateClicked(object sender, EventArgs e)
     {
-        // TODO: Implement heart rate sensor connection logic here
-        DisplayAlert("Hartslagmeter", "Koppelen met hartslagmeter gestart.", "OK");
+        Runtime.HeartRate.DeleteDeviceIdFile();
+
+        var connected = Task.Run<bool>(async () => { return await Runtime.HeartRate.ConnectToDevice(true); });
+        Runtime.HeartRate.Enabled=connected.Result;
     }
 
     private void LoadRouteDetails()
@@ -51,15 +53,18 @@ public partial class RouteDetailsScreen : ContentPage
         TotalDistanceLabel.Text = $"Total Distance: {gpxProcessor.TotalDistanceInMeters / 1000:F1} km";
         TotalElevationLabel.Text = $"Total Elevation: {(gpxProcessor.FindMaximumElevation() - gpxProcessor.FindMinimumElevation()):F0} m";
         TotalAscendLabel.Text = $"Total Ascend: {gpxProcessor.TotalElevationInMeters:F0}  m";
-        
-      
     }
 
     private async void OnStartClicked(object sender, EventArgs e)
     {
         SaveSpeedSettings();
-        await Navigation.PushAsync(new ActivityScreen());
 
+        if (!Runtime.HeartRate.Enabled)
+        {
+            var connected = Task.Run<bool>(async () => { return await Runtime.HeartRate.ConnectToDevice(true); });
+            Runtime.HeartRate.Enabled = connected.Result;
+        }
+        await Navigation.PushAsync(new ActivityScreen(_gpxFilePath));
     }
     private void OnIncreaseSpeed0to5(object sender, EventArgs e)
     {

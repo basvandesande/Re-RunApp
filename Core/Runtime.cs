@@ -4,6 +4,18 @@ namespace Re_RunApp.Core
 {
     internal class Runtime
     {
+        internal static Treadmill Treadmill { get; set; } = new Treadmill();
+        internal static HeartRate HeartRate { get; set; } = new HeartRate(); 
+
+        public static void DeleteDeviceIdFile(string deviceIdFile)
+        {
+            if (File.Exists(deviceIdFile))
+            {
+                File.Delete(deviceIdFile);
+            }
+        }
+
+
         public static async Task<BluetoothDevice?> GetOrRequestDeviceAsync(string deviceIdFile, Guid optionalService , bool showDialog=true)
         {
             BluetoothDevice? device;

@@ -5,6 +5,8 @@ using InTheHand.Bluetooth;
 
 internal class Treadmill
 {
+    public string Name => _device?.Name ?? string.Empty;
+
     private BluetoothDevice? _device;
     private GattCharacteristic? _characteristic;
     private GattCharacteristic? _statusCharacteristic;
@@ -31,6 +33,12 @@ internal class Treadmill
     private decimal _minSpeed = 0;
     private decimal _maxSpeed = 0;
     //private decimal _speedResolution = 0.1m;
+
+    internal void DeleteDeviceIdFile()
+    {
+        Runtime.DeleteDeviceIdFile(_deviceIdFile);
+    }
+
 
     public async Task<bool> ConnectToDevice(bool showDialog=true)
     {

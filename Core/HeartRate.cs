@@ -2,6 +2,8 @@
 
 public class HeartRate
 {
+    public string Name => _device?.Name ?? string.Empty;
+
     private readonly string _deviceIdFile = "heartrate_device_id.txt";
     private readonly Guid _optionalService = Guid.Parse("0000180D-0000-1000-8000-00805F9B34FB"); // Heart Rate Service UUID
     private readonly Guid _measureCharacteristic = Guid.Parse("00002A37-0000-1000-8000-00805F9B34FB");
@@ -15,11 +17,19 @@ public class HeartRate
 
     public event Action<int>? OnHeartPulse;
 
-    public async Task Init()
-    {
-        if (!Enabled) return;
 
-        _device = await Runtime.GetOrRequestDeviceAsync(_deviceIdFile, _optionalService);
+    internal void DeleteDeviceIdFile()
+    {
+        Runtime.DeleteDeviceIdFile(_deviceIdFile);
+    }
+
+
+
+    public async Task<bool> ConnectToDevice(bool showDialog = true)
+    {
+        if (!Enabled) return false;
+
+        _device = await Runtime.GetOrRequestDeviceAsync(_deviceIdFile, _optionalService, showDialog);
 
         if (_device != null && _device.Gatt.IsConnected)
         {
@@ -27,7 +37,6 @@ public class HeartRate
             var heartRateService = await _device.Gatt.GetPrimaryServiceAsync(_optionalService);
             if (heartRateService != null)
             {
-
                 // Get the Heart Rate Measurement characteristic
                 var heartRateCharacteristic = await heartRateService.GetCharacteristicAsync(_measureCharacteristic); // Heart Rate Measurement UUID
                 if (heartRateCharacteristic != null)
@@ -48,13 +57,15 @@ public class HeartRate
                     };
 
                     await heartRateCharacteristic.StartNotificationsAsync();
-                    Console.WriteLine("Subscribed to heart rate notifications.");
+                    //Console.WriteLine("Subscribed to heart rate notifications.");
                 }
                 else
                 {
                     Enabled = false;
+                    return false;
                 }
             }
         }
+        return true;
     }
 }
