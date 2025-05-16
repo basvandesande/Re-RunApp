@@ -4,7 +4,7 @@ namespace Re_RunApp.Core
 {
     internal class Runtime
     {
-        public static async Task<BluetoothDevice?> GetOrRequestDeviceAsync(string deviceIdFile, Guid optionalService)
+        public static async Task<BluetoothDevice?> GetOrRequestDeviceAsync(string deviceIdFile, Guid optionalService , bool showDialog=true)
         {
             BluetoothDevice? device;
             if (File.Exists(deviceIdFile))
@@ -22,6 +22,12 @@ namespace Re_RunApp.Core
                     }
                 }
             }
+
+            if (!showDialog)
+            {
+                return null;
+            }
+
 
             // Scan for new device
             device = await Bluetooth.RequestDeviceAsync(new RequestDeviceOptions

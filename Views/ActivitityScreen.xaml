@@ -4,6 +4,9 @@
              Title="Activity">
     <StackLayout>
         <Label Text="Activity in progress..." />
-        <Button Text="Finish" Clicked="OnFinishClicked" />
+        <Button Text="Finish" 
+                Clicked="OnFinishClicked"  
+                FontSize="Large"
+                HeightRequest="50"/>
     </StackLayout>
 </ContentPage>

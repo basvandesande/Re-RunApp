@@ -32,11 +32,11 @@ internal class Treadmill
     private decimal _maxSpeed = 0;
     //private decimal _speedResolution = 0.1m;
 
-    public async Task<bool> ConnectToDevice()
+    public async Task<bool> ConnectToDevice(bool showDialog=true)
     {
         try
         {
-            _device = await Runtime.GetOrRequestDeviceAsync(_deviceIdFile, _treadmillServiceId);
+            _device = await Runtime.GetOrRequestDeviceAsync(_deviceIdFile, _treadmillServiceId, showDialog);
             if (_device != null && _device.Gatt.IsConnected)
             {
                 GattService service = await _device.Gatt.GetPrimaryServiceAsync(_treadmillServiceId);

@@ -27,7 +27,7 @@ internal class GraphPlotter
             Maximum = maxDistance,
             MajorStep = 1000,
             Title = "Distance (meters)",
-            FontSize = 20
+            FontSize = 16
         });
 
         plotModel.Axes.Add(new LinearAxis
@@ -37,7 +37,7 @@ internal class GraphPlotter
             Maximum = (double)(maxElevation + elevationScale),
             MajorStep = elevationScale,
             Title = "Height (meters)",
-            FontSize = 20
+            FontSize = 16
         });
 
         if (gpx.Tracks.Length > 0)
@@ -91,6 +91,54 @@ internal class GraphPlotter
                 LineStyle = LineStyle.Dash
             };
             plotModel.Annotations.Add(verticalLine);
+        }
+
+        // Legend settings
+        double legendY = (double)(maxElevation + elevationScale) - 0.06 * (maxElevation - minElevation); // 5% from top
+        double legendXStart = maxDistance * 0.45; // Start legend at 45% of width
+        double boxWidth = maxDistance * 0.03;     // Width of color box
+        double boxHeight = (maxElevation - minElevation) * 0.05; // Height of color box
+        double spacing = maxDistance * 0.016;      // Space between items
+
+        var legendItems = new (OxyColor color, string label)[]
+        {
+            (OxyColors.Blue,  "< 0"),
+            (OxyColors.Green, "0-5"),
+            (OxyColors.Yellow, "6-8"),
+            (OxyColors.Orange, "8-10"),
+            (OxyColors.Red, "11-12"),
+            (OxyColors.DarkRed, "13-15 %"),
+        };
+
+        double x = legendXStart;
+        foreach (var legendItem in legendItems)
+        {
+            // Color box
+            plotModel.Annotations.Add(new RectangleAnnotation
+            {
+                MinimumX = x + 40,
+                MaximumX = x + 35 + boxWidth,
+                MinimumY = legendY,
+                MaximumY = legendY + boxHeight,
+                Fill = legendItem.color,
+                Stroke = OxyColors.Black,
+                StrokeThickness = 1,
+                Layer = AnnotationLayer.AboveSeries
+            });
+
+            // Text next to box
+            plotModel.Annotations.Add(new TextAnnotation
+            {
+                Text = legendItem.label,
+                TextPosition = new DataPoint(x + boxWidth + spacing - 15, legendY + boxHeight / 2),
+                FontSize = 14,
+                Stroke = OxyColors.Undefined,
+                TextHorizontalAlignment = OxyPlot.HorizontalAlignment.Left,
+                TextVerticalAlignment = OxyPlot.VerticalAlignment.Middle,
+                Layer = AnnotationLayer.AboveSeries
+            });
+
+            x += boxWidth + spacing * 3; // Move to the right for next item
         }
 
         var stream = new MemoryStream();

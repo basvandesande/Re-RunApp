@@ -4,6 +4,9 @@
              Title="Summary">
     <StackLayout>
         <Label Text="Activity Summary" />
-        <Button Text="Exit" Clicked="OnExitClicked" />
+        <Button Text="Exit" 
+                Clicked="OnExitClicked"  
+                FontSize="Large"
+                HeightRequest="50" />
     </StackLayout>
 </ContentPage>

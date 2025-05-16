@@ -5,6 +5,7 @@ using Re_RunApp.Core;
 public partial class RouteDetailsScreen : ContentPage
 {
     private readonly string _gpxFilePath;
+    private Treadmill _treadmill = new Treadmill();
 
     private bool _graphGenerated = false;
 
@@ -15,6 +16,28 @@ public partial class RouteDetailsScreen : ContentPage
 
         LoadRouteDetails();
         LoadSpeedSettings(); // Load speed settings if the file exists
+    }
+
+
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+        
+        var connected =  Task.Run<bool>(async () => { return await _treadmill.ConnectToDevice(false); });
+
+        StartButton.IsEnabled = connected.Result;
+    }
+
+    private void OnConnectTreadmillClicked(object sender, EventArgs e)
+    {
+        var connected = Task.Run<bool>(async () => { return await _treadmill.ConnectToDevice(true); });
+        StartButton.IsEnabled = connected.Result;
+    }
+
+    private void OnConnectHeartRateClicked(object sender, EventArgs e)
+    {
+        // TODO: Implement heart rate sensor connection logic here
+        DisplayAlert("Hartslagmeter", "Koppelen met hartslagmeter gestart.", "OK");
     }
 
     private void LoadRouteDetails()
@@ -34,21 +57,7 @@ public partial class RouteDetailsScreen : ContentPage
 
     private async void OnStartClicked(object sender, EventArgs e)
     {
-        // Save the speed settings to a file
         SaveSpeedSettings();
-
-        // Collect speed settings for display or further processing
-        var speedSettings = new Dictionary<string, double>
-        {
-            { "0-5%", double.Parse(Speed0to5Label.Text, System.Globalization.CultureInfo.InvariantCulture) },
-            { "6-8%", double.Parse(Speed6to8Label.Text, System.Globalization.CultureInfo.InvariantCulture) },
-            { "8-10%", double.Parse(Speed8to10Label.Text, System.Globalization.CultureInfo.InvariantCulture) },
-            { "11-12%", double.Parse(Speed11to12Label.Text, System.Globalization.CultureInfo.InvariantCulture) },
-            { "13-15%", double.Parse(Speed13to15Label.Text, System.Globalization.CultureInfo.InvariantCulture) }
-        };
-
-        // Display the speed settings or pass them to the next screen
-        await DisplayAlert("Speed Settings", string.Join("\n", speedSettings.Select(kv => $"{kv.Key}: {kv.Value} km/h")), "OK");
         await Navigation.PushAsync(new ActivityScreen());
 
     }
@@ -112,45 +121,37 @@ public partial class RouteDetailsScreen : ContentPage
     }
     private void SaveSpeedSettings()
     {
-        // Construct the file path with the same name as the GPX file but with a .speedsettings extension
         string speedSettingsFilePath = Path.ChangeExtension(_gpxFilePath, ".speedsettings");
 
-        // Create a dictionary of speed settings
-        var speedSettings = new Dictionary<string, double>
+        var settings = new SpeedSettings
         {
-            { "0-5%", double.Parse(Speed0to5Label.Text, System.Globalization.CultureInfo.InvariantCulture) },
-            { "6-8%", double.Parse(Speed6to8Label.Text, System.Globalization.CultureInfo.InvariantCulture) },
-            { "8-10%", double.Parse(Speed8to10Label.Text, System.Globalization.CultureInfo.InvariantCulture) },
-            { "11-12%", double.Parse(Speed11to12Label.Text, System.Globalization.CultureInfo.InvariantCulture) },
-            { "13-15%", double.Parse(Speed13to15Label.Text, System.Globalization.CultureInfo.InvariantCulture) }
+            Speed0to5 = double.Parse(Speed0to5Label.Text, System.Globalization.CultureInfo.InvariantCulture),
+            Speed6to8 = double.Parse(Speed6to8Label.Text, System.Globalization.CultureInfo.InvariantCulture),
+            Speed8to10 = double.Parse(Speed8to10Label.Text, System.Globalization.CultureInfo.InvariantCulture),
+            Speed11to12 = double.Parse(Speed11to12Label.Text, System.Globalization.CultureInfo.InvariantCulture),
+            Speed13to15 = double.Parse(Speed13to15Label.Text, System.Globalization.CultureInfo.InvariantCulture),
+            AutoSpeedControl = AutoSpeedControlCheckBox.IsChecked
         };
-
-        // Serialize the dictionary to JSON and save it to the file
-        File.WriteAllText(speedSettingsFilePath, System.Text.Json.JsonSerializer.Serialize(speedSettings));
+        File.WriteAllText(speedSettingsFilePath, System.Text.Json.JsonSerializer.Serialize(settings));
     }
 
     private void LoadSpeedSettings()
     {
-        // Construct the file path with the same name as the GPX file but with a .speedsettings extension
         string speedSettingsFilePath = Path.ChangeExtension(_gpxFilePath, ".speedsettings");
 
-        // Check if the file exists
         if (File.Exists(speedSettingsFilePath))
         {
-            // Read the JSON content from the file
             string jsonContent = File.ReadAllText(speedSettingsFilePath);
+            var settings = System.Text.Json.JsonSerializer.Deserialize<SpeedSettings>(jsonContent);
 
-            // Deserialize the JSON content into a dictionary
-            var speedSettings = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, double>>(jsonContent);
-
-            // Set the speed values in the controls
-            if (speedSettings != null)
+            if (settings != null)
             {
-                Speed0to5Label.Text = speedSettings["0-5%"].ToString("F1", System.Globalization.CultureInfo.InvariantCulture);
-                Speed6to8Label.Text = speedSettings["6-8%"].ToString("F1", System.Globalization.CultureInfo.InvariantCulture);
-                Speed8to10Label.Text = speedSettings["8-10%"].ToString("F1", System.Globalization.CultureInfo.InvariantCulture);
-                Speed11to12Label.Text = speedSettings["11-12%"].ToString("F1", System.Globalization.CultureInfo.InvariantCulture);
-                Speed13to15Label.Text = speedSettings["13-15%"].ToString("F1", System.Globalization.CultureInfo.InvariantCulture);
+                Speed0to5Label.Text = settings.Speed0to5.ToString("F1", System.Globalization.CultureInfo.InvariantCulture);
+                Speed6to8Label.Text = settings.Speed6to8.ToString("F1", System.Globalization.CultureInfo.InvariantCulture);
+                Speed8to10Label.Text = settings.Speed8to10.ToString("F1", System.Globalization.CultureInfo.InvariantCulture);
+                Speed11to12Label.Text = settings.Speed11to12.ToString("F1", System.Globalization.CultureInfo.InvariantCulture);
+                Speed13to15Label.Text = settings.Speed13to15.ToString("F1", System.Globalization.CultureInfo.InvariantCulture);
+                AutoSpeedControlCheckBox.IsChecked = settings.AutoSpeedControl;
             }
         }
     }
@@ -176,4 +177,6 @@ public partial class RouteDetailsScreen : ContentPage
             _graphGenerated = true;
         }
     }
+
+    
 }

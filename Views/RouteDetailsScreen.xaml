@@ -2,7 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Re_RunApp.Views.RouteDetailsScreen"
              Title="Route Details">
-    <Grid RowDefinitions="2*,2*,Auto"> <!-- Added Auto for the Start button -->
+    <Grid RowDefinitions="2*,2.4*,Auto"> <!-- Added Auto for the Start button -->
         <!-- Route Elevation Graph -->
         <Image x:Name="ElevationGraphImage" Grid.Row="0" Margin="10" Aspect="Fill" />
 
@@ -15,12 +15,24 @@
                 <Label x:Name="TotalDistanceLabel" Text="Total Distance: " FontSize="18" />
                 <Label x:Name="TotalElevationLabel" Text="Total Elevation: " FontSize="18" />
                 <Label x:Name="TotalAscendLabel" Text="Total Ascend: " FontSize="18" />
+
+                <!-- Row with two buttons below the route details -->
+                <HorizontalStackLayout Margin="0,15,0,0" Spacing="15" VerticalOptions="End">
+                    <Button Text="+ Treadmill" 
+                            x:Name="ConnectTreadmillButton"
+                            Clicked="OnConnectTreadmillClicked"
+                            HorizontalOptions="FillAndExpand" VerticalOptions="End"/>
+                    <Button Text="+ Heart sensor" 
+                            x:Name="ConnectHeartRateButton"
+                            Clicked="OnConnectHeartRateClicked"
+                            HorizontalOptions="FillAndExpand"/>
+                </HorizontalStackLayout>
             </StackLayout>
 
             <!-- Speed Settings -->
             <StackLayout Grid.Column="1" Padding="10" BackgroundColor="#f0f0f0">
                 <Label Text="Speed Settings (km/h)" FontSize="20" FontAttributes="Bold" />
-                <Grid ColumnDefinitions="2*,3*,1*" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+                <Grid ColumnDefinitions="2*,3*,1*" RowDefinitions="Auto,Auto,Auto,Auto,Auto, Auto">
                     <Label Text="0-5%" Grid.Row="0" Grid.Column="0" FontSize="18" VerticalOptions="Center" />
                     <HorizontalStackLayout Grid.Row="0" Grid.Column="1" Margin="0,2" Spacing="10">
                         <Button Text="-" WidthRequest="40" FontSize="18" Clicked="OnDecreaseSpeed0to5" />
@@ -60,11 +72,23 @@
                         <Button Text="+" WidthRequest="40" FontSize="18" Clicked="OnIncreaseSpeed13to15" />
                     </HorizontalStackLayout>
                     <Label Text="km/h" Grid.Row="4" Grid.Column="2" FontSize="18" VerticalOptions="Center" />
+
+                    <CheckBox x:Name="AutoSpeedControlCheckBox" IsChecked="True" Grid.Row="5"  Grid.Column="0" VerticalOptions="Center" HorizontalOptions="Center" />
+                    <HorizontalStackLayout Grid.Row="5" Grid.Column="1" Margin="0,2" Spacing="10">
+                        <Label Text="Allow Cruise Control" FontSize="18" VerticalOptions="Center"/>
+                    </HorizontalStackLayout>
                 </Grid>
             </StackLayout>
         </Grid>
 
         <!-- Start Button -->
-        <Button Text="Start" Grid.Row="2" HorizontalOptions="FillAndExpand"  VerticalOptions="Center" Margin="10" Clicked="OnStartClicked" />
+        <Button x:Name="StartButton" 
+                Text="Start" Grid.Row="2" HorizontalOptions="FillAndExpand"  
+                VerticalOptions="Center" 
+                Margin="10" 
+                Clicked="OnStartClicked" 
+                FontSize="Large"
+                HeightRequest="50" 
+                IsEnabled="False"/>
     </Grid>
 </ContentPage>

@@ -53,6 +53,7 @@
                 Clicked="OnNextClicked"
                 HorizontalOptions="Fill"
                 Margin="0,10,0,10"
-                HeightRequest="50"  />
+                HeightRequest="50"
+                FontSize="Large" />
     </Grid>
 </ContentPage>
