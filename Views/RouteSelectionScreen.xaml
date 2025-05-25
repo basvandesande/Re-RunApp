@@ -43,6 +43,7 @@
                                   ShouldMute="True"
                                   HorizontalOptions="End"
                                   VerticalOptions="Center"
+                                  Source="embed://no-media.mp4"
                                   Margin="0,0,20,0" />
         </Grid>
 

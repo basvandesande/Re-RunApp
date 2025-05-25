@@ -48,6 +48,10 @@ internal class Player
                                                 _totalDistanceM;
 
             _playerStatistics.CurrentSpeedKMH = e.SpeedKMH;
+
+            _playerStatistics.CurrentSpeedMinKM = _playerStatistics.CurrentSpeedKMH.HasValue && _playerStatistics.CurrentSpeedKMH > 0
+                ? TimeSpan.FromMinutes(60 / (double)e.SpeedKMH)
+                : null;
         }
     }
 
@@ -134,7 +138,7 @@ internal class Player
                 // ensure the remaining distance is updated for the segment
                 _playerStatistics.SegmentRemainingM = current.TotalDistanceInMeters - _totalDistanceM;
                 _playerStatistics.SecondsElapsed = (DateTime.UtcNow - _startTime).TotalSeconds;
-
+                
                 // update the statistics
                 OnStatisticsUpdate?.Invoke(_playerStatistics);
 

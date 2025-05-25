@@ -45,13 +45,13 @@ public partial class RouteSelectionScreen : ContentPage
             if (File.Exists(videoPath))
             {
                 RouteVideo.Source = MediaSource.FromFile(videoPath);
-                RouteVideo.IsVisible = true;
-                ForceVideoScaling();
             }
             else
             {
-                RouteVideo.IsVisible = false;
+                RouteVideo.Source= MediaSource.FromResource("no-media.mp4");
             }
+            RouteVideo.IsVisible = true;
+            ForceVideoScaling();
 
             // Show the details panel and video  
             DetailsGrid.IsVisible = true;
@@ -86,7 +86,7 @@ public partial class RouteSelectionScreen : ContentPage
         if (RouteVideo.IsVisible)
         {
             double containerWidth = DetailsGrid.Width; 
-            double containerHeight = DetailsGrid.Height; 
+            double containerHeight = DetailsGrid.Height;
 
             double aspectRatio = 9.0 / 16.0;
             double videoWidth = containerWidth;

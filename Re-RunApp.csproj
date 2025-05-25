@@ -66,10 +66,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <None Remove="Resources\Files\no-media.mp4" />
 	  <None Remove="Resources\Files\Stelvio.gpx" />
 	</ItemGroup>
 
 	<ItemGroup>
+	  <EmbeddedResource Include="Resources\Raw\no-media.mp4" />
 	  <EmbeddedResource Include="Resources\Files\Stelvio.gpx" />
 	</ItemGroup>
 

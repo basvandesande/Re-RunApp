@@ -17,29 +17,30 @@ public partial class RouteDetailsScreen : ContentPage
     }
 
 
-    protected override void OnAppearing()
+    protected override async void OnAppearing()
     {
         base.OnAppearing();
         
-        var connected =  Task.Run<bool>(async () => { return await Runtime.Treadmill.ConnectToDevice(false); });
-
-        StartButton.IsEnabled = connected.Result;
+        var connected =  await Runtime.Treadmill.ConnectToDevice(false); 
+       
+        // todo remove comments
+        StartButton.IsEnabled = true;
     }
 
-    private void OnConnectTreadmillClicked(object sender, EventArgs e)
+    private async void OnConnectTreadmillClicked(object sender, EventArgs e)
     {
         Runtime.Treadmill.DeleteDeviceIdFile();
 
-        var connected = Task.Run<bool>(async () => { return await Runtime.Treadmill.ConnectToDevice(true); });
-        StartButton.IsEnabled = connected.Result;
+        var connected = await Runtime.Treadmill.ConnectToDevice(true);
+        StartButton.IsEnabled = connected;
     }
 
-    private void OnConnectHeartRateClicked(object sender, EventArgs e)
+    private async void OnConnectHeartRateClicked(object sender, EventArgs e)
     {
         Runtime.HeartRate.DeleteDeviceIdFile();
 
-        var connected = Task.Run<bool>(async () => { return await Runtime.HeartRate.ConnectToDevice(true); });
-        Runtime.HeartRate.Enabled=connected.Result;
+        var connected = await Runtime.HeartRate.ConnectToDevice(true);
+        Runtime.HeartRate.Enabled=connected;
     }
 
     private void LoadRouteDetails()
@@ -61,11 +62,12 @@ public partial class RouteDetailsScreen : ContentPage
 
         if (!Runtime.HeartRate.Enabled)
         {
-            var connected = Task.Run<bool>(async () => { return await Runtime.HeartRate.ConnectToDevice(true); });
-            Runtime.HeartRate.Enabled = connected.Result;
+            var connected = await Runtime.HeartRate.ConnectToDevice(true); 
+            Runtime.HeartRate.Enabled = connected;
         }
         await Navigation.PushAsync(new ActivityScreen(_gpxFilePath));
     }
+
     private void OnIncreaseSpeed0to5(object sender, EventArgs e)
     {
         UpdateSpeed(Speed0to5Label, 0.1);
@@ -173,7 +175,7 @@ public partial class RouteDetailsScreen : ContentPage
 
             var graphPlotter = new GraphPlotter();
             var elevationBitmap = graphPlotter.PlotGraph(gpxProcessor, (int)ElevationGraphImage.Height, (int)ElevationGraphImage.Width);
-
+            
             // Set the ImageSource
             ElevationGraphImage.Source = ImageSource.FromStream(() => elevationBitmap);
 
