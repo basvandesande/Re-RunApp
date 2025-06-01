@@ -8,14 +8,46 @@
         <Grid Grid.Row="0" ColumnDefinitions="1*,1*" ColumnSpacing="10">
             <!-- Statistics Pane -->
             <Frame Grid.Column="0" Padding="10" BackgroundColor="#f0f0f0" CornerRadius="8">
-                <!-- Replace with your statistics UI -->
-                <StackLayout>
-                    <Label Text="Statistieken" FontAttributes="Bold" FontSize="18"/>
-                    <Label x:Name="DistanceLabel" Text="Afstand: 0.0 km"/>
-                    <Label x:Name="TimeLabel" Text="Tijd: 00:00"/>
-                    <Label x:Name="SpeedLabel" Text="Snelheid: 0.0 km/h"/>
-                    <!-- Add more statistics as needed -->
-                </StackLayout>
+                <Grid ColumnDefinitions="*,20,*" RowDefinitions="Auto,Auto,Auto,Auto" ColumnSpacing="10" RowSpacing="12">
+                    <!-- Linkerkolom -->
+                    <StackLayout Grid.Column="0" Grid.Row="0" Spacing="2">
+                        <Label Text="Distance meters" FontAttributes="None" FontSize="16" HorizontalTextAlignment="Center" />
+                        <Label x:Name="DistanceLabel" Text="0" FontAttributes="Bold" FontSize="20" HorizontalTextAlignment="Center"/>
+                    </StackLayout>
+                    <StackLayout Grid.Column="0" Grid.Row="1" Spacing="2">
+                        <Label Text="Segment remaining meters" FontAttributes="None" FontSize="16" HorizontalTextAlignment="Center"/>
+                        <Label x:Name="SegmentRemainingLabel" Text="0" FontAttributes="Bold" FontSize="20" HorizontalTextAlignment="Center"/>
+                    </StackLayout>
+                    <StackLayout Grid.Column="0" Grid.Row="2" Spacing="2">
+                        <Label Text="Total meters climbed" FontAttributes="None" FontSize="16" HorizontalTextAlignment="Center"/>
+                        <Label x:Name="TotalClimbedLabel" Text="0" FontAttributes="Bold" FontSize="20" HorizontalTextAlignment="Center"/>
+                    </StackLayout>
+                    <StackLayout Grid.Column="0" Grid.Row="3" Spacing="2">
+                        <Label Text="Total meters descended" FontAttributes="None" FontSize="16" HorizontalTextAlignment="Center"/>
+                        <Label x:Name="TotalDescendedLabel" Text="0" FontAttributes="Bold" FontSize="20" HorizontalTextAlignment="Center"/>
+                    </StackLayout>
+
+                    <!-- Middelste kolom blijft leeg -->
+
+                    <!-- Rechterkolom -->
+                    <StackLayout Grid.Column="2" Grid.Row="0" Spacing="2">
+                        <Label Text="Elapsed time" FontAttributes="None" FontSize="16" HorizontalTextAlignment="Center"/>
+                        <Label x:Name="TimeLabel" Text="00:00" FontAttributes="Bold" FontSize="20" HorizontalTextAlignment="Center"/>
+                    </StackLayout>
+                    <StackLayout Grid.Column="2" Grid.Row="1" Spacing="2">
+                        <Label Text="Heartrate" FontAttributes="None" FontSize="16" HorizontalTextAlignment="Center"/>
+                        <Label x:Name="HeartrateLabel" Text="0" FontAttributes="Bold" FontSize="20" HorizontalTextAlignment="Center"/>
+                    </StackLayout>
+                    <StackLayout Grid.Column="2" Grid.Row="2" Spacing="2">
+                        <Label Text="Speed KM/h" FontAttributes="None" FontSize="16" HorizontalTextAlignment="Center"/>
+                        <Label x:Name="SpeedLabelKm" Text="0.0" FontAttributes="Bold" FontSize="20" HorizontalTextAlignment="Center"/>
+                    </StackLayout>
+                    <StackLayout Grid.Column="2" Grid.Row="3" Spacing="2">
+                        <Label Text="Speed Min/KM" FontAttributes="None" FontSize="16" HorizontalTextAlignment="Center"/>
+                        <Label x:Name="SpeedLabelMin" Text="0.0" FontAttributes="Bold" FontSize="20" HorizontalTextAlignment="Center"/>
+                    </StackLayout>
+                    <!-- Voeg hier eventueel meer statistieken toe in de rechterkolom -->
+                </Grid>
             </Frame>
             <!-- Video Pane -->
             <Frame x:Name="VideoFrame" Grid.Column="1" Padding="0" BackgroundColor="#000" CornerRadius="8" HasShadow="False">

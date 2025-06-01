@@ -4,7 +4,12 @@
              Title="Route Details">
     <Grid RowDefinitions="2*,2.4*,Auto"> <!-- Added Auto for the Start button -->
         <!-- Route Elevation Graph -->
-        <Image x:Name="ElevationGraphImage" Grid.Row="0" Margin="10" Aspect="Fill" />
+        <Image x:Name="ElevationGraphImage" Grid.Row="0" Margin="10" Aspect="Fill">
+            <Image.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnElevationGraphTapped" NumberOfTapsRequired="1"/>
+            </Image.GestureRecognizers>
+
+        </Image> 
 
         <!-- Bottom Section with Two Columns -->
         <Grid Grid.Row="1" ColumnDefinitions="2*,1*" Padding="10">

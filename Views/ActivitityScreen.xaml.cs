@@ -3,17 +3,18 @@ namespace Re_RunApp.Views;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Controls;
 using Re_RunApp.Core;
+//using Windows.ApplicationModel;
 
 public partial class ActivityScreen : ContentPage
 {
     private string _gpxFilePath;
     private GpxProcessor _gpxProcessor = new GpxProcessor();
-    private Treadmill _treadmill = new Treadmill();
+    private ITreadmill _treadmill;
     private HeartRate _heartRate = new HeartRate();
     private GraphPlotter _graphPlotter = new GraphPlotter();
     private Player _player;
 
-    public ActivityScreen(string gpxFilePath)
+    public ActivityScreen(string gpxFilePath, bool simulate=false)
     {
         InitializeComponent();
 
@@ -21,10 +22,10 @@ public partial class ActivityScreen : ContentPage
         _gpxProcessor.LoadGpxData(_gpxFilePath);
         _gpxProcessor.GetRun();
 
-        _treadmill = Runtime.Treadmill;
+        _treadmill = (!simulate)? Runtime.Treadmill: Runtime.TreadmillSimulator;
         _heartRate = Runtime.HeartRate;
 
-        _player = new Player(_gpxProcessor, _treadmill, _heartRate);
+        _player = new Player(_gpxProcessor, _treadmill, _heartRate, Runtime.SpeedSettings);
         _player.OnStatisticsUpdate += OnStatisticsUpdate; 
        
     }
@@ -34,10 +35,15 @@ public partial class ActivityScreen : ContentPage
         // Ensure UI updates are on the main thread
         MainThread.BeginInvokeOnMainThread(() =>
         {
-            DistanceLabel.Text = $"Distance: {stats.TotalDistanceM:N0} meter";
-            TimeLabel.Text = $"Elapsed time: {TimeSpan.FromSeconds(stats.SecondsElapsed):hh\\:mm\\:ss}";
-            SpeedLabel.Text = $"Speed: {stats.CurrentSpeedKMH:F1} km/h - ({stats.CurrentSpeedMinKM:mm\\:ss})";
-            //// Voeg hier eventueel meer statistieken toe
+            DistanceLabel.Text = $"{stats.TotalDistanceM/1000:N1}";
+            TimeLabel.Text = $"{TimeSpan.FromSeconds(stats.SecondsElapsed):hh\\:mm\\:ss}";
+            SpeedLabelKm.Text = $"{stats.CurrentSpeedKMH:F1}";
+            SpeedLabelMin.Text = $"{stats.CurrentSpeedMinKM:mm\\:ss}";
+            HeartrateLabel.Text = $"{stats.CurrentHeartRate}";
+            TotalClimbedLabel.Text = $"{stats.TotalInclinationM:N0}";
+            TotalDescendedLabel.Text = $"{stats.TotalDeclinationM:N0}";
+            SegmentRemainingLabel.Text = $"{stats.SegmentRemainingM:N0}";
+
         });
     }
 

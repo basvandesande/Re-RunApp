@@ -3,7 +3,7 @@ namespace Re_RunApp.Core;
 
 using InTheHand.Bluetooth;
 
-internal class Treadmill
+internal class Treadmill: ITreadmill
 {
     public string Name => _device?.Name ?? string.Empty;
 

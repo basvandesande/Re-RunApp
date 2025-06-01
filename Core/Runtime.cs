@@ -5,7 +5,10 @@ namespace Re_RunApp.Core
     internal class Runtime
     {
         internal static Treadmill Treadmill { get; set; } = new Treadmill();
+        internal static TreadmillSimulator TreadmillSimulator { get; set; } = new TreadmillSimulator();
         internal static HeartRate HeartRate { get; set; } = new HeartRate(); 
+
+        internal static SpeedSettings? SpeedSettings { get; set; }
 
         public static void DeleteDeviceIdFile(string deviceIdFile)
         {

@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 internal class Player
 {
     private readonly GpxProcessor _gpx;
-    private readonly Treadmill _treadmill;
+    private readonly ITreadmill _treadmill;
     private readonly HeartRate _heartRate;
-
+    private readonly SpeedSettings? _speedSettings;
     private bool _isPlaying = false;
 
     private CancellationTokenSource _cancellationTokenSource;
@@ -21,15 +21,17 @@ internal class Player
     private DateTime _startTime;
 
 
-    public Player(GpxProcessor gpx, Treadmill treadmill, HeartRate heartRate)
+    public Player(GpxProcessor gpx, ITreadmill treadmill, HeartRate heartRate, SpeedSettings speedSettings)
     {
         _gpx = gpx ?? throw new Exception("GpxProcessor is null");
+        _speedSettings = speedSettings;
         _treadmill = treadmill ?? throw new Exception("Treadmill is null");
         _treadmill.OnStatisticsUpdate += Treadmill_OnStatisticsUpdate;
         _treadmill.OnStatusUpdate += Treadmill_OnStatusUpdate;
         _heartRate = heartRate;
         _heartRate.OnHeartPulse += HeartRate_OnHeartPulse;
     }
+
 
     private void HeartRate_OnHeartPulse(int heartRate)
     {
@@ -132,7 +134,7 @@ internal class Player
                     _playerStatistics.TotalInclinationM += previous.AscendInMeters;
                     _playerStatistics.TotalDeclinationM += previous.DescendInMeters;
 
-                    await AdjustTreadmillAsync(current);
+                    await AdjustTreadmillAsync(current, previous);
                 }
 
                 // ensure the remaining distance is updated for the segment
@@ -173,8 +175,46 @@ internal class Player
         }
     }
 
-    private async Task AdjustTreadmillAsync(Track track)
+    private async Task AdjustTreadmillAsync(Track track, Track? previousTrack)
     {
-        await _treadmill.ChangeInclineAsync((short)Math.Round(track.InclinationInDegrees, 0));
+        short inclinationInDegrees = (short)Math.Round(track.InclinationInDegrees, 0);
+        await _treadmill.ChangeInclineAsync(inclinationInDegrees);
+        await AdjustTreadmillAsync(track, previousTrack);
+    }
+
+
+    private async Task AdjustTreadmillSpeedAsync(Track track, Track? previousTrack)
+    {
+        if (_speedSettings != null && _speedSettings.AutoSpeedControl)
+        {
+            // calculate the delay based on the inclination difference and ascend / descend
+            int delayMs = 0;
+            decimal speed = 0;
+            if (previousTrack != null && previousTrack.InclinationInDegrees > track.InclinationInDegrees)
+            {
+                delayMs = (int)((previousTrack.InclinationInDegrees - track.InclinationInDegrees) * 300);
+            }
+            else if (previousTrack != null && previousTrack.InclinationInDegrees < track.InclinationInDegrees)
+            {
+                delayMs = (int)((track.InclinationInDegrees - previousTrack.InclinationInDegrees) * 150);
+            }
+
+            // set the speeds
+            if (track.InclinationInDegrees < 0)
+                 speed = (decimal)_speedSettings.Speed0to5 + 0.5m;
+            if (track.InclinationInDegrees <= 5)
+                 speed = (decimal)_speedSettings.Speed0to5;
+            else if (track.InclinationInDegrees <= 8)
+                speed = (decimal)_speedSettings.Speed6to8;
+            else if (track.InclinationInDegrees <= 10)
+                speed = (decimal)_speedSettings.Speed8to10;
+            else if (track.InclinationInDegrees <= 12)
+                speed = (decimal)_speedSettings.Speed11to12;
+            else
+                speed = (decimal)_speedSettings.Speed13to15;
+        
+            await Task.Delay(delayMs);
+            await _treadmill.ChangeSpeedAsync((decimal)_speedSettings.Speed0to5 + 0.5m);
+        }
     }
 }

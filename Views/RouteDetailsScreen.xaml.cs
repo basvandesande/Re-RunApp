@@ -6,6 +6,10 @@ public partial class RouteDetailsScreen : ContentPage
 {
     private readonly string _gpxFilePath;
     private bool _graphGenerated = false;
+    private DateTime _lastTapTime = DateTime.MinValue;
+    private const int _doubleTapThresholdMs = 400; // Adjust as needed
+    private bool _useSimulation = false;
+    private bool _startButtonEnabled = false;
 
     public RouteDetailsScreen(string gpxFilePath)
     {
@@ -22,17 +26,15 @@ public partial class RouteDetailsScreen : ContentPage
         base.OnAppearing();
         
         var connected =  await Runtime.Treadmill.ConnectToDevice(false); 
-       
-        // todo remove comments
-        StartButton.IsEnabled = true;
+        StartButton.IsEnabled = _startButtonEnabled;
     }
 
     private async void OnConnectTreadmillClicked(object sender, EventArgs e)
     {
         Runtime.Treadmill.DeleteDeviceIdFile();
 
-        var connected = await Runtime.Treadmill.ConnectToDevice(true);
-        StartButton.IsEnabled = connected;
+        _startButtonEnabled = await Runtime.Treadmill.ConnectToDevice(true);
+        StartButton.IsEnabled = _startButtonEnabled;
     }
 
     private async void OnConnectHeartRateClicked(object sender, EventArgs e)
@@ -50,7 +52,7 @@ public partial class RouteDetailsScreen : ContentPage
         gpxProcessor.GetRun();
 
         // Set route details
-        RouteNameLabel.Text = $"Name: {gpxProcessor.Gpx.trk.name}";
+        RouteNameLabel.Text = $"Name: {gpxProcessor.Gpx?.trk.name}";
         TotalDistanceLabel.Text = $"Total Distance: {gpxProcessor.TotalDistanceInMeters / 1000:F1} km";
         TotalElevationLabel.Text = $"Total Elevation: {(gpxProcessor.FindMaximumElevation() - gpxProcessor.FindMinimumElevation()):F0} m";
         TotalAscendLabel.Text = $"Total Ascend: {gpxProcessor.TotalElevationInMeters:F0}  m";
@@ -65,7 +67,7 @@ public partial class RouteDetailsScreen : ContentPage
             var connected = await Runtime.HeartRate.ConnectToDevice(true); 
             Runtime.HeartRate.Enabled = connected;
         }
-        await Navigation.PushAsync(new ActivityScreen(_gpxFilePath));
+        await Navigation.PushAsync(new ActivityScreen(_gpxFilePath, _useSimulation));
     }
 
     private void OnIncreaseSpeed0to5(object sender, EventArgs e)
@@ -140,6 +142,10 @@ public partial class RouteDetailsScreen : ContentPage
             AutoSpeedControl = AutoSpeedControlCheckBox.IsChecked
         };
         File.WriteAllText(speedSettingsFilePath, System.Text.Json.JsonSerializer.Serialize(settings));
+        
+        // update the speedsettings while saving...
+        Runtime.SpeedSettings = settings;
+
     }
 
     private void LoadSpeedSettings()
@@ -160,6 +166,9 @@ public partial class RouteDetailsScreen : ContentPage
                 Speed13to15Label.Text = settings.Speed13to15.ToString("F1", System.Globalization.CultureInfo.InvariantCulture);
                 AutoSpeedControlCheckBox.IsChecked = settings.AutoSpeedControl;
             }
+
+            // initialize the speedsettings
+            Runtime.SpeedSettings = settings;
         }
     }
     protected override void OnSizeAllocated(double width, double height)
@@ -183,6 +192,31 @@ public partial class RouteDetailsScreen : ContentPage
             if (_graphGenerated) return;
             _graphGenerated = true;
         }
+    }
+
+    private void OnElevationGraphTapped(object sender, TappedEventArgs e)
+    {
+        var now = DateTime.UtcNow;
+        if ((now - _lastTapTime).TotalMilliseconds < _doubleTapThresholdMs)
+        {
+            // Double-tap detected
+            OnElevationGraphDoubleTapped(sender, e);
+            _lastTapTime = DateTime.MinValue; // Reset
+        }
+        else
+        {
+            _lastTapTime = now;
+        }
+    }
+
+    private void OnElevationGraphDoubleTapped(object sender, TappedEventArgs e)
+    {
+        // toggle the simulation
+        _useSimulation = !_useSimulation;
+        StartButton.IsEnabled = _useSimulation || _startButtonEnabled;
+
+        string msg = _useSimulation ? "Use treadmill simulation!" : "Use actual treadmill!";
+        DisplayAlert("Developer Information", msg, "OK");
     }
 
     
