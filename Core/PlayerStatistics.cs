@@ -11,4 +11,5 @@ internal class PlayerStatistics
     public decimal? TotalInclinationM { get; set; } = 0;
     public decimal? TotalDeclinationM { get; set; } = 0;
     public int? CurrentHeartRate { get; set; } = 0;
+
 }

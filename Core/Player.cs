@@ -14,6 +14,7 @@ internal class Player
 
     private CancellationTokenSource _cancellationTokenSource;
 
+    public event Action<decimal> OnTrackChange; 
     public event Action<PlayerStatistics> OnStatisticsUpdate;
     private PlayerStatistics _playerStatistics = new();
 
@@ -104,6 +105,8 @@ internal class Player
 
         try
         {
+            OnTrackChange?.Invoke(0);
+
             DateTime startTime = DateTime.UtcNow;
             while (!token.IsCancellationRequested)
             {
@@ -133,6 +136,9 @@ internal class Player
                     _playerStatistics.SegmentIncrementPercentage = current.InclinationInDegrees;
                     _playerStatistics.TotalInclinationM += previous.AscendInMeters;
                     _playerStatistics.TotalDeclinationM += previous.DescendInMeters;
+
+                    // Indicate the track change
+                    OnTrackChange?.Invoke(previous.TotalDistanceInMeters);
 
                     await AdjustTreadmillAsync(current, previous);
                 }
@@ -179,7 +185,7 @@ internal class Player
     {
         short inclinationInDegrees = (short)Math.Round(track.InclinationInDegrees, 0);
         await _treadmill.ChangeInclineAsync(inclinationInDegrees);
-        await AdjustTreadmillAsync(track, previousTrack);
+        await AdjustTreadmillSpeedAsync(track, previousTrack);
     }
 
 

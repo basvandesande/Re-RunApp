@@ -3,7 +3,6 @@ namespace Re_RunApp.Views;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Controls;
 using Re_RunApp.Core;
-//using Windows.ApplicationModel;
 
 public partial class ActivityScreen : ContentPage
 {
@@ -26,8 +25,18 @@ public partial class ActivityScreen : ContentPage
         _heartRate = Runtime.HeartRate;
 
         _player = new Player(_gpxProcessor, _treadmill, _heartRate, Runtime.SpeedSettings);
-        _player.OnStatisticsUpdate += OnStatisticsUpdate; 
-       
+        _player.OnStatisticsUpdate += OnStatisticsUpdate;
+        _player.OnTrackChange += OnTrackChange; 
+
+    }
+
+    private void OnTrackChange(decimal totalDistanceInMeters)
+    {
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            ElevationGraphImage.Source = ImageSource.FromStream(() => _graphPlotter.RenderDistanceOverlay(totalDistanceInMeters)); 
+        });
+        
     }
 
     private void OnStatisticsUpdate(PlayerStatistics stats)
@@ -35,10 +44,10 @@ public partial class ActivityScreen : ContentPage
         // Ensure UI updates are on the main thread
         MainThread.BeginInvokeOnMainThread(() =>
         {
-            DistanceLabel.Text = $"{stats.TotalDistanceM/1000:N1}";
+            DistanceLabel.Text = $"{stats.TotalDistanceM:N0}";
             TimeLabel.Text = $"{TimeSpan.FromSeconds(stats.SecondsElapsed):hh\\:mm\\:ss}";
-            SpeedLabelKm.Text = $"{stats.CurrentSpeedKMH:F1}";
-            SpeedLabelMin.Text = $"{stats.CurrentSpeedMinKM:mm\\:ss}";
+            SpeedLabel.Text = $"{stats.CurrentSpeedKMH:F1} ({stats.CurrentSpeedMinKM:mm\\:ss})";
+            InclinationLabel.Text = $"{stats.SegmentIncrementPercentage:N1}";
             HeartrateLabel.Text = $"{stats.CurrentHeartRate}";
             TotalClimbedLabel.Text = $"{stats.TotalInclinationM:N0}";
             TotalDescendedLabel.Text = $"{stats.TotalDeclinationM:N0}";
@@ -96,9 +105,18 @@ public partial class ActivityScreen : ContentPage
     }
 
 
+    private async void OnStartClicked(object sender, EventArgs e)
+    {   
+        // swap buttons
+        StartButton.IsVisible = false;
+        FinishButton.IsVisible = true;
+        await _player.StartAsync();
+    }
+
 
     private async void OnFinishClicked(object sender, EventArgs e)
     {
+        await _player.StopAsync();
         await Navigation.PushAsync(new SummaryScreen());
     }
 }

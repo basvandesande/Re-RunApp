@@ -7,7 +7,7 @@ public class TreadmillSimulator : ITreadmill
     private bool _isRunning;
     private CancellationTokenSource _cts;
     private decimal _percentageIncline=0;
-    private decimal _speed = 0;
+    private decimal _speed = 10; // we need to start with a default speed. cruise control takes over
 
     public Task StartAsync()
     {
@@ -35,27 +35,33 @@ public class TreadmillSimulator : ITreadmill
 
     public Task ChangeSpeedAsync(decimal speed)
     {
-        _speed = speed;
+        _speed = speed * 2;  // multiply the speed ... do a fast run :)
         return Task.CompletedTask;
     }
 
     private async void SimulateAsync(CancellationToken token)
     {
         double distance = 0;
-        
-        while (_isRunning && !token.IsCancellationRequested)
+        try
         {
-            distance += (double)_speed * 1000 / 3600 ; 
-            var stats = new TreadmillStatistics
+            while (_isRunning && !token.IsCancellationRequested)
             {
-                SpeedKMH = _speed,
-                DistanceM = distance,
-                InclinationPercentage = _percentageIncline,
-                HeartRate = 120,
-                ElapsedSeconds = (int)(distance / ((double)_speed * 1000 / 3600))
-            };
-            OnStatisticsUpdate?.Invoke(stats);
-            await Task.Delay(1000, token);
+                distance += (double)_speed * 1000 / 3600;
+                var stats = new TreadmillStatistics
+                {
+                    SpeedKMH = _speed,
+                    DistanceM = distance,
+                    InclinationPercentage = _percentageIncline,
+                    HeartRate = 120,
+                    ElapsedSeconds = (int)(distance / ((double)_speed * 1000 / 3600))
+                };
+                OnStatisticsUpdate?.Invoke(stats);
+                await Task.Delay(1000, token);
+            }
+        }
+        catch (TaskCanceledException)
+        {
+            // Handle cancellation gracefully, if needed
         }
     }
 }
