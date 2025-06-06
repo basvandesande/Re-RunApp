@@ -8,12 +8,13 @@ internal class Player
 {
     private readonly GpxProcessor _gpx;
     private readonly ITreadmill _treadmill;
-    private readonly HeartRate _heartRate;
+    private readonly IHeartRate _heartRate;
     private readonly SpeedSettings? _speedSettings;
     private bool _isPlaying = false;
 
     private CancellationTokenSource _cancellationTokenSource;
 
+    public event Action<PlayerStatistics> OnTrackReady;
     public event Action<decimal> OnTrackChange; 
     public event Action<PlayerStatistics> OnStatisticsUpdate;
     private PlayerStatistics _playerStatistics = new();
@@ -22,7 +23,7 @@ internal class Player
     private DateTime _startTime;
 
 
-    public Player(GpxProcessor gpx, ITreadmill treadmill, HeartRate heartRate, SpeedSettings speedSettings)
+    public Player(GpxProcessor gpx, ITreadmill treadmill, IHeartRate heartRate, SpeedSettings speedSettings)
     {
         _gpx = gpx ?? throw new Exception("GpxProcessor is null");
         _speedSettings = speedSettings;
@@ -121,8 +122,19 @@ internal class Player
 
                     if (index >= maxIndex)
                     {
+                        // Indicate the track change
+                        OnTrackChange?.Invoke(current.TotalDistanceInMeters);
+
                         Console.WriteLine("End of track reached.");
                         await _treadmill.StopAsync();
+
+                        // set the finish statistics
+                        _playerStatistics.SegmentIncrementPercentage = 0;
+                        _playerStatistics.SegmentRemainingM = 0;
+                        _playerStatistics.SecondsElapsed = (DateTime.UtcNow - _startTime).TotalSeconds;
+
+                        OnTrackReady?.Invoke(_playerStatistics);
+
                         break;
                     }
                     // set the new start time of the track    
@@ -136,6 +148,8 @@ internal class Player
                     _playerStatistics.SegmentIncrementPercentage = current.InclinationInDegrees;
                     _playerStatistics.TotalInclinationM += previous.AscendInMeters;
                     _playerStatistics.TotalDeclinationM += previous.DescendInMeters;
+                    _playerStatistics.CurrentSpeedKMH = 0;
+                    _playerStatistics.CurrentSpeedMinKM = null;
 
                     // Indicate the track change
                     OnTrackChange?.Invoke(previous.TotalDistanceInMeters);
@@ -185,6 +199,7 @@ internal class Player
     {
         short inclinationInDegrees = (short)Math.Round(track.InclinationInDegrees, 0);
         await _treadmill.ChangeInclineAsync(inclinationInDegrees);
+        await Task.Delay(2000);
         await AdjustTreadmillSpeedAsync(track, previousTrack);
     }
 
@@ -194,17 +209,12 @@ internal class Player
         if (_speedSettings != null && _speedSettings.AutoSpeedControl)
         {
             // calculate the delay based on the inclination difference and ascend / descend
-            int delayMs = 0;
+            int deltaIncline = (int)Math.Abs(track.InclinationInDegrees - (previousTrack?.InclinationInDegrees ?? 0));
+            if (deltaIncline == 0) return;
+            
             decimal speed = 0;
-            if (previousTrack != null && previousTrack.InclinationInDegrees > track.InclinationInDegrees)
-            {
-                delayMs = (int)((previousTrack.InclinationInDegrees - track.InclinationInDegrees) * 300);
-            }
-            else if (previousTrack != null && previousTrack.InclinationInDegrees < track.InclinationInDegrees)
-            {
-                delayMs = (int)((track.InclinationInDegrees - previousTrack.InclinationInDegrees) * 150);
-            }
-
+            int  delayMs = deltaIncline * 150;
+            
             // set the speeds
             if (track.InclinationInDegrees < 0)
                  speed = (decimal)_speedSettings.Speed0to5 + 0.5m;

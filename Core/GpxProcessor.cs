@@ -76,7 +76,7 @@ internal class GpxProcessor
 
         List<Track> tracks = ProcessGpxSegments(_gpx);
         tracks = CreateNewTracks(tracks);
-        tracks.Insert(0, GetIntroTrack());
+        tracks.Insert(0, GetIntroTrack(tracks[0].StartElevation)); //set the initial elevation
         _tracks = [.. tracks];
 
         Console.WriteLine($"Tracks created, total distance {_tracks[_tracks.Length - 1].TotalDistanceInMeters:F0}");
@@ -99,7 +99,7 @@ internal class GpxProcessor
     }
 
 
-    private Track GetIntroTrack()
+    private Track GetIntroTrack(decimal startElevation)
     {
         return new Track
         {
@@ -111,8 +111,8 @@ internal class GpxProcessor
             InclinationInDegrees = 0,
             TrackStartDistanceInMeters = 0,
             PreviousTrackDescended = false,
-            StartElevation = 0,
-            EndElevation = 0,
+            StartElevation = startElevation,
+            EndElevation = startElevation,
             Segments = []
         };
 

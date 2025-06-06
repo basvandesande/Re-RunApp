@@ -1,6 +1,6 @@
 ﻿namespace Re_RunApp.Core;
 
-internal class PlayerStatistics
+public class PlayerStatistics
 {
     public decimal? CurrentSpeedKMH { get; set; } = 0;
     public TimeSpan? CurrentSpeedMinKM { get; set; }

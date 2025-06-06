@@ -3,7 +3,7 @@
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
             x:Class="Re_RunApp.Views.ActivityScreen"
              Title="Activity">
-    <Grid RowDefinitions="2*,2.4*,Auto" ColumnSpacing="0" RowSpacing="10" Padding="10">
+    <Grid RowDefinitions="2.4*,2*,Auto" ColumnSpacing="0" RowSpacing="10" Padding="10">
         <!-- Top: Two panes (statistics and video) -->
         <Grid Grid.Row="0" ColumnDefinitions="1*,1*" ColumnSpacing="10">
             <!-- Statistics Pane -->
@@ -12,19 +12,19 @@
                     <!-- Linkerkolom -->
                     <StackLayout Grid.Column="0" Grid.Row="0" Spacing="2">
                         <Label Text="Distance meters" FontAttributes="None" FontSize="16" HorizontalTextAlignment="Center" />
-                        <Label x:Name="DistanceLabel" Text="0" FontAttributes="Bold" FontSize="20" HorizontalTextAlignment="Center"/>
+                        <Label x:Name="DistanceLabel" Text="0" FontAttributes="Bold" FontSize="30" HorizontalTextAlignment="Center"/>
                     </StackLayout>
                     <StackLayout Grid.Column="0" Grid.Row="1" Spacing="2">
                         <Label Text="Segment remaining meters" FontAttributes="None" FontSize="16" HorizontalTextAlignment="Center"/>
-                        <Label x:Name="SegmentRemainingLabel" Text="0" FontAttributes="Bold" FontSize="20" HorizontalTextAlignment="Center"/>
+                        <Label x:Name="SegmentRemainingLabel" Text="0" FontAttributes="Bold" FontSize="30" HorizontalTextAlignment="Center"/>
                     </StackLayout>
                     <StackLayout Grid.Column="0" Grid.Row="2" Spacing="2">
                         <Label Text="Total meters climbed" FontAttributes="None" FontSize="16" HorizontalTextAlignment="Center"/>
-                        <Label x:Name="TotalClimbedLabel" Text="0" FontAttributes="Bold" FontSize="20" HorizontalTextAlignment="Center"/>
+                        <Label x:Name="TotalClimbedLabel" Text="0" FontAttributes="Bold" FontSize="30" HorizontalTextAlignment="Center"/>
                     </StackLayout>
                     <StackLayout Grid.Column="0" Grid.Row="3" Spacing="2">
                         <Label Text="Total meters descended" FontAttributes="None" FontSize="16" HorizontalTextAlignment="Center"/>
-                        <Label x:Name="TotalDescendedLabel" Text="0" FontAttributes="Bold" FontSize="20" HorizontalTextAlignment="Center"/>
+                        <Label x:Name="TotalDescendedLabel" Text="0" FontAttributes="Bold" FontSize="30" HorizontalTextAlignment="Center"/>
                     </StackLayout>
 
                     <!-- Middelste kolom blijft leeg -->
@@ -32,19 +32,19 @@
                     <!-- Rechterkolom -->
                     <StackLayout Grid.Column="2" Grid.Row="0" Spacing="2">
                         <Label Text="Elapsed time" FontAttributes="None" FontSize="16" HorizontalTextAlignment="Center"/>
-                        <Label x:Name="TimeLabel" Text="00:00" FontAttributes="Bold" FontSize="20" HorizontalTextAlignment="Center"/>
+                        <Label x:Name="TimeLabel" Text="00:00" FontAttributes="Bold" FontSize="30" HorizontalTextAlignment="Center"/>
                     </StackLayout>
                     <StackLayout Grid.Column="2" Grid.Row="1" Spacing="2">
                         <Label Text="Heartrate" FontAttributes="None" FontSize="16" HorizontalTextAlignment="Center"/>
-                        <Label x:Name="HeartrateLabel" Text="0" FontAttributes="Bold" FontSize="20" HorizontalTextAlignment="Center"/>
+                        <Label x:Name="HeartrateLabel" Text="0" FontAttributes="Bold" FontSize="30" HorizontalTextAlignment="Center"/>
                     </StackLayout>
                     <StackLayout Grid.Column="2" Grid.Row="2" Spacing="2">
-                        <Label Text="Speed KM/h  (Min/KM)" FontAttributes="None" FontSize="16" HorizontalTextAlignment="Center"/>
-                        <Label x:Name="SpeedLabel" Text="0.0" FontAttributes="Bold" FontSize="20" HorizontalTextAlignment="Center"/>
+                        <Label Text="Speed Min/KM" FontAttributes="None" FontSize="16" HorizontalTextAlignment="Center"/>
+                        <Label x:Name="SpeedLabel" Text="00:00" FontAttributes="Bold" FontSize="30" HorizontalTextAlignment="Center"/>
                     </StackLayout>
                     <StackLayout Grid.Column="2" Grid.Row="3" Spacing="2">
                         <Label Text="Inclination %" FontAttributes="None" FontSize="16" HorizontalTextAlignment="Center"/>
-                        <Label x:Name="InclinationLabel" Text="0.0" FontAttributes="Bold" FontSize="20" HorizontalTextAlignment="Center"/>
+                        <Label x:Name="InclinationLabel" Text="0.0" FontAttributes="Bold" FontSize="30" HorizontalTextAlignment="Center"/>
                     </StackLayout>
                     <!-- Voeg hier eventueel meer statistieken toe in de rechterkolom -->
                 </Grid>
@@ -71,9 +71,18 @@
 
         <!-- Bottom: Finish Button -->
         <Button Grid.Row="2"
-                x:Name="FinishButton"
-                Text="Stop"
-                Clicked="OnFinishClicked"
+             x:Name="FinishButton"
+             Text="Finish"
+             Clicked="OnFinishClicked"
+             FontSize="Large"
+             HeightRequest="50"
+             HorizontalOptions="FillAndExpand"
+             Margin="0,10,0,0"
+             IsVisible="Hidden"/>
+        <Button Grid.Row="2"
+                x:Name="StopButton"
+                Text="STOP"
+                Clicked="OnStopClicked"
                 BackgroundColor="Red"
                 FontSize="Large"
                 HeightRequest="50"

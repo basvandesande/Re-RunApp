@@ -1,6 +1,6 @@
 ﻿namespace Re_RunApp.Core;
 
-public class HeartRate
+public class HeartRate: IHeartRate
 {
     public string Name => _device?.Name ?? string.Empty;
 
@@ -67,5 +67,9 @@ public class HeartRate
             }
         }
         return true;
+    }
+
+    public void Disconnect()
+    {
     }
 }

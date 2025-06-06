@@ -64,4 +64,9 @@ public class TreadmillSimulator : ITreadmill
             // Handle cancellation gracefully, if needed
         }
     }
+
+    public void Disconnect()
+    {
+        // ignore....
+    }
 }

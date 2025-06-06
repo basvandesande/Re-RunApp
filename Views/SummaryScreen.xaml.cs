@@ -1,11 +1,15 @@
 namespace Re_RunApp.Views;
 
 using Microsoft.Maui.Controls;
+using Re_RunApp.Core;
 
 public partial class SummaryScreen : ContentPage
 {
-    public SummaryScreen()
+    private PlayerStatistics _statistics;
+
+    public SummaryScreen(PlayerStatistics statistics)
     {
+        _statistics = statistics ?? throw new ArgumentNullException(nameof(statistics));
         InitializeComponent();
     }
 

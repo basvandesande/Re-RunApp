@@ -110,54 +110,6 @@ internal class GraphPlotter
             plotModel.Annotations.Add(verticalLine);
         }
 
-        // Legend settings
-        double legendY = (double)(maxElevation + elevationScale) - 0.06 * (maxElevation - minElevation); // 5% from top
-        double legendXStart = maxDistance * 0.45; // Start legend at 45% of width
-        double boxWidth = maxDistance * 0.03;     // Width of color box
-        double boxHeight = (maxElevation - minElevation) * 0.05; // Height of color box
-        double spacing = maxDistance * 0.016;      // Space between items
-
-        var legendItems = new (OxyColor color, string label)[]
-        {
-            (OxyColors.Blue,  "< 0"),
-            (OxyColors.Green, "0-5"),
-            (OxyColors.Yellow, "6-8"),
-            (OxyColors.Orange, "8-10"),
-            (OxyColors.Red, "11-12"),
-            (OxyColors.DarkRed, "13-15 %"),
-        };
-
-        double x = legendXStart;
-        foreach (var legendItem in legendItems)
-        {
-            // Color box
-            plotModel.Annotations.Add(new RectangleAnnotation
-            {
-                MinimumX = x + 40,
-                MaximumX = x + 35 + boxWidth,
-                MinimumY = legendY,
-                MaximumY = legendY + boxHeight,
-                Fill = legendItem.color,
-                Stroke = OxyColors.Black,
-                StrokeThickness = 1,
-                Layer = AnnotationLayer.AboveSeries
-            });
-
-            // Text next to box
-            plotModel.Annotations.Add(new TextAnnotation
-            {
-                Text = legendItem.label,
-                TextPosition = new DataPoint(x + boxWidth + spacing - 15, legendY + boxHeight / 2),
-                FontSize = 14,
-                Stroke = OxyColors.Undefined,
-                TextHorizontalAlignment = OxyPlot.HorizontalAlignment.Left,
-                TextVerticalAlignment = OxyPlot.VerticalAlignment.Middle,
-                Layer = AnnotationLayer.AboveSeries
-            });
-
-            x += boxWidth + spacing * 3; // Move to the right for next item
-        }
-
         return plotModel;
     }
 
@@ -206,15 +158,17 @@ internal class GraphPlotter
 
     private OxyColor GetColorForPercentage(decimal percentage)
     {
+        percentage = Math.Round(percentage, 0);
+
         if (percentage < 0)
             return OxyColors.Blue;
-        if (percentage < 5)
+        if (percentage <=5)
             return OxyColors.Green;
-        if (percentage < 8)
+        if (percentage <= 6)
             return OxyColors.Yellow;
-        if (percentage < 10)
+        if (percentage <= 10)
             return OxyColors.Orange;
-        if (percentage < 12)
+        if (percentage <= 12)
             return OxyColors.Red;
         return OxyColors.DarkRed;
     }

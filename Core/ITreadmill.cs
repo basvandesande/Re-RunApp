@@ -8,6 +8,5 @@ public interface ITreadmill
     Task ResetAsync();
     Task ChangeInclineAsync(short increment);
     Task ChangeSpeedAsync(decimal speed);
-
-
+    void Disconnect();
 }

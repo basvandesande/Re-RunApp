@@ -161,6 +161,47 @@ internal class Treadmill: ITreadmill
         OnStatisticsUpdate?.Invoke(stats);
     }
 
+    public void Disconnect()
+    {
+        try
+        {
+            // Stop notifications and detach event handlers
+            if (_activityCharacteristic != null)
+            {
+                _activityCharacteristic.CharacteristicValueChanged -= HandleActivityNotifications;
+                _activityCharacteristic.StopNotificationsAsync().Wait();
+            }
+            if (_characteristic != null)
+            {
+                _characteristic.CharacteristicValueChanged -= HandleRequestNotifications;
+                _characteristic.StopNotificationsAsync().Wait();
+            }
+            if (_statusCharacteristic != null)
+            {
+                _statusCharacteristic.CharacteristicValueChanged -= HandleStatusNotifications;
+                _statusCharacteristic.StopNotificationsAsync().Wait();
+            }
+
+            // Dispose GATT objects
+            _activityCharacteristic = null;
+            _characteristic = null;
+            _statusCharacteristic = null;
+            _supportedSpeedRangeCharacteristic = null;
+            _supportedInclinationRangeCharacteristic = null;
+
+            // Disconnect and dispose the device
+            if (_device != null && _device.Gatt.IsConnected)
+            {
+                _device.Gatt.Disconnect();
+            }
+            _device = null;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error during disconnect: {ex.Message}");
+        }
+    }
+
     public async Task StartAsync()
     {
         if (_characteristic != null)
