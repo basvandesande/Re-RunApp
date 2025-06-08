@@ -13,7 +13,8 @@ public partial class ActivityScreen : ContentPage
     private GraphPlotter _graphPlotter = new();
     private Player _player;
     private PlayerStatistics _playerStatistics = new();
-
+    private decimal? _actualSpeed = 0;
+    
     public ActivityScreen(string gpxFilePath, bool simulate=false)
     {
         InitializeComponent();
@@ -51,9 +52,21 @@ public partial class ActivityScreen : ContentPage
     {
         MainThread.BeginInvokeOnMainThread(() =>
         {
-            ElevationGraphImage.Source = ImageSource.FromStream(() => _graphPlotter.RenderDistanceOverlay(totalDistanceInMeters)); 
+            ElevationGraphImage.Source = ImageSource.FromStream(() => _graphPlotter.RenderDistanceOverlay(totalDistanceInMeters));
         });
     }
+
+    private void UpdateRouteVideoSpeed()
+    {
+        if (RouteVideo.IsVisible)
+        {
+            double secondsToGo = CalculateRemainingSeconds(_gpxProcessor, _playerStatistics);
+            double remainingDuration = RouteVideo.Duration.TotalSeconds - _playerStatistics.SecondsElapsed;
+            RouteVideo.Speed = remainingDuration / secondsToGo;
+        }
+    }
+
+
 
     private void OnStatisticsUpdate(PlayerStatistics stats)
     {
@@ -69,9 +82,15 @@ public partial class ActivityScreen : ContentPage
             TotalDescendedLabel.Text = $"{stats.TotalDeclinationM:N0}";
             SegmentRemainingLabel.Text = $"{stats.SegmentRemainingM:N0}";
 
-
             // store the statistics for later use
             _playerStatistics = stats;
+
+            // change video speed if needed.... otherwise use the actual speed
+            if (_actualSpeed != stats.CurrentSpeedKMH)
+            {
+                _actualSpeed = stats.CurrentSpeedKMH;
+                UpdateRouteVideoSpeed();
+            }
         });
     }
 
@@ -105,6 +124,7 @@ public partial class ActivityScreen : ContentPage
         StartButton.IsVisible = false;
         StopButton.IsVisible = true;
         FinishButton.IsVisible = false;
+        RouteVideo.Play();
         await _player.StartAsync();
     }
 
@@ -119,6 +139,7 @@ public partial class ActivityScreen : ContentPage
         StartButton.IsVisible = false;
         StopButton.IsVisible = false;
         FinishButton.IsVisible = true;
+        RouteVideo.Pause();
         await _player.StopAsync();
     }
 
@@ -155,5 +176,25 @@ public partial class ActivityScreen : ContentPage
 
         _treadmill.Disconnect();
         _heartRate.Disconnect();
+    }
+
+    private double CalculateRemainingSeconds(GpxProcessor gpxProcessor, PlayerStatistics stats)
+    {
+        decimal? totalDistanceM = gpxProcessor.TotalDistanceInMeters;
+        decimal? distanceCoveredM = stats.TotalDistanceM;
+        decimal? currentSpeedKmh = stats.CurrentSpeedKMH;
+
+        // Convert speed from km/h to m/s
+        double currentSpeedMps = currentSpeedKmh.HasValue ? (double)currentSpeedKmh.Value / 3.6 : 0;
+
+        // Remaining distance
+        double remainingDistanceM = (double)((totalDistanceM ?? 0) - (distanceCoveredM ?? 0));
+
+        // Remaining time in seconds
+        double remainingTimeSeconds = (currentSpeedMps > 0)
+            ? remainingDistanceM / currentSpeedMps
+            : double.PositiveInfinity; // or 0 if you prefer
+
+        return remainingTimeSeconds;
     }
 }
