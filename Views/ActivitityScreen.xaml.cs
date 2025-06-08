@@ -160,10 +160,12 @@ public partial class ActivityScreen : ContentPage
         if (File.Exists(videoPath))
         {
             RouteVideo.Source = MediaSource.FromFile(videoPath);
+            RouteVideo.ShouldAutoPlay = false;
         }
         else
         {
             RouteVideo.ShouldLoopPlayback = true;
+            RouteVideo.ShouldAutoPlay = true;
         }
         RouteVideo.IsVisible = true;
         ForceVideoScaling();

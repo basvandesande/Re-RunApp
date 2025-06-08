@@ -53,7 +53,7 @@
             <Frame x:Name="VideoFrame" Grid.Column="1" Padding="0" BackgroundColor="#000" CornerRadius="8" HasShadow="False">
                 <!-- Video -->
                 <toolkit:MediaElement x:Name="RouteVideo"
-                      ShouldAutoPlay="False"
+                      ShouldAutoPlay="True"
                       Aspect="AspectFill"
                       ShouldLoopPlayback="False"
                       ShouldShowPlaybackControls="False"
