@@ -62,10 +62,14 @@ public partial class RouteDetailsScreen : ContentPage
     {
         SaveSpeedSettings();
 
-        if (!Runtime.HeartRate.Enabled)
+        // connect to heartrate monitor if not already connected
+        if (!_useSimulation)
         {
-            var connected = await Runtime.HeartRate.ConnectToDevice(true); 
-            Runtime.HeartRate.Enabled = connected;
+            Runtime.HeartRate.Enabled = await Runtime.HeartRate.ConnectToDevice(false);
+        }
+        else
+        {
+            Runtime.HeartRateSimulator.Enabled = await Runtime.HeartRateSimulator.ConnectToDevice(false);
         }
         await Navigation.PushAsync(new ActivityScreen(_gpxFilePath, _useSimulation));
     }

@@ -27,9 +27,11 @@ internal class Player
     {
         _gpx = gpx ?? throw new Exception("GpxProcessor is null");
         _speedSettings = speedSettings;
+
         _treadmill = treadmill ?? throw new Exception("Treadmill is null");
         _treadmill.OnStatisticsUpdate += Treadmill_OnStatisticsUpdate;
         _treadmill.OnStatusUpdate += Treadmill_OnStatusUpdate;
+     
         _heartRate = heartRate;
         _heartRate.OnHeartPulse += HeartRate_OnHeartPulse;
     }
@@ -73,7 +75,6 @@ internal class Player
     {
         if (_gpx?.Tracks?.Length == 0) throw new Exception("No tracks to play");
 
-
         if (!_isPlaying) await _treadmill.StartAsync();
 
         _isPlaying = true;
@@ -87,9 +88,16 @@ internal class Player
 
     public async Task StopAsync()
     {
-        _cancellationTokenSource?.Cancel();
-        _isPlaying = false;
-        await _treadmill.StopAsync();
+        try
+        {
+            _cancellationTokenSource?.Cancel();
+            _isPlaying = false;
+            await _treadmill.StopAsync();
+        }
+        catch (TaskCanceledException)
+        {
+            Debug.WriteLine("Player stop requested");
+        }
     }
 
     public decimal? GetDistanceRan() => _playerStatistics.TotalDistanceM;
@@ -199,8 +207,9 @@ internal class Player
     {
         short inclinationInDegrees = (short)Math.Round(track.InclinationInDegrees, 0);
         await _treadmill.ChangeInclineAsync(inclinationInDegrees);
-        await Task.Delay(2000);
+        await Task.Delay(1000);
         await AdjustTreadmillSpeedAsync(track, previousTrack);
+     
     }
 
 
@@ -230,7 +239,7 @@ internal class Player
                 speed = (decimal)_speedSettings.Speed13to15;
         
             await Task.Delay(delayMs);
-            await _treadmill.ChangeSpeedAsync((decimal)_speedSettings.Speed0to5 + 0.5m);
+            await _treadmill.ChangeSpeedAsync(speed);
         }
     }
 }

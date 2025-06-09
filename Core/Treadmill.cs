@@ -14,7 +14,7 @@ internal class Treadmill: ITreadmill
     private GattCharacteristic? _supportedSpeedRangeCharacteristic;
     private GattCharacteristic? _supportedInclinationRangeCharacteristic;
 
-    private readonly string _deviceIdFile = "treadmill_device_id.txt";
+    private readonly string _deviceIdFile = Path.Combine(Runtime.GetAppFolder(),"treadmill_device_id.txt");
     private readonly Guid _treadmillServiceId = Guid.Parse("00001826-0000-1000-8000-00805f9b34fb");
     private readonly Guid _controlPointId = Guid.Parse("00002ad9-0000-1000-8000-00805f9b34fb");
     private readonly Guid _statusId = Guid.Parse("00002acd-0000-1000-8000-00805f9b34fb");
@@ -165,23 +165,7 @@ internal class Treadmill: ITreadmill
     {
         try
         {
-            // Stop notifications and detach event handlers
-            if (_activityCharacteristic != null)
-            {
-                _activityCharacteristic.CharacteristicValueChanged -= HandleActivityNotifications;
-                _activityCharacteristic.StopNotificationsAsync().Wait();
-            }
-            if (_characteristic != null)
-            {
-                _characteristic.CharacteristicValueChanged -= HandleRequestNotifications;
-                _characteristic.StopNotificationsAsync().Wait();
-            }
-            if (_statusCharacteristic != null)
-            {
-                _statusCharacteristic.CharacteristicValueChanged -= HandleStatusNotifications;
-                _statusCharacteristic.StopNotificationsAsync().Wait();
-            }
-
+         
             // Dispose GATT objects
             _activityCharacteristic = null;
             _characteristic = null;
@@ -198,7 +182,7 @@ internal class Treadmill: ITreadmill
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error during disconnect: {ex.Message}");
+            Console.WriteLine($"Error during Treadmill disconnect: {ex.Message}");
         }
     }
 
@@ -249,7 +233,7 @@ internal class Treadmill: ITreadmill
 
     public async Task ChangeInclineAsync(short increment)
     {
-        if (_characteristic != null && _minInclination>0)
+        if (_characteristic != null)
         {
             // protect the treadmill, don't oversteer it
             if (increment < _minInclination) increment = (short)_minInclination;

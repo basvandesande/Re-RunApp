@@ -4,7 +4,7 @@ public class HeartRate: IHeartRate
 {
     public string Name => _device?.Name ?? string.Empty;
 
-    private readonly string _deviceIdFile = "heartrate_device_id.txt";
+    private readonly string _deviceIdFile = Path.Combine(Runtime.GetAppFolder(), "heartrate_device_id.txt");
     private readonly Guid _optionalService = Guid.Parse("0000180D-0000-1000-8000-00805F9B34FB"); // Heart Rate Service UUID
     private readonly Guid _measureCharacteristic = Guid.Parse("00002A37-0000-1000-8000-00805F9B34FB");
 
@@ -55,9 +55,7 @@ public class HeartRate: IHeartRate
                             OnHeartPulse?.Invoke(CurrentRate);
                         }
                     };
-
                     await heartRateCharacteristic.StartNotificationsAsync();
-                    //Console.WriteLine("Subscribed to heart rate notifications.");
                 }
                 else
                 {
@@ -71,5 +69,19 @@ public class HeartRate: IHeartRate
 
     public void Disconnect()
     {
+        try
+        {
+
+            // Disconnect and dispose the device
+            if (_device != null && _device.Gatt.IsConnected)
+            {
+                _device.Gatt.Disconnect();
+            }
+            _device = null;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error during Heartrate disconnect: {ex.Message}");
+        }
     }
 }

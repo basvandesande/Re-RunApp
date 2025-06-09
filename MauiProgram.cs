@@ -22,5 +22,4 @@ public static class MauiProgram
         return builder.Build();
     }
 
-    public static string GetAppFolder() => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Re-Run");
 }

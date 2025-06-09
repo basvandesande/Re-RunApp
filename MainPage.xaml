@@ -1,7 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Re_RunApp.MainPage">
+             x:Class="Re_RunApp.MainPage" 
+             BackgroundColor="White">
     <Grid>
         <!-- Background Image -->
         <Image Source="lake.jpg" Aspect="AspectFill" />
@@ -11,7 +12,8 @@
             <Label Text="Re-Run" 
                    HorizontalTextAlignment="Center" 
                    TextColor="#000E1C"
-                   FontSize="Header" />
+                   FontSize="Header" 
+                   FontAttributes="Bold" />
             <Label Text="Relive the runs you did before on your treadmill" 
                    HorizontalTextAlignment="Center" 
                    TextColor="#FFFFFF"

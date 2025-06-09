@@ -14,8 +14,8 @@ public class HeartRateSimulator : IHeartRate
 
     public Task<bool> ConnectToDevice(bool showDialog = true)
     {
-        if (!Enabled)
-            return Task.FromResult(false);
+        //if (!Enabled)
+        //    return Task.FromResult(false);
 
         _timer = new System.Timers.Timer(1000); // Fully qualify the Timer type
         _timer.Elapsed += (s, e) =>

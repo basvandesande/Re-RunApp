@@ -9,7 +9,7 @@ public partial class RouteSelectionScreen : ContentPage
     {
         InitializeComponent();
 
-        string folder = MauiProgram.GetAppFolder();
+        string folder = Runtime.GetAppFolder();
         string[] files = Directory.GetFiles(folder, "*.gpx");
 
         var fileList = files.Select(file => new

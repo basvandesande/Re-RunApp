@@ -2,7 +2,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              x:Class="Re_RunApp.Views.RouteSelectionScreen"
-             Title="Select Route">
+             Title="Select Route" 
+             BackgroundColor="White" >
     <Grid RowDefinitions="7*,3*,Auto"
           Margin="20,0,20,0"> <!-- 20 eenheden marge links en rechts -->
         <!-- ListView met routes -->

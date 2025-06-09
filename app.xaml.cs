@@ -1,5 +1,6 @@
 ﻿namespace Re_RunApp;
 
+using Re_RunApp.Core;
 using Re_RunApp.Views;
 using System.Reflection;
 
@@ -16,7 +17,7 @@ public partial class App : Application
 
     private void PrepareFolderAndDefaultFile()
     {
-        string folder = MauiProgram.GetAppFolder();
+        string folder = Runtime.GetAppFolder();
 
         if (!Directory.Exists(folder))
         {
