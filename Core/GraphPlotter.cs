@@ -12,12 +12,13 @@ internal class GraphPlotter
     private GpxProcessor _gpx;
     private int _width = 1920;
     private int _height = 1080;
-
-    public MemoryStream PlotGraph(GpxProcessor gpx, int height = 1080, int width = 1920)
+    private bool _minimal = false;
+    public MemoryStream PlotGraph(GpxProcessor gpx, int height = 1080, int width = 1920, bool minimal=false)
     {
         _gpx = gpx;
         _height = height;
         _width = width;
+        _minimal = minimal;
         PlotModel plotModel = Plotter(gpx, height, width);  
         return StreamPlotModelAsPng(plotModel);
     }
@@ -25,7 +26,8 @@ internal class GraphPlotter
     
     private PlotModel Plotter(GpxProcessor gpx, int height, int width)
     {
-       var plotModel = new PlotModel() { Title = "Re-Run Virtual Run" };
+        var plotModel = new PlotModel();
+        if (!_minimal) plotModel.Title = "Re-Run Virtual Run";
 
         double maxDistance = (double)(gpx.Tracks.Last().TotalDistanceInMeters / 1000) * 1000;
         if (maxDistance < 1000) maxDistance = 1000;
@@ -34,9 +36,7 @@ internal class GraphPlotter
         double maxElevation = gpx.FindMaximumElevation();
         int elevationScale = maxElevation > 100 ? 100 : 10;
 
-        plotModel = new PlotModel { Title = "Re-Run Virtual Run" };
-        
-        plotModel.Background = OxyColors.White;
+        plotModel.Background = OxyColor.FromArgb(128,0xFF,0xFF,0xFF);
 
         plotModel.Axes.Add(new LinearAxis
         {
@@ -44,7 +44,7 @@ internal class GraphPlotter
             Minimum = 0,
             Maximum = maxDistance,
             MajorStep = 1000,
-            Title = "Distance (meters)",
+            Title = (!_minimal) ? "Distance (meters)": "Distance (M)",
             FontSize = 16
         });
 
@@ -53,8 +53,8 @@ internal class GraphPlotter
             Position = AxisPosition.Left,
             Minimum = (double)(minElevation / 10 * 10),
             Maximum = (double)(maxElevation + elevationScale),
-            MajorStep = elevationScale,
-            Title = "Height (meters)",
+            MajorStep = (!_minimal)? elevationScale: double.NaN,
+            Title = (!_minimal) ?  "Height (meters)": "Height (M)",
             FontSize = 16
         });
 
@@ -149,11 +149,19 @@ internal class GraphPlotter
 
     private MemoryStream StreamPlotModelAsPng(PlotModel plotModel)
     {
-        MemoryStream stream = new MemoryStream();
-        var pngExporter = new PngExporter { Width = _width, Height = _height };
-        pngExporter.Export(plotModel, stream);
-        stream.Seek(0, SeekOrigin.Begin);
-        return stream;
+        try
+        {
+            MemoryStream stream = new MemoryStream();
+            var pngExporter = new PngExporter { Width = _width, Height = _height };
+            pngExporter.Export(plotModel, stream);
+            stream.Seek(0, SeekOrigin.Begin);
+            return stream;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error exporting plot model to PNG: {ex.Message}");
+            return new MemoryStream();
+        }
     }
 
     private OxyColor GetColorForPercentage(decimal percentage)

@@ -14,7 +14,8 @@ public partial class ActivityScreen : ContentPage
     private Player _player;
     private PlayerStatistics _playerStatistics = new();
     private decimal? _actualSpeed = 0;
-    
+    private bool _hasVideo = false;
+
     public ActivityScreen(string gpxFilePath, bool simulate=false)
     {
         InitializeComponent();
@@ -58,7 +59,7 @@ public partial class ActivityScreen : ContentPage
 
     private void UpdateRouteVideoSpeed()
     {
-        if (RouteVideo.IsVisible)
+        if (RouteVideo.IsVisible && _hasVideo)
         {
             double secondsToGo = CalculateRemainingSeconds(_gpxProcessor, _playerStatistics);
             double remainingDuration = RouteVideo.Duration.TotalSeconds - _playerStatistics.SecondsElapsed;
@@ -76,11 +77,11 @@ public partial class ActivityScreen : ContentPage
             DistanceLabel.Text = $"{stats.TotalDistanceM:N0}";
             TimeLabel.Text = $"{TimeSpan.FromSeconds(stats.SecondsElapsed):hh\\:mm\\:ss}";
             SpeedLabel.Text = $"{stats.CurrentSpeedMinKM:mm\\:ss}";
-            InclinationLabel.Text = $"{stats.SegmentIncrementPercentage:N1}";
+            //InclinationLabel.Text = $"{stats.SegmentIncrementPercentage:N1}";
             HeartrateLabel.Text = $"{stats.CurrentHeartRate}";
-            TotalClimbedLabel.Text = $"{stats.TotalInclinationM:N0}";
-            TotalDescendedLabel.Text = $"{stats.TotalDeclinationM:N0}";
-            SegmentRemainingLabel.Text = $"{stats.SegmentRemainingM:N0}";
+            //TotalClimbedLabel.Text = $"{stats.TotalInclinationM:N0}";
+            //TotalDescendedLabel.Text = $"{stats.TotalDeclinationM:N0}";
+            //SegmentRemainingLabel.Text = $"{stats.SegmentRemainingM:N0}";
 
             // store the statistics for later use
             _playerStatistics = stats;
@@ -124,6 +125,9 @@ public partial class ActivityScreen : ContentPage
         StartButton.IsVisible = false;
         StopButton.IsVisible = true;
         FinishButton.IsVisible = false;
+
+        // ensure the video starts playing (stand still, waiting for motion on treadmill)
+        RouteVideo.Speed = 0;
         RouteVideo.Play();
         await _player.StartAsync();
     }
@@ -143,24 +147,20 @@ public partial class ActivityScreen : ContentPage
         await _player.StopAsync();
     }
 
-
-
-    protected override void OnSizeAllocated(double width, double height)
+    protected override void OnAppearing()
     {
-        base.OnSizeAllocated(width, height);
+        base.OnAppearing();
 
-        if (ElevationGraphImage.Width > 0 && ElevationGraphImage.Height > 0)
-        {
-            var elevationBitmap = _graphPlotter.PlotGraph(_gpxProcessor, (int)ElevationGraphImage.Height, (int)ElevationGraphImage.Width);
-            ElevationGraphImage.Source = ImageSource.FromStream(() => elevationBitmap);
-            ElevationGraphImage.Source = ImageSource.FromStream(() => _graphPlotter.RenderDistanceOverlay((decimal)_playerStatistics.TotalDistanceM));
-        }
+        this.Title = Path.GetFileNameWithoutExtension(_gpxFilePath);
 
         string videoPath = Path.ChangeExtension(_gpxFilePath, ".mp4");
         if (File.Exists(videoPath))
         {
             RouteVideo.Source = MediaSource.FromFile(videoPath);
+            RouteVideo.ShouldLoopPlayback = false;
             RouteVideo.ShouldAutoPlay = false;
+            RouteVideo.Pause();
+            _hasVideo = true;
         }
         else
         {
@@ -168,6 +168,18 @@ public partial class ActivityScreen : ContentPage
             RouteVideo.ShouldAutoPlay = true;
         }
         RouteVideo.IsVisible = true;
+    }
+
+    protected override void OnSizeAllocated(double width, double height)
+    {
+        base.OnSizeAllocated(width, height);
+
+        if (ElevationGraphImage.Width > 0 && ElevationGraphImage.Height > 0)
+        {
+            var elevationBitmap = _graphPlotter.PlotGraph(_gpxProcessor, (int)ElevationGraphImage.Height, (int)ElevationGraphImage.Width, true);
+            ElevationGraphImage.Source = ImageSource.FromStream(() => elevationBitmap);
+            ElevationGraphImage.Source = ImageSource.FromStream(() => _graphPlotter.RenderDistanceOverlay((decimal)_playerStatistics.TotalDistanceM));
+        }
         ForceVideoScaling();
 
     }

@@ -1,104 +1,87 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
-            x:Class="Re_RunApp.Views.ActivityScreen"
+             x:Class="Re_RunApp.Views.ActivityScreen"
              Title="Activity"
-             BackgroundColor="White" >
-    <Grid RowDefinitions="2.4*,2*,Auto" ColumnSpacing="0" RowSpacing="10" Padding="10">
-        <!-- Top: Two panes (statistics and video) -->
-        <Grid Grid.Row="0" ColumnDefinitions="1*,1*" ColumnSpacing="10">
-            <!-- Statistics Pane -->
-            <Frame Grid.Column="0" Padding="10" BackgroundColor="#f0f0f0" CornerRadius="8">
-                <Grid ColumnDefinitions="*,20,*" RowDefinitions="Auto,Auto,Auto,Auto" ColumnSpacing="10" RowSpacing="12">
-                    <!-- Linkerkolom -->
-                    <StackLayout Grid.Column="0" Grid.Row="0" Spacing="2">
-                        <Label Text="Distance meters" FontAttributes="None" FontSize="16" HorizontalTextAlignment="Center" />
-                        <Label x:Name="DistanceLabel" Text="0" FontAttributes="Bold" FontSize="30" HorizontalTextAlignment="Center"/>
-                    </StackLayout>
-                    <StackLayout Grid.Column="0" Grid.Row="1" Spacing="2">
-                        <Label Text="Segment remaining meters" FontAttributes="None" FontSize="16" HorizontalTextAlignment="Center"/>
-                        <Label x:Name="SegmentRemainingLabel" Text="0" FontAttributes="Bold" FontSize="30" HorizontalTextAlignment="Center"/>
-                    </StackLayout>
-                    <StackLayout Grid.Column="0" Grid.Row="2" Spacing="2">
-                        <Label Text="Total meters climbed" FontAttributes="None" FontSize="16" HorizontalTextAlignment="Center"/>
-                        <Label x:Name="TotalClimbedLabel" Text="0" FontAttributes="Bold" FontSize="30" HorizontalTextAlignment="Center"/>
-                    </StackLayout>
-                    <StackLayout Grid.Column="0" Grid.Row="3" Spacing="2">
-                        <Label Text="Total meters descended" FontAttributes="None" FontSize="16" HorizontalTextAlignment="Center"/>
-                        <Label x:Name="TotalDescendedLabel" Text="0" FontAttributes="Bold" FontSize="30" HorizontalTextAlignment="Center"/>
-                    </StackLayout>
-
-                    <!-- Middelste kolom blijft leeg -->
-
-                    <!-- Rechterkolom -->
-                    <StackLayout Grid.Column="2" Grid.Row="0" Spacing="2">
-                        <Label Text="Elapsed time" FontAttributes="None" FontSize="16" HorizontalTextAlignment="Center"/>
-                        <Label x:Name="TimeLabel" Text="00:00" FontAttributes="Bold" FontSize="30" HorizontalTextAlignment="Center"/>
-                    </StackLayout>
-                    <StackLayout Grid.Column="2" Grid.Row="1" Spacing="2">
-                        <Label Text="Heartrate" FontAttributes="None" FontSize="16" HorizontalTextAlignment="Center"/>
-                        <Label x:Name="HeartrateLabel" Text="0" FontAttributes="Bold" FontSize="30" HorizontalTextAlignment="Center"/>
-                    </StackLayout>
-                    <StackLayout Grid.Column="2" Grid.Row="2" Spacing="2">
-                        <Label Text="Speed Min/KM" FontAttributes="None" FontSize="16" HorizontalTextAlignment="Center"/>
-                        <Label x:Name="SpeedLabel" Text="00:00" FontAttributes="Bold" FontSize="30" HorizontalTextAlignment="Center"/>
-                    </StackLayout>
-                    <StackLayout Grid.Column="2" Grid.Row="3" Spacing="2">
-                        <Label Text="Inclination %" FontAttributes="None" FontSize="16" HorizontalTextAlignment="Center"/>
-                        <Label x:Name="InclinationLabel" Text="0.0" FontAttributes="Bold" FontSize="30" HorizontalTextAlignment="Center"/>
-                    </StackLayout>
-                    <!-- Voeg hier eventueel meer statistieken toe in de rechterkolom -->
-                </Grid>
-            </Frame>
-            <!-- Video Pane -->
-            <Frame x:Name="VideoFrame" Grid.Column="1" Padding="0" BackgroundColor="#000" CornerRadius="8" HasShadow="False">
-                <!-- Video -->
+             BackgroundColor="White">
+    <Grid RowDefinitions="3.7*,1.5*,Auto" ColumnSpacing="0" RowSpacing="0" Padding="0">
+        <!-- Middle: Route Video with Overlay -->
+        <Grid Grid.Row="0">
+            <!-- Video -->
+            <Frame x:Name="VideoFrame" Padding="0" BackgroundColor="#000" CornerRadius="0" HasShadow="False">
                 <toolkit:MediaElement x:Name="RouteVideo"
-                      ShouldAutoPlay="True"
-                      Aspect="AspectFill"
-                      ShouldLoopPlayback="False"
-                      ShouldShowPlaybackControls="False"
-                      ShouldMute="True"
-                      HorizontalOptions="Center" 
-                      Source="embed://no-media.mp4"                
-                      VerticalOptions="Center" ShouldKeepScreenOn="True" />
+                                      ShouldAutoPlay="false"
+                                      Aspect="AspectFill"
+                                      ShouldLoopPlayback="False"
+                                      ShouldShowPlaybackControls="False"
+                                      ShouldMute="True"
+                                      HorizontalOptions="CenterAndExpand"  
+                                      Source="embed://no-media.mp4"                
+                                      VerticalOptions="Center" ShouldKeepScreenOn="True" />
+            </Frame>
+
+            <!-- Overlay: Semi-transparent Statistics Bar -->
+            <Frame BackgroundColor="#60101010"  
+                   Padding="10"
+                   CornerRadius="0"
+                   VerticalOptions="Start"
+                   HorizontalOptions="FillAndExpand"
+                   Margin="0">
+                <Grid ColumnDefinitions="2*,2*,2*,2*" RowDefinitions="Auto,Auto" ColumnSpacing="10">
+                    <StackLayout Grid.Column="0" Spacing="2">
+                        <Label Text="Distance meters" FontAttributes="None" FontSize="14" TextColor="White" HorizontalTextAlignment="Center" />
+                        <Label x:Name="DistanceLabel" Text="0" FontAttributes="Bold" FontSize="20" TextColor="White" HorizontalTextAlignment="Center"/>
+                    </StackLayout>
+                    <StackLayout Grid.Column="1" Grid.Row="0" Spacing="2">
+                        <Label Text="Elapsed time" FontAttributes="None" FontSize="14" TextColor="White" HorizontalTextAlignment="Center"/>
+                        <Label x:Name="TimeLabel" Text="00:00" FontAttributes="Bold" FontSize="20" TextColor="White" HorizontalTextAlignment="Center"/>
+                    </StackLayout>
+
+                    <StackLayout Grid.Column="2" Spacing="2">
+                        <Label Text="Heartrate" FontAttributes="None" FontSize="14" TextColor="White" HorizontalTextAlignment="Center"/>
+                        <Label x:Name="HeartrateLabel" Text="0" FontAttributes="Bold" FontSize="20" TextColor="White" HorizontalTextAlignment="Center"/>
+                    </StackLayout>
+                    <StackLayout Grid.Column="3" Grid.Row="0" Spacing="2">
+                        <Label Text="Speed Min/KM" FontAttributes="None" FontSize="14" TextColor="White" HorizontalTextAlignment="Center"/>
+                        <Label x:Name="SpeedLabel" Text="00:00" FontAttributes="Bold" FontSize="20" TextColor="White" HorizontalTextAlignment="Center"/>
+                    </StackLayout>
+                </Grid>
             </Frame>
         </Grid>
 
-        <!-- Middle: Graph -->
-        <Frame Grid.Row="1" Padding="0" Margin="0,10,0,10" BackgroundColor="#e0e0e0" CornerRadius="8" HasShadow="False">
-            <Image x:Name="ElevationGraphImage" Grid.Row="0" Margin="10" Aspect="Fill" />
+        <!-- Below Video: Route Map -->
+        <Frame Grid.Row="1" Padding="0" Margin="0" BackgroundColor="#e0e0e0" CornerRadius="0" HasShadow="False">
+            <Image x:Name="ElevationGraphImage" Margin="0" Aspect="Fill" />
         </Frame>
 
-        <!-- Bottom: Finish Button -->
-        <Button Grid.Row="2"
-             x:Name="FinishButton"
-             Text="Finish"
-             Clicked="OnFinishClicked"
-             FontSize="Large"
-             HeightRequest="50"
-             HorizontalOptions="FillAndExpand"
-             Margin="0,10,0,0"
-             IsVisible="Hidden"/>
-        <Button Grid.Row="2"
-                x:Name="StopButton"
-                Text="STOP"
-                Clicked="OnStopClicked"
-                BackgroundColor="Red"
-                FontSize="Large"
-                HeightRequest="50"
-                HorizontalOptions="FillAndExpand"
-                Margin="0,10,0,0"
-                IsVisible="Hidden"/>
-        <Button Grid.Row="2"
-                x:Name="StartButton"
-                Text="Start your Run!"
-                Clicked="OnStartClicked"
-                BackgroundColor="Green"
-                FontSize="Large"
-                HeightRequest="50"
-                HorizontalOptions="FillAndExpand"
-                Margin="0,10,0,0"
-                IsVisible="Visible"/>
+        <!-- Bottom: Buttons -->
+        <StackLayout Grid.Row="2" Orientation="Horizontal" Spacing="0">
+            <Button x:Name="FinishButton"
+                    Text="Finish"
+                    Clicked="OnFinishClicked"
+                    CornerRadius="0"
+                    FontSize="Large"
+                    HeightRequest="50"
+                    HorizontalOptions="FillAndExpand"
+                    IsVisible="Hidden"/>
+            <Button x:Name="StopButton"
+                    Text="STOP"
+                    Clicked="OnStopClicked"
+                    CornerRadius="0"
+                    BackgroundColor="Red"
+                    FontSize="Large"
+                    HeightRequest="50"
+                    HorizontalOptions="FillAndExpand"
+                    IsVisible="Hidden"/>
+            <Button x:Name="StartButton"
+                    Text="Start your Run!"
+                    CornerRadius="0"
+                    Clicked="OnStartClicked"
+                    BackgroundColor="Green"
+                    FontSize="Large"
+                    HeightRequest="50"
+                    HorizontalOptions="FillAndExpand"
+                    IsVisible="Visible"/>
+        </StackLayout>
     </Grid>
 </ContentPage>

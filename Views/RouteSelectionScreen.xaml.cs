@@ -5,33 +5,48 @@ using Re_RunApp.Core;
 
 public partial class RouteSelectionScreen : ContentPage
 {
+    private bool _isLoaded = false;
     public RouteSelectionScreen()
     {
         InitializeComponent();
-
-        string folder = Runtime.GetAppFolder();
-        string[] files = Directory.GetFiles(folder, "*.gpx");
-
-        var fileList = files.Select(file => new
-        {
-            FullPath = file,
-            FileName = Path.GetFileName(file)
-        }).ToList();
-
-        RouteListView.ItemsSource = fileList;
-
-        if (fileList.Count > 0)
-        {
-            RouteListView.SelectedItem = fileList[0];
-        }
-
-        NextButton.IsEnabled = (fileList.Count > 0);
     }
+
+    protected override void OnSizeAllocated(double width, double height)
+    {
+        base.OnSizeAllocated(width, height);
+
+        if (!_isLoaded)
+        {
+            string folder = Runtime.GetAppFolder();
+            string[] files = Directory.GetFiles(folder, "*.gpx");
+
+            var fileList = files.Select(file => new
+            {
+                FullPath = file,
+                FileName = Path.GetFileName(file)
+            }).ToList();
+
+            RouteListView.ItemsSource = fileList;
+
+            if (fileList.Count > 0)
+            {
+                RouteListView.SelectedItem = fileList[0];
+            }
+
+            _isLoaded = true;
+        }
+    }
+
 
     private void OnRouteSelected(object sender, SelectedItemChangedEventArgs e)
     {
         if (e.SelectedItem is not null)
         {
+            if (!this.IsLoaded)
+            {
+                Thread.Sleep(100);
+                OnRouteSelected(sender, e);
+            }
             var selectedRoute = (dynamic)e.SelectedItem;
             string fullPath = selectedRoute.FullPath;
 
@@ -50,11 +65,8 @@ public partial class RouteSelectionScreen : ContentPage
             {
                 RouteVideo.Source= MediaSource.FromResource("no-media.mp4");
             }
-            RouteVideo.IsVisible = true;
             ForceVideoScaling();
 
-            // Show the details panel and video  
-            DetailsGrid.IsVisible = true;
         }
 
         NextButton.IsEnabled = (e.SelectedItem is not null);
