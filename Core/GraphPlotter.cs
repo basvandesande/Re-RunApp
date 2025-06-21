@@ -4,7 +4,6 @@ using OxyPlot;
 using OxyPlot.Annotations;
 using OxyPlot.Axes;
 using OxyPlot.Series;
-using OxyPlot.SkiaSharp;
 
 internal class GraphPlotter
 {
@@ -19,12 +18,52 @@ internal class GraphPlotter
         _height = height;
         _width = width;
         _minimal = minimal;
-        PlotModel plotModel = Plotter(gpx, height, width);  
+        PlotModel plotModel = Plotter(gpx);  
         return StreamPlotModelAsPng(plotModel);
     }
     
-    
-    private PlotModel Plotter(GpxProcessor gpx, int height, int width)
+    public PlotModel PlotGraph(GpxProcessor gpx, bool minimal = false)
+    {
+        _gpx = gpx;
+        _minimal = minimal;
+        return Plotter(gpx);
+    }
+
+    public PlotModel RenderDistanceOverlay(decimal meters)
+    {
+        if (_gpx == null)
+            throw new InvalidOperationException("No GPX data available to plot.");
+
+        PlotModel plotModel = Plotter(_gpx);
+        double maxHeight = plotModel.Axes[1].Maximum;
+
+        var areaSeries = new AreaSeries
+        {
+            Color = OxyColor.FromAColor(128, OxyColors.LightSkyBlue),
+            Fill = OxyColor.FromAColor(128, OxyColors.LightSkyBlue),
+            StrokeThickness = 1
+        };
+        areaSeries.Points.Add(new DataPoint(0, 0));
+        areaSeries.Points.Add(new DataPoint(0, maxHeight));
+        areaSeries.Points.Add(new DataPoint((double)meters, maxHeight));
+        areaSeries.Points.Add(new DataPoint((double)meters, 0));
+        plotModel.Series.Add(areaSeries);
+
+        var lineSeries = new LineSeries
+        {
+            Color = OxyColors.OrangeRed,
+            StrokeThickness = 4
+        };
+        lineSeries.Points.Add(new DataPoint((double)meters, 0));
+        lineSeries.Points.Add(new DataPoint((double)meters, maxHeight));
+        plotModel.Series.Add(lineSeries);
+
+        return plotModel;
+    }
+
+
+
+    private PlotModel Plotter(GpxProcessor gpx)
     {
         var plotModel = new PlotModel();
         if (!_minimal) plotModel.Title = "Re-Run Virtual Run";
@@ -114,12 +153,12 @@ internal class GraphPlotter
     }
 
 
-    public MemoryStream RenderDistanceOverlay(decimal meters)
+    public MemoryStream RenderDistanceOverlay(decimal meters, bool bas=false)
     {
         if (_gpx == null)
             throw new InvalidOperationException("No GPX data available to plot.");
 
-        PlotModel plotModel = Plotter(_gpx,_height, _width);
+        PlotModel plotModel = Plotter(_gpx);
         double maxHeight = plotModel.Axes[1].Maximum;
       
         var areaSeries = new AreaSeries
@@ -152,9 +191,9 @@ internal class GraphPlotter
         try
         {
             MemoryStream stream = new MemoryStream();
-            var pngExporter = new PngExporter { Width = _width, Height = _height };
-            pngExporter.Export(plotModel, stream);
-            stream.Seek(0, SeekOrigin.Begin);
+            //var pngExporter = new PngExporter { Width = _width, Height = _height };
+            //pngExporter.Export(plotModel, stream);
+            //stream.Seek(0, SeekOrigin.Begin);
             return stream;
         }
         catch (Exception ex)

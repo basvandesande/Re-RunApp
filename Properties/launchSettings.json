@@ -3,6 +3,11 @@
     "Windows Machine": {
       "commandName": "MsixPackage",
       "nativeDebugging": false
+    },
+    "Profile 2": {
+      "commandName": "Project",
+      "workingDirectory": "C:\\Development\\Re-Run\\Re-RunApp\\bin\\Debug\\net9.0-windows10.0.20348.0",
+      "nativeDebugging": true
     }
   }
 }

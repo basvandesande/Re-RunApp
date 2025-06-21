@@ -1,17 +1,33 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:oxy="clr-namespace:OxyPlot.Maui.Skia;assembly=OxyPlot.Maui.Skia"
              x:Class="Re_RunApp.Views.RouteDetailsScreen"
              Title="Route Details"
              BackgroundColor="White" >
     <Grid RowDefinitions="2*,2.4*,Auto"> <!-- Added Auto for the Start button -->
-        <!-- Route Elevation Graph -->
-        <Image x:Name="ElevationGraphImage" Grid.Row="0" Margin="10" Aspect="Fill">
-            <Image.GestureRecognizers>
-                <TapGestureRecognizer Tapped="OnElevationGraphTapped" NumberOfTapsRequired="1"/>
-            </Image.GestureRecognizers>
+        <Grid Grid.Row="0">
+            <!-- PlotView als achtergrond -->
+            <oxy:PlotView x:Name="PlotView"
+                          VerticalOptions="FillAndExpand"
+                          HorizontalOptions="FillAndExpand" />
 
-        </Image> 
-
+            <!-- Hyperlink Label als overlay -->
+            <Label Text="Simulator"
+                   x:Name="SimulatorLabel"
+                   TextColor="DarkGray"
+                   FontAttributes="Bold"
+                   TextDecorations="Underline"
+                   Padding="8,2"
+                   FontSize="14"
+                   BackgroundColor="#AAFFFFFF"
+                   HorizontalOptions="End"
+                   VerticalOptions="Start"
+                   Margin="10">
+                <Label.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnHyperlinkTapped"/>
+                </Label.GestureRecognizers>
+            </Label>
+        </Grid>
         <!-- Bottom Section with Two Columns -->
         <Grid Grid.Row="1" ColumnDefinitions="2*,1*" Padding="10">
             <!-- Route Details -->

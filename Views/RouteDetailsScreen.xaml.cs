@@ -1,25 +1,40 @@
 namespace Re_RunApp.Views;
 
+using OxyPlot;
 using Re_RunApp.Core;
 
 public partial class RouteDetailsScreen : ContentPage
 {
+    private GpxProcessor _gpxProcessor = new GpxProcessor();
     private readonly string _gpxFilePath;
-    private bool _graphGenerated = false;
-    private DateTime _lastTapTime = DateTime.MinValue;
-    private const int _doubleTapThresholdMs = 400; // Adjust as needed
     private bool _useSimulation = false;
     private bool _startButtonEnabled = false;
 
     public RouteDetailsScreen(string gpxFilePath)
     {
         InitializeComponent();
+
         _gpxFilePath = gpxFilePath;
 
-        LoadRouteDetails();
-        LoadSpeedSettings(); // Load speed settings if the file exists
+        this.Loaded += RouteDetailsScreen_Loaded;
+        this.Unloaded += RouteDetailsScreen_Unloaded;
     }
 
+
+    private void RouteDetailsScreen_Loaded(object? sender, EventArgs e)
+    { 
+        LoadRouteDetails();
+        LoadSpeedSettings(); // Load speed settings if the file exists
+        
+        var graphPlotter = new GraphPlotter();
+        PlotView.Model = graphPlotter.PlotGraph(_gpxProcessor,false);
+    }
+
+    
+    private void RouteDetailsScreen_Unloaded(object? sender, EventArgs e)
+    {
+        PlotView.Model = null;
+    }
 
     protected override async void OnAppearing()
     {
@@ -47,15 +62,14 @@ public partial class RouteDetailsScreen : ContentPage
 
     private void LoadRouteDetails()
     {
-        var gpxProcessor = new GpxProcessor();
-        gpxProcessor.LoadGpxData(_gpxFilePath);
-        gpxProcessor.GetRun();
+        _gpxProcessor.LoadGpxData(_gpxFilePath);
+        _gpxProcessor.GetRun();
 
         // Set route details
-        RouteNameLabel.Text = $"Name: {gpxProcessor.Gpx?.trk.name}";
-        TotalDistanceLabel.Text = $"Total Distance: {gpxProcessor.TotalDistanceInMeters / 1000:F1} km";
-        TotalElevationLabel.Text = $"Total Elevation: {(gpxProcessor.FindMaximumElevation() - gpxProcessor.FindMinimumElevation()):F0} m";
-        TotalAscendLabel.Text = $"Total Ascend: {gpxProcessor.TotalElevationInMeters:F0}  m";
+        RouteNameLabel.Text = $"Name: {_gpxProcessor.Gpx?.trk.name}";
+        TotalDistanceLabel.Text = $"Total Distance: {_gpxProcessor.TotalDistanceInMeters / 1000:F1} km";
+        TotalElevationLabel.Text = $"Total Elevation: {(_gpxProcessor.FindMaximumElevation() - _gpxProcessor.FindMinimumElevation()):F0} m";
+        TotalAscendLabel.Text = $"Total Ascend: {_gpxProcessor.TotalElevationInMeters:F0}  m";
     }
 
     private async void OnStartClicked(object sender, EventArgs e)
@@ -175,51 +189,16 @@ public partial class RouteDetailsScreen : ContentPage
             Runtime.SpeedSettings = settings;
         }
     }
-    protected override void OnSizeAllocated(double width, double height)
-    {
-        base.OnSizeAllocated(width, height);
-
-        if (ElevationGraphImage.Width > 0 && ElevationGraphImage.Height > 0)
-        {
-            // Generate elevation graph using the actual width and height
-            var gpxProcessor = new GpxProcessor();
-            gpxProcessor.LoadGpxData(_gpxFilePath);
-            gpxProcessor.GetRun();
-
-            var graphPlotter = new GraphPlotter();
-            var elevationBitmap = graphPlotter.PlotGraph(gpxProcessor, (int)ElevationGraphImage.Height, (int)ElevationGraphImage.Width);
-            
-            // Set the ImageSource
-            ElevationGraphImage.Source = ImageSource.FromStream(() => elevationBitmap);
-
-            // Optionally, prevent redundant calls by setting a flag
-            if (_graphGenerated) return;
-            _graphGenerated = true;
-        }
-    }
-
-    private void OnElevationGraphTapped(object sender, TappedEventArgs e)
-    {
-        var now = DateTime.UtcNow;
-        if ((now - _lastTapTime).TotalMilliseconds < _doubleTapThresholdMs)
-        {
-            // Double-tap detected
-            OnElevationGraphDoubleTapped(sender, e);
-            _lastTapTime = DateTime.MinValue; // Reset
-        }
-        else
-        {
-            _lastTapTime = now;
-        }
-    }
-
-    private void OnElevationGraphDoubleTapped(object sender, TappedEventArgs e)
+    
+    private void OnHyperlinkTapped(object sender, EventArgs e)
     {
         // toggle the simulation
         _useSimulation = !_useSimulation;
         StartButton.IsEnabled = _useSimulation || _startButtonEnabled;
 
-        string msg = _useSimulation ? "Use treadmill simulation!" : "Use actual treadmill!";
+        SimulatorLabel.Text = (StartButton.IsEnabled) ? "Treadmill" : "Simulator";
+
+        string msg = _useSimulation ? "The treadmill and heartrate sensor will be simulated!" : "Use actual treadmill and heartrate sensor will be used!";
         DisplayAlert("Developer Information", msg, "OK");
     }
 

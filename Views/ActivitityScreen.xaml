@@ -1,6 +1,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:oxy="clr-namespace:OxyPlot.Maui.Skia;assembly=OxyPlot.Maui.Skia"
              x:Class="Re_RunApp.Views.ActivityScreen"
              Title="Activity"
              BackgroundColor="White">
@@ -16,7 +17,7 @@
                                       ShouldShowPlaybackControls="False"
                                       ShouldMute="True"
                                       HorizontalOptions="CenterAndExpand"  
-                                      Source="embed://no-media.mp4"                
+                                      Source="embed://nomedia.mp4"                
                                       VerticalOptions="Center" ShouldKeepScreenOn="True" />
             </Frame>
 
@@ -51,7 +52,7 @@
 
         <!-- Below Video: Route Map -->
         <Frame Grid.Row="1" Padding="0" Margin="0" BackgroundColor="#e0e0e0" CornerRadius="0" HasShadow="False">
-            <Image x:Name="ElevationGraphImage" Margin="0" Aspect="Fill" />
+            <oxy:PlotView x:Name="PlotView" VerticalOptions="FillAndExpand"  HorizontalOptions="FillAndExpand"  />
         </Frame>
 
         <!-- Bottom: Buttons -->

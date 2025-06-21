@@ -5,37 +5,32 @@ using Re_RunApp.Core;
 
 public partial class RouteSelectionScreen : ContentPage
 {
-    private bool _isLoaded = false;
     public RouteSelectionScreen()
     {
         InitializeComponent();
+        this.Loaded += RouteSelectionScreen_Loaded;
+
     }
 
-    protected override void OnSizeAllocated(double width, double height)
+    private void RouteSelectionScreen_Loaded(object? sender, EventArgs e)
     {
-        base.OnSizeAllocated(width, height);
+        string folder = Runtime.GetAppFolder();
+        string[] files = Directory.GetFiles(folder, "*.gpx");
 
-        if (!_isLoaded)
+        var fileList = files.Select(file => new
         {
-            string folder = Runtime.GetAppFolder();
-            string[] files = Directory.GetFiles(folder, "*.gpx");
+            FullPath = file,
+            FileName = Path.GetFileName(file)
+        }).ToList();
 
-            var fileList = files.Select(file => new
-            {
-                FullPath = file,
-                FileName = Path.GetFileName(file)
-            }).ToList();
+        RouteListView.ItemsSource = fileList;
 
-            RouteListView.ItemsSource = fileList;
-
-            if (fileList.Count > 0)
-            {
-                RouteListView.SelectedItem = fileList[0];
-            }
-
-            _isLoaded = true;
+        if (fileList.Count > 0)
+        {
+            RouteListView.SelectedItem = fileList[0];
         }
     }
+
 
 
     private void OnRouteSelected(object sender, SelectedItemChangedEventArgs e)
@@ -44,7 +39,6 @@ public partial class RouteSelectionScreen : ContentPage
         {
             if (!this.IsLoaded)
             {
-                Thread.Sleep(100);
                 OnRouteSelected(sender, e);
             }
             var selectedRoute = (dynamic)e.SelectedItem;
@@ -63,7 +57,7 @@ public partial class RouteSelectionScreen : ContentPage
             }
             else
             {
-                RouteVideo.Source= MediaSource.FromResource("no-media.mp4");
+                RouteVideo.Source = MediaSource.FromResource("nomedia.mp4");
             }
             ForceVideoScaling();
 

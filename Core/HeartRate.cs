@@ -8,7 +8,10 @@ public class HeartRate: IHeartRate
     private readonly Guid _optionalService = Guid.Parse("0000180D-0000-1000-8000-00805F9B34FB"); // Heart Rate Service UUID
     private readonly Guid _measureCharacteristic = Guid.Parse("00002A37-0000-1000-8000-00805F9B34FB");
 
-    InTheHand.Bluetooth.BluetoothDevice? _device = null;
+    private DateTime _lastPulseSent = DateTime.MinValue;
+    private static readonly TimeSpan PulseThrottleInterval = TimeSpan.FromSeconds(5);
+
+    private InTheHand.Bluetooth.BluetoothDevice? _device = null;
 
     public bool Enabled { get; set; } = true;
 
@@ -51,8 +54,13 @@ public class HeartRate: IHeartRate
                             // Parse the heart rate value (first byte contains flags, second byte contains the heart rate)
                             CurrentRate = data[1];
 
-                            // raise new event....
-                            OnHeartPulse?.Invoke(CurrentRate);
+                            // Throttle: send every couple of seconds an update
+                            var now = DateTime.UtcNow;
+                            if ((now - _lastPulseSent) >= PulseThrottleInterval)
+                            {
+                                _lastPulseSent = now;
+                                OnHeartPulse?.Invoke(CurrentRate);
+                            }
                         }
                     };
                     await heartRateCharacteristic.StartNotificationsAsync();

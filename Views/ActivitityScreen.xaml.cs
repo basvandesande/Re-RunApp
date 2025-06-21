@@ -2,6 +2,7 @@ namespace Re_RunApp.Views;
 
 using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Controls;
+using OxyPlot.Maui.Skia;
 using Re_RunApp.Core;
 
 public partial class ActivityScreen : ContentPage
@@ -34,8 +35,46 @@ public partial class ActivityScreen : ContentPage
         _player.OnTrackChange += OnTrackChange; 
         _player.OnTrackReady += OnTrackReady;
      
+        this.Loaded += ActivityScreen_Loaded;
+        this.Unloaded += ActivityScreen_Unloaded;
+    }
+
+    private void ActivityScreen_Loaded(object? sender, EventArgs e)
+    {
+        PlotView.Model = _graphPlotter.PlotGraph(_gpxProcessor, false);
+
+        this.Title = Path.GetFileNameWithoutExtension(_gpxFilePath);
+
+        string videoPath = Path.ChangeExtension(_gpxFilePath, ".mp4");
+        _hasVideo = File.Exists(videoPath);
+
+        if (_hasVideo)
+        {
+            RouteVideo.Source = MediaSource.FromFile(videoPath);
+            RouteVideo.ShouldLoopPlayback = false;
+            RouteVideo.ShouldAutoPlay = false;
+            RouteVideo.Pause();
+        }
+        else
+        {
+            RouteVideo.ShouldLoopPlayback = true;
+            RouteVideo.ShouldAutoPlay = true;
+            RouteVideo.Play();
+        }
+        RouteVideo.IsVisible = true;
+    }
+
+
+    private void ActivityScreen_Unloaded(object? sender, EventArgs e)
+    {
+        _treadmill.Disconnect();
+        _heartRate.Disconnect();
+
+        PlotView.Model = null;
+
 
     }
+
 
     private void OnTrackReady(PlayerStatistics statistics)
     {
@@ -53,28 +92,18 @@ public partial class ActivityScreen : ContentPage
     {
         MainThread.BeginInvokeOnMainThread(() =>
         {
-            ElevationGraphImage.Source = ImageSource.FromStream(() => _graphPlotter.RenderDistanceOverlay(totalDistanceInMeters));
+            PlotView.Model = _graphPlotter.RenderDistanceOverlay(totalDistanceInMeters);
         });
     }
 
-    private void UpdateRouteVideoSpeed()
-    {
-        if (RouteVideo.IsVisible && _hasVideo)
-        {
-            double secondsToGo = CalculateRemainingSeconds(_gpxProcessor, _playerStatistics);
-            double remainingDuration = RouteVideo.Duration.TotalSeconds - _playerStatistics.SecondsElapsed;
-            RouteVideo.Speed = remainingDuration / secondsToGo;
-        }
-    }
-
-
+    
 
     private void OnStatisticsUpdate(PlayerStatistics stats)
     {
         // Ensure UI updates are on the main thread
         MainThread.BeginInvokeOnMainThread(() =>
         {
-            DistanceLabel.Text = $"{stats.TotalDistanceM:N0}";
+            DistanceLabel.Text = $"{stats.CurrentDistanceM:N0}";
             TimeLabel.Text = $"{TimeSpan.FromSeconds(stats.SecondsElapsed):hh\\:mm\\:ss}";
             SpeedLabel.Text = $"{stats.CurrentSpeedMinKM:mm\\:ss}";
             //InclinationLabel.Text = $"{stats.SegmentIncrementPercentage:N1}";
@@ -95,27 +124,43 @@ public partial class ActivityScreen : ContentPage
         });
     }
 
-
-    private void ForceVideoScaling()
+    private void UpdateRouteVideoSpeed()
     {
-        if (RouteVideo.IsVisible)
+        if (_hasVideo && RouteVideo.Duration.TotalSeconds > 0)
         {
-            double containerWidth = VideoFrame.Width;
-            double containerHeight = VideoFrame.Height;
+            double secondsToGo = CalculateRemainingSeconds();
+            double remainingVideoSeconds = RouteVideo.Duration.TotalSeconds - _playerStatistics.SecondsElapsed;
 
-            double aspectRatio = containerHeight / containerWidth ;   //  9.0/16.0
-            double videoWidth = containerWidth;
-            double videoHeight = videoWidth * aspectRatio;
-
-            if (videoHeight > containerHeight)
+            // Prevent division by zero or negative speed
+            if (secondsToGo > 0 && remainingVideoSeconds > 0)
             {
-                videoHeight = containerHeight;
-                videoWidth = videoHeight / aspectRatio;
+                RouteVideo.Speed = remainingVideoSeconds / secondsToGo;
             }
-
-            RouteVideo.WidthRequest = videoWidth;
-            RouteVideo.HeightRequest = videoHeight;
+            else
+            {
+                RouteVideo.Speed = 0; // Pause or stop the video if the run is over or speed is zero
+            }
         }
+    }
+
+    private double CalculateRemainingSeconds()
+    {
+        decimal? totalDistanceM = _gpxProcessor.TotalDistanceInMeters;
+        decimal? distanceCoveredM = _playerStatistics.CurrentDistanceM;
+        decimal? currentSpeedKmh = _playerStatistics.CurrentSpeedKMH;
+
+        // Convert speed from km/h to m/s
+        double currentSpeedMps = currentSpeedKmh.HasValue ? (double)currentSpeedKmh.Value / 3.6 : 0;
+
+        // Remaining distance
+        double remainingDistanceM = (double)((totalDistanceM ?? 0) - (distanceCoveredM ?? 0));
+
+        // Remaining time in seconds
+        double remainingTimeSeconds = (currentSpeedMps > 0)
+                                        ? Math.Max(0, remainingDistanceM / currentSpeedMps)
+                                        : double.PositiveInfinity;
+
+        return remainingTimeSeconds;
     }
 
 
@@ -147,68 +192,4 @@ public partial class ActivityScreen : ContentPage
         await _player.StopAsync();
     }
 
-    protected override void OnAppearing()
-    {
-        base.OnAppearing();
-
-        this.Title = Path.GetFileNameWithoutExtension(_gpxFilePath);
-
-        string videoPath = Path.ChangeExtension(_gpxFilePath, ".mp4");
-        if (File.Exists(videoPath))
-        {
-            RouteVideo.Source = MediaSource.FromFile(videoPath);
-            RouteVideo.ShouldLoopPlayback = false;
-            RouteVideo.ShouldAutoPlay = false;
-            RouteVideo.Pause();
-            _hasVideo = true;
-        }
-        else
-        {
-            RouteVideo.ShouldLoopPlayback = true;
-            RouteVideo.ShouldAutoPlay = true;
-        }
-        RouteVideo.IsVisible = true;
-    }
-
-    protected override void OnSizeAllocated(double width, double height)
-    {
-        base.OnSizeAllocated(width, height);
-
-        if (ElevationGraphImage.Width > 0 && ElevationGraphImage.Height > 0)
-        {
-            var elevationBitmap = _graphPlotter.PlotGraph(_gpxProcessor, (int)ElevationGraphImage.Height, (int)ElevationGraphImage.Width, true);
-            ElevationGraphImage.Source = ImageSource.FromStream(() => elevationBitmap);
-            ElevationGraphImage.Source = ImageSource.FromStream(() => _graphPlotter.RenderDistanceOverlay((decimal)_playerStatistics.TotalDistanceM));
-        }
-        ForceVideoScaling();
-
-    }
-
-    protected override void OnDisappearing()
-    {
-        base.OnDisappearing();
-
-        _treadmill.Disconnect();
-        _heartRate.Disconnect();
-    }
-
-    private double CalculateRemainingSeconds(GpxProcessor gpxProcessor, PlayerStatistics stats)
-    {
-        decimal? totalDistanceM = gpxProcessor.TotalDistanceInMeters;
-        decimal? distanceCoveredM = stats.TotalDistanceM;
-        decimal? currentSpeedKmh = stats.CurrentSpeedKMH;
-
-        // Convert speed from km/h to m/s
-        double currentSpeedMps = currentSpeedKmh.HasValue ? (double)currentSpeedKmh.Value / 3.6 : 0;
-
-        // Remaining distance
-        double remainingDistanceM = (double)((totalDistanceM ?? 0) - (distanceCoveredM ?? 0));
-
-        // Remaining time in seconds
-        double remainingTimeSeconds = (currentSpeedMps > 0)
-            ? remainingDistanceM / currentSpeedMps
-            : double.PositiveInfinity; // or 0 if you prefer
-
-        return remainingTimeSeconds;
-    }
 }

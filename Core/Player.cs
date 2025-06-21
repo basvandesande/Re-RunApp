@@ -12,7 +12,7 @@ internal class Player
     private readonly SpeedSettings? _speedSettings;
     private bool _isPlaying = false;
 
-    private CancellationTokenSource _cancellationTokenSource;
+    private CancellationTokenSource? _cancellationTokenSource;
 
     public event Action<PlayerStatistics> OnTrackReady;
     public event Action<decimal> OnTrackChange; 
@@ -21,6 +21,8 @@ internal class Player
 
     private decimal? _totalDistanceM = 0;
     private DateTime _startTime;
+    private DateTime _lastStatisticsUpdate = DateTime.MinValue;
+    private static readonly TimeSpan StatisticsUpdateInterval = TimeSpan.FromSeconds(5);
 
 
     public Player(GpxProcessor gpx, ITreadmill treadmill, IHeartRate heartRate, SpeedSettings speedSettings)
@@ -45,29 +47,38 @@ internal class Player
 
     private void Treadmill_OnStatisticsUpdate(TreadmillStatistics e)
     {
+        var now = DateTime.UtcNow;
+        if ((now - _lastStatisticsUpdate) < StatisticsUpdateInterval)
+            return; // Ignore events that come in too quickly
+
+        _lastStatisticsUpdate = now;
+
         if (_isPlaying)
         {
             _totalDistanceM = (decimal)e.DistanceM;
 
-            _playerStatistics.TotalDistanceM = _totalDistanceM < _playerStatistics.TotalDistanceM ?
-                                                _playerStatistics.TotalDistanceM + _totalDistanceM :
+            _playerStatistics.CurrentDistanceM = _totalDistanceM < _playerStatistics.CurrentDistanceM ?
+                                                _playerStatistics.CurrentDistanceM + _totalDistanceM :
                                                 _totalDistanceM;
 
             _playerStatistics.CurrentSpeedKMH = e.SpeedKMH;
 
-            _playerStatistics.CurrentSpeedMinKM = _playerStatistics.CurrentSpeedKMH.HasValue && _playerStatistics.CurrentSpeedKMH > 0
-                ? TimeSpan.FromMinutes(60 / (double)e.SpeedKMH)
-                : null;
+           
+            // Forward the throttled update
+            OnStatisticsUpdate?.Invoke(_playerStatistics);
         }
     }
 
     private void Treadmill_OnStatusUpdate(string e)
     {
-        Debug.WriteLine(e);
         if (e == "STOP" || e == "STOP KEY")
         {
             Console.WriteLine("Treadmill stopped.");
             Task.Run(async () => await StopAsync());
+        }
+        else
+        {
+            Debug.WriteLine(e);
         }
     }
 
@@ -83,7 +94,7 @@ internal class Player
         await _treadmill.ResetAsync();
 
         _cancellationTokenSource = new CancellationTokenSource();
-        await BackgroundLoop(_cancellationTokenSource.Token);
+        _ = BackgroundLoop(_cancellationTokenSource.Token);
     }
 
     public async Task StopAsync()
@@ -98,9 +109,14 @@ internal class Player
         {
             Debug.WriteLine("Player stop requested");
         }
+        finally
+        {
+            _cancellationTokenSource?.Dispose();
+            _cancellationTokenSource = null;
+        }
     }
 
-    public decimal? GetDistanceRan() => _playerStatistics.TotalDistanceM;
+    public decimal? GetDistanceRan() => _playerStatistics.CurrentDistanceM;
 
     private async Task BackgroundLoop(CancellationToken token)
     {
@@ -110,8 +126,7 @@ internal class Player
         Track previous = _gpx.Tracks[index];
 
         Console.WriteLine("Device is running...");
-        //OnStatisticsUpdate?.Invoke(_playerStatistics);
-
+        
         try
         {
             OnTrackChange?.Invoke(0);
@@ -124,7 +139,7 @@ internal class Player
                     if (_heartRate.Enabled) current.HeartRate = _heartRate.CurrentRate;
 
                     // update the statistics in the gpx file as accurate as possible
-                    UpdateGpxStatistics(index, startTime);
+                    _ = Task.Run(() => UpdateGpxStatistics(index, maxIndex, startTime));
 
                     index++;
 
@@ -157,12 +172,11 @@ internal class Player
                     _playerStatistics.TotalInclinationM += previous.AscendInMeters;
                     _playerStatistics.TotalDeclinationM += previous.DescendInMeters;
                     _playerStatistics.CurrentSpeedKMH = 0;
-                    _playerStatistics.CurrentSpeedMinKM = null;
-
+                 
                     // Indicate the track change
                     OnTrackChange?.Invoke(previous.TotalDistanceInMeters);
 
-                    await AdjustTreadmillAsync(current, previous);
+                    _ = AdjustTreadmillAsync(current, previous);
                 }
 
                 // ensure the remaining distance is updated for the segment
@@ -172,7 +186,7 @@ internal class Player
                 // update the statistics
                 OnStatisticsUpdate?.Invoke(_playerStatistics);
 
-                await Task.Delay(500, token);
+                await Task.Delay(1000, token);
             }
         }
         catch (TaskCanceledException)
@@ -185,8 +199,10 @@ internal class Player
         }
     }
 
-    private void UpdateGpxStatistics(int index, DateTime startTime)
+    private void UpdateGpxStatistics(int index, int maxIndex, DateTime startTime)
     {
+        if (index >= maxIndex) return;
+
         int totalSeconds = (DateTime.UtcNow - startTime).Seconds;
         decimal totalDistance = _gpx.Tracks[index].DistanceInMeters;
 
@@ -198,7 +214,7 @@ internal class Player
             startTime = startTime.AddSeconds(segmentTimeInSeconds);
             _gpx.Gpx.trk.trkseg[segment.GpxIndex].time = startTime;
             
-            // todo uitzoeken gaat nog fout
+            // ik denk dat hier het trackpointextension opject nog null is, check de gpx file init
             //    _gpx.Gpx.trk.trkseg[segment.GpxIndex].extensions.TrackPointExtension.hr = (byte)_gpx.Tracks[index].HeartRate;
         }
     }
@@ -235,9 +251,11 @@ internal class Player
                 speed = (decimal)_speedSettings.Speed8to10;
             else if (track.InclinationInDegrees <= 12)
                 speed = (decimal)_speedSettings.Speed11to12;
-            else
+            else if (track.InclinationInDegrees <= 15)
                 speed = (decimal)_speedSettings.Speed13to15;
-        
+            else
+                speed = (decimal)_speedSettings.Speed13to15 - 0.5m;
+
             await Task.Delay(delayMs);
             await _treadmill.ChangeSpeedAsync(speed);
         }

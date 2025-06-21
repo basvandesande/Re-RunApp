@@ -17,7 +17,7 @@ public class HeartRateSimulator : IHeartRate
         //if (!Enabled)
         //    return Task.FromResult(false);
 
-        _timer = new System.Timers.Timer(1000); // Fully qualify the Timer type
+        _timer = new System.Timers.Timer(5000); // Fully qualify the Timer type
         _timer.Elapsed += (s, e) =>
         {
             // Simulate heart rate between 123 and 160 bpm
