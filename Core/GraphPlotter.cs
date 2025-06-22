@@ -29,7 +29,7 @@ internal class GraphPlotter
         return Plotter(gpx);
     }
 
-    public PlotModel RenderDistanceOverlay(decimal meters)
+    public PlotModel RenderDistanceOverlay(decimal meters, decimal nextSegmentLength=0)
     {
         if (_gpx == null)
             throw new InvalidOperationException("No GPX data available to plot.");
@@ -49,15 +49,33 @@ internal class GraphPlotter
         areaSeries.Points.Add(new DataPoint((double)meters, 0));
         plotModel.Series.Add(areaSeries);
 
+        if (nextSegmentLength > 0)
+        {
+            var nextSeries = new AreaSeries
+            {
+                Color = OxyColor.FromAColor(255, OxyColors.OrangeRed),
+                Fill = OxyColor.FromAColor(32, OxyColors.Black),
+                StrokeThickness = 1
+            };
+            nextSeries.Points.Add(new DataPoint((double)meters, 0));
+            nextSeries.Points.Add(new DataPoint((double)meters, maxHeight));
+            nextSeries.Points.Add(new DataPoint((double)(meters + nextSegmentLength), maxHeight));
+            nextSeries.Points.Add(new DataPoint((double)(meters + nextSegmentLength), 0));
+            plotModel.Series.Add(nextSeries);
+        }
+
+
+
         var lineSeries = new LineSeries
         {
             Color = OxyColors.OrangeRed,
-            StrokeThickness = 4
+            StrokeThickness = 3
         };
         lineSeries.Points.Add(new DataPoint((double)meters, 0));
         lineSeries.Points.Add(new DataPoint((double)meters, maxHeight));
         plotModel.Series.Add(lineSeries);
 
+        
         return plotModel;
     }
 

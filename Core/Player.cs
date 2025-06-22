@@ -15,7 +15,7 @@ internal class Player
     private CancellationTokenSource? _cancellationTokenSource;
 
     public event Action<PlayerStatistics> OnTrackReady;
-    public event Action<decimal> OnTrackChange; 
+    public event Action<decimal,decimal> OnTrackChange; 
     public event Action<PlayerStatistics> OnStatisticsUpdate;
     private PlayerStatistics _playerStatistics = new();
 
@@ -134,7 +134,7 @@ internal class Player
         
         try
         {
-            OnTrackChange?.Invoke(0);
+            OnTrackChange?.Invoke(0, current.DistanceInMeters);
 
             DateTime startTime = DateTime.UtcNow;
             while (!token.IsCancellationRequested)
@@ -151,11 +151,11 @@ internal class Player
                     if (index >= maxIndex)
                     {
                         // Indicate the track change (this is just to set the progress bar to done :)
-                        OnTrackChange?.Invoke(current.TotalDistanceInMeters);
+                        OnTrackChange?.Invoke(current.TotalDistanceInMeters,0);
 
                         Console.WriteLine("End of track reached.");
                         await _treadmill.StopAsync();
-
+                        
                         // set the finish statistics
                         _playerStatistics.SegmentIncrementPercentage = 0;
                         _playerStatistics.SegmentRemainingM = 0;
@@ -179,7 +179,7 @@ internal class Player
                     _playerStatistics.CurrentSpeedKMH = 0;
                  
                     // Indicate the track change
-                    OnTrackChange?.Invoke(previous.TotalDistanceInMeters);
+                    OnTrackChange?.Invoke(previous.TotalDistanceInMeters, current.DistanceInMeters);
 
                     _ = AdjustTreadmillAsync(current, previous);
                 }

@@ -86,11 +86,11 @@ public partial class ActivityScreen : ContentPage
         });
     }
 
-    private void OnTrackChange(decimal totalDistanceInMeters)
+    private void OnTrackChange(decimal totalDistanceInMeters, decimal nextSegmentInMeters)
     {
         MainThread.BeginInvokeOnMainThread(() =>
         {
-            PlotView.Model = _graphPlotter.RenderDistanceOverlay(totalDistanceInMeters);
+            PlotView.Model = _graphPlotter.RenderDistanceOverlay(totalDistanceInMeters, nextSegmentInMeters);
         });
     }
 
