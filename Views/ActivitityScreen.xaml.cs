@@ -67,12 +67,10 @@ public partial class ActivityScreen : ContentPage
 
     private void ActivityScreen_Unloaded(object? sender, EventArgs e)
     {
+        _player?.Dispose();
         _treadmill.Disconnect();
         _heartRate.Disconnect();
-
         PlotView.Model = null;
-
-
     }
 
 
@@ -129,17 +127,9 @@ public partial class ActivityScreen : ContentPage
         if (_hasVideo && RouteVideo.Duration.TotalSeconds > 0)
         {
             double secondsToGo = CalculateRemainingSeconds();
-            double remainingVideoSeconds = RouteVideo.Duration.TotalSeconds - _playerStatistics.SecondsElapsed;
-
-            // Prevent division by zero or negative speed
-            if (secondsToGo > 0 && remainingVideoSeconds > 0)
-            {
-                RouteVideo.Speed = remainingVideoSeconds / secondsToGo;
-            }
-            else
-            {
-                RouteVideo.Speed = 0; // Pause or stop the video if the run is over or speed is zero
-            }
+            double remainingVideoSeconds = RouteVideo.Duration.TotalSeconds - RouteVideo.Position.TotalSeconds;
+           
+            RouteVideo.Speed = (secondsToGo > 0) ? (remainingVideoSeconds / secondsToGo) : 0;
         }
     }
 
@@ -191,5 +181,6 @@ public partial class ActivityScreen : ContentPage
         RouteVideo.Pause();
         await _player.StopAsync();
     }
+    
 
 }

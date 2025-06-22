@@ -39,8 +39,8 @@ public partial class RouteDetailsScreen : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        
-        var connected =  await Runtime.Treadmill.ConnectToDevice(false); 
+
+        _startButtonEnabled =  await Runtime.Treadmill.ConnectToDevice(false); 
         StartButton.IsEnabled = _startButtonEnabled;
     }
 

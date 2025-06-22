@@ -23,6 +23,8 @@ internal class Player
     private DateTime _startTime;
     private DateTime _lastStatisticsUpdate = DateTime.MinValue;
     private static readonly TimeSpan StatisticsUpdateInterval = TimeSpan.FromSeconds(5);
+    private bool _firstStatisticsUpdate = true;
+
 
 
     public Player(GpxProcessor gpx, ITreadmill treadmill, IHeartRate heartRate, SpeedSettings speedSettings)
@@ -48,8 +50,11 @@ internal class Player
     private void Treadmill_OnStatisticsUpdate(TreadmillStatistics e)
     {
         var now = DateTime.UtcNow;
-        if ((now - _lastStatisticsUpdate) < StatisticsUpdateInterval)
-            return; // Ignore events that come in too quickly
+        if (_firstStatisticsUpdate || (now - _lastStatisticsUpdate) < StatisticsUpdateInterval)
+        {
+            _firstStatisticsUpdate = false;
+            return; // Ignore events that come in too quickly, except the start :)
+        }
 
         _lastStatisticsUpdate = now;
 
@@ -145,7 +150,7 @@ internal class Player
 
                     if (index >= maxIndex)
                     {
-                        // Indicate the track change
+                        // Indicate the track change (this is just to set the progress bar to done :)
                         OnTrackChange?.Invoke(current.TotalDistanceInMeters);
 
                         Console.WriteLine("End of track reached.");
@@ -184,7 +189,7 @@ internal class Player
                 _playerStatistics.SecondsElapsed = (DateTime.UtcNow - _startTime).TotalSeconds;
                 
                 // update the statistics
-                OnStatisticsUpdate?.Invoke(_playerStatistics);
+                //OnStatisticsUpdate?.Invoke(_playerStatistics);
 
                 await Task.Delay(1000, token);
             }
@@ -258,6 +263,19 @@ internal class Player
 
             await Task.Delay(delayMs);
             await _treadmill.ChangeSpeedAsync(speed);
+        }
+    }
+
+    public void Dispose()
+    {
+        if (_treadmill != null)
+        {
+            _treadmill.OnStatisticsUpdate -= Treadmill_OnStatisticsUpdate;
+            _treadmill.OnStatusUpdate -= Treadmill_OnStatusUpdate;
+        }
+        if (_heartRate != null)
+        {
+            _heartRate.OnHeartPulse -= HeartRate_OnHeartPulse;
         }
     }
 }
