@@ -2,7 +2,6 @@
 
 using InTheHand.Bluetooth;
 
-
 internal class Runtime
 {
     internal static Treadmill Treadmill { get; set; } = new Treadmill();
@@ -61,7 +60,21 @@ internal class Runtime
         return null;
     }
 
-        public static string GetAppFolder() => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Re-Run");
-   
+    public static string GetAppFolder()
+    {
+        if (DeviceInfo.Platform == DevicePlatform.Android)
+        {
+            string documentsPath = Path.Combine("/storage/emulated/0/Documents", "Re-Run");
+            if (!Directory.Exists(documentsPath))
+                Directory.CreateDirectory(documentsPath);
+
+            return documentsPath;
+        }
+        else
+        {
+            // Default to the app-specific folder for other platforms  
+            return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Re-Run");
+        }
+    }       
 }
 

@@ -64,8 +64,6 @@ internal class GraphPlotter
             plotModel.Series.Add(nextSeries);
         }
 
-
-
         var lineSeries = new LineSeries
         {
             Color = OxyColors.OrangeRed,
@@ -75,7 +73,6 @@ internal class GraphPlotter
         lineSeries.Points.Add(new DataPoint((double)meters, maxHeight));
         plotModel.Series.Add(lineSeries);
 
-        
         return plotModel;
     }
 
