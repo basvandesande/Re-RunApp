@@ -16,6 +16,9 @@ public partial class ActivityScreen : ContentPage
     private PlayerStatistics _playerStatistics = new();
     private decimal? _actualSpeed = 0;
     private bool _hasVideo = false;
+    private bool _isFirstSegment=true;
+    private bool _pulseActive = true;
+    private decimal _nextAnimationDistance = 0;
 
     public ActivityScreen(string gpxFilePath, bool simulate=false)
     {
@@ -24,7 +27,6 @@ public partial class ActivityScreen : ContentPage
         _gpxFilePath = gpxFilePath;
         _gpxProcessor.LoadGpxData(_gpxFilePath);
         _gpxProcessor.GetRun();
-
         _treadmill = (!simulate)? Runtime.Treadmill: Runtime.TreadmillSimulator;
         _heartRate = (!simulate) ? Runtime.HeartRate : Runtime.HeartRateSimulator;
 
@@ -54,11 +56,13 @@ public partial class ActivityScreen : ContentPage
             RouteVideo.ShouldLoopPlayback = false;
             RouteVideo.ShouldAutoPlay = false;
             RouteVideo.Pause();
+            RouteVideo.Speed = 0.5;
         }
         else
         {
             RouteVideo.ShouldLoopPlayback = true;
             RouteVideo.ShouldAutoPlay = true;
+            RouteVideo.Speed = 1;
             RouteVideo.Play();
         }
         RouteVideo.IsVisible = true;
@@ -90,6 +94,10 @@ public partial class ActivityScreen : ContentPage
     {
         MainThread.BeginInvokeOnMainThread(() =>
         {
+            _isFirstSegment = (totalDistanceInMeters < 10);
+
+            if (!_isFirstSegment)  StopPulseAnimation();
+       
             PlotView.Model = _graphPlotter.RenderDistanceOverlay(totalDistanceInMeters, nextSegmentInMeters);
         });
     }
@@ -101,8 +109,8 @@ public partial class ActivityScreen : ContentPage
         // Ensure UI updates are on the main thread
         MainThread.BeginInvokeOnMainThread(() =>
         {
-            DistanceLabel.Text = $"{stats.CurrentDistanceM:N0}";
-            TimeLabel.Text = $"{TimeSpan.FromSeconds(stats.SecondsElapsed):hh\\:mm\\:ss}";
+            DistanceLabel.Text = $"{stats.CurrentDistanceM:N0} / {_gpxProcessor.TotalDistanceInMeters:N0}";
+            SegmentLabel.Text = $"{stats.SegmentRemainingM:N0}";
             SpeedLabel.Text = $"{stats.CurrentSpeedMinKM:mm\\:ss}";
             //InclinationLabel.Text = $"{stats.SegmentIncrementPercentage:N1}";
             HeartrateLabel.Text = $"{stats.CurrentHeartRate}";
@@ -119,6 +127,13 @@ public partial class ActivityScreen : ContentPage
                 _actualSpeed = stats.CurrentSpeedKMH;
                 UpdateRouteVideoSpeed();
             }
+
+            // do we need to show the animation?
+            if (stats.CurrentDistanceM >= _nextAnimationDistance)
+            {
+                int? repeat = (_nextAnimationDistance >= (_gpxProcessor.TotalDistanceInMeters / 4 * 3)) ? 0 : 3;
+                StartPulseAnimation(repeat); 
+            }
         });
     }
 
@@ -128,8 +143,10 @@ public partial class ActivityScreen : ContentPage
         {
             double secondsToGo = CalculateRemainingSeconds();
             double remainingVideoSeconds = RouteVideo.Duration.TotalSeconds - RouteVideo.Position.TotalSeconds;
-           
-            RouteVideo.Speed = (secondsToGo > 0) ? (remainingVideoSeconds / secondsToGo) : 0;
+
+            // If the video is not playing, we set the speed to 0 (same applies for the first segment)
+            if (!_isFirstSegment) 
+                RouteVideo.Speed = (secondsToGo > 0) ? (remainingVideoSeconds / secondsToGo) : 0;
         }
     }
 
@@ -162,9 +179,11 @@ public partial class ActivityScreen : ContentPage
         FinishButton.IsVisible = false;
 
         // ensure the video starts playing (stand still, waiting for motion on treadmill)
-        RouteVideo.Speed = 0;
         RouteVideo.Play();
+        RouteVideo.Speed = 0.5;
         await _player.StartAsync();
+
+        StartPulseAnimation();
     }
 
 
@@ -180,6 +199,53 @@ public partial class ActivityScreen : ContentPage
         FinishButton.IsVisible = true;
         RouteVideo.Pause();
         await _player.StopAsync();
+    }
+
+    private void StopPulseAnimation()
+    {
+        _pulseActive = false;
+        StartPulseImage.IsVisible = false;
+
+        // ensure we have the next animation waiting in the background
+        decimal totalDistance = _gpxProcessor.TotalDistanceInMeters;
+
+        // set the correct image
+        if (_nextAnimationDistance <= totalDistance / 4)
+            StartPulseImage.Source = "checkpoint.png";
+        else if (_nextAnimationDistance <= totalDistance / 2)
+            StartPulseImage.Source = "halfway.png";
+        else if (_nextAnimationDistance <= (3 * totalDistance) / 4)
+            StartPulseImage.Source = "almostthere.png";
+        else
+            StartPulseImage.Source = "finish.png";
+    }
+
+
+
+    private async void StartPulseAnimation(int? repeatCount = null)
+    {
+        _pulseActive = true;
+        StartPulseImage.IsVisible = true;
+
+        // Calculate the next animation distance based on the current distance and the total distance
+        // i want to animate at 25 / 50/ 75 / 100 percent of the total distance
+        decimal totalDistance = _gpxProcessor.TotalDistanceInMeters;
+        decimal currentDistance = _playerStatistics.CurrentDistanceM ?? 0;
+        decimal nextSegmentLength = totalDistance / 4; // 25% of the total distance
+
+        if (currentDistance + nextSegmentLength > totalDistance)
+            nextSegmentLength = totalDistance - currentDistance - 20; // give some extra length :)
+
+        _nextAnimationDistance = currentDistance + nextSegmentLength;
+        int repeats = 0;
+        while (_pulseActive && (repeatCount == null || repeats < repeatCount))
+        {
+            await StartPulseImage.ScaleTo(1.10, 800, Easing.SinInOut);
+            await StartPulseImage.ScaleTo(0.90, 800, Easing.SinInOut);
+            repeats++;
+        }
+
+        StopPulseAnimation();
     }
     
 

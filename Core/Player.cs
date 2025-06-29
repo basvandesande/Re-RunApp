@@ -188,9 +188,6 @@ internal class Player
                 _playerStatistics.SegmentRemainingM = current.TotalDistanceInMeters - _totalDistanceM;
                 _playerStatistics.SecondsElapsed = (DateTime.UtcNow - _startTime).TotalSeconds;
                 
-                // update the statistics
-                //OnStatisticsUpdate?.Invoke(_playerStatistics);
-
                 await Task.Delay(1000, token);
             }
         }

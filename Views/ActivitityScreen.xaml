@@ -17,9 +17,10 @@
                                       ShouldShowPlaybackControls="False"
                                       ShouldMute="True"
                                       HorizontalOptions="CenterAndExpand"  
-                                      Source="embed://nomedia.mp4"                
+                                      Source="embed://nomedia.mp4"         
+                                      Speed="0.5"
                                       VerticalOptions="Center" ShouldKeepScreenOn="True" />
-            </Frame>
+                            </Frame>
 
             <!-- Overlay: Semi-transparent Statistics Bar -->
             <Frame BackgroundColor="#60101010"  
@@ -31,23 +32,33 @@
                 <Grid ColumnDefinitions="2*,2*,2*,2*" RowDefinitions="Auto,Auto" ColumnSpacing="10">
                     <StackLayout Grid.Column="0" Spacing="2">
                         <Label Text="Distance meters" FontAttributes="None" FontSize="14" TextColor="White" HorizontalTextAlignment="Center" />
-                        <Label x:Name="DistanceLabel" Text="0" FontAttributes="Bold" FontSize="20" TextColor="White" HorizontalTextAlignment="Center"/>
+                        <Label x:Name="DistanceLabel" Text="0 / 0" FontAttributes="Bold" FontSize="26" TextColor="Orange" HorizontalTextAlignment="Center"/>
                     </StackLayout>
                     <StackLayout Grid.Column="1" Grid.Row="0" Spacing="2">
-                        <Label Text="Elapsed time" FontAttributes="None" FontSize="14" TextColor="White" HorizontalTextAlignment="Center"/>
-                        <Label x:Name="TimeLabel" Text="00:00" FontAttributes="Bold" FontSize="20" TextColor="White" HorizontalTextAlignment="Center"/>
+                        <Label Text="Segment remaining meters" FontAttributes="None" FontSize="14" TextColor="White" HorizontalTextAlignment="Center"/>
+                        <Label x:Name="SegmentLabel" Text="0" FontAttributes="Bold" FontSize="26" TextColor="Orange" HorizontalTextAlignment="Center"/>
                     </StackLayout>
 
                     <StackLayout Grid.Column="2" Spacing="2">
-                        <Label Text="Heartrate" FontAttributes="None" FontSize="14" TextColor="White" HorizontalTextAlignment="Center"/>
-                        <Label x:Name="HeartrateLabel" Text="0" FontAttributes="Bold" FontSize="20" TextColor="White" HorizontalTextAlignment="Center"/>
+                        <Label Text="Heartrate BPM" FontAttributes="None" FontSize="14" TextColor="White" HorizontalTextAlignment="Center"/>
+                        <Label x:Name="HeartrateLabel" Text="0" FontAttributes="Bold" FontSize="26" TextColor="Orange" HorizontalTextAlignment="Center"/>
                     </StackLayout>
                     <StackLayout Grid.Column="3" Grid.Row="0" Spacing="2">
                         <Label Text="Speed Min/KM" FontAttributes="None" FontSize="14" TextColor="White" HorizontalTextAlignment="Center"/>
-                        <Label x:Name="SpeedLabel" Text="00:00" FontAttributes="Bold" FontSize="20" TextColor="White" HorizontalTextAlignment="Center"/>
+                        <Label x:Name="SpeedLabel" Text="00:00" FontAttributes="Bold" FontSize="26" TextColor="Orange" HorizontalTextAlignment="Center"/>
                     </StackLayout>
                 </Grid>
             </Frame>
+            <Image x:Name="StartPulseImage"
+            Source="start.png"
+            Opacity="0.7"
+            IsVisible="False"
+            HorizontalOptions="Center"
+            VerticalOptions="Center"
+            WidthRequest="600"
+            HeightRequest="250"
+            InputTransparent="True" />
+
         </Grid>
 
         <!-- Below Video: Route Map -->
