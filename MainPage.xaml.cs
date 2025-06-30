@@ -5,8 +5,8 @@ using Re_RunApp.Views;
 
 public partial class MainPage : ContentPage
 {
-
     private bool _pulseActive = true;
+
     public MainPage()
     {
         InitializeComponent();

@@ -17,8 +17,10 @@ public partial class ActivityScreen : ContentPage
     private decimal? _actualSpeed = 0;
     private bool _hasVideo = false;
     private bool _isFirstSegment=true;
-    private bool _pulseActive = true;
-    private decimal _nextAnimationDistance = 0;
+    private bool _pulseActive = false;
+    private decimal? _nextAnimationDistance = null;
+    private readonly decimal[] _milestones = { 0.25m, 0.5m, 0.75m, 0.995m };
+    private int _nextMilestoneIndex = 0;
 
     public ActivityScreen(string gpxFilePath, bool simulate=false)
     {
@@ -112,12 +114,8 @@ public partial class ActivityScreen : ContentPage
             DistanceLabel.Text = $"{stats.CurrentDistanceM:N0} / {_gpxProcessor.TotalDistanceInMeters:N0}";
             SegmentLabel.Text = $"{stats.SegmentRemainingM:N0}";
             SpeedLabel.Text = $"{stats.CurrentSpeedMinKM:mm\\:ss}";
-            //InclinationLabel.Text = $"{stats.SegmentIncrementPercentage:N1}";
             HeartrateLabel.Text = $"{stats.CurrentHeartRate}";
-            //TotalClimbedLabel.Text = $"{stats.TotalInclinationM:N0}";
-            //TotalDescendedLabel.Text = $"{stats.TotalDeclinationM:N0}";
-            //SegmentRemainingLabel.Text = $"{stats.SegmentRemainingM:N0}";
-
+       
             // store the statistics for later use
             _playerStatistics = stats;
 
@@ -128,11 +126,20 @@ public partial class ActivityScreen : ContentPage
                 UpdateRouteVideoSpeed();
             }
 
-            // do we need to show the animation?
-            if (stats.CurrentDistanceM >= _nextAnimationDistance)
+
+            // Check milestone
+            decimal totalDistance = _gpxProcessor.TotalDistanceInMeters;
+            decimal currentDistance = stats.CurrentDistanceM ?? 0;
+
+            if (_nextMilestoneIndex < _milestones.Length)
             {
-                int? repeat = (_nextAnimationDistance >= (_gpxProcessor.TotalDistanceInMeters / 4 * 3)) ? 0 : 3;
-                StartPulseAnimation(repeat); 
+                decimal milestoneDistance = totalDistance * _milestones[_nextMilestoneIndex];
+                if (currentDistance >= milestoneDistance)
+                {
+                    int? repeat = (_milestones[_nextMilestoneIndex] == 0.995m) ? null : 3;
+                    StartPulseAnimation(repeat, _milestones[_nextMilestoneIndex]);
+                    _nextMilestoneIndex++;
+                }
             }
         });
     }
@@ -205,47 +212,47 @@ public partial class ActivityScreen : ContentPage
     {
         _pulseActive = false;
         StartPulseImage.IsVisible = false;
-
-        // ensure we have the next animation waiting in the background
-        decimal totalDistance = _gpxProcessor.TotalDistanceInMeters;
-
-        // set the correct image
-        if (_nextAnimationDistance <= totalDistance / 4)
-            StartPulseImage.Source = "checkpoint.png";
-        else if (_nextAnimationDistance <= totalDistance / 2)
-            StartPulseImage.Source = "halfway.png";
-        else if (_nextAnimationDistance <= (3 * totalDistance) / 4)
-            StartPulseImage.Source = "almostthere.png";
-        else
-            StartPulseImage.Source = "finish.png";
+        StartPulseImage.WidthRequest = 600;
+        StartPulseImage.HeightRequest = 250;
     }
 
 
 
-    private async void StartPulseAnimation(int? repeatCount = null)
+    private async void StartPulseAnimation(int? repeatCount = null, decimal milestone = 0)
     {
+        if (_pulseActive) return;
+
         _pulseActive = true;
         StartPulseImage.IsVisible = true;
 
-        // Calculate the next animation distance based on the current distance and the total distance
-        // i want to animate at 25 / 50/ 75 / 100 percent of the total distance
-        decimal totalDistance = _gpxProcessor.TotalDistanceInMeters;
-        decimal currentDistance = _playerStatistics.CurrentDistanceM ?? 0;
-        decimal nextSegmentLength = totalDistance / 4; // 25% of the total distance
+        // Kies juiste afbeelding
+        switch (milestone)
+        {
+            case 0.25m:
+                StartPulseImage.Source = "checkpoint.png";
+                break;
+            case 0.5m:
+                StartPulseImage.Source = "halfway.png";
+                break;
+            case 0.75m:
+                StartPulseImage.Source = "almostthere.png";
+                break;
+            case 0.995m:
+                StartPulseImage.Source = "finish.png";
+                break;
+        }
 
-        if (currentDistance + nextSegmentLength > totalDistance)
-            nextSegmentLength = totalDistance - currentDistance - 20; // give some extra length :)
-
-        _nextAnimationDistance = currentDistance + nextSegmentLength;
         int repeats = 0;
-        while (_pulseActive && (repeatCount == null || repeats < repeatCount))
+        bool infinite = (milestone == 0.995m || milestone == 1.0m) && repeatCount == null;
+        while (_pulseActive && (infinite || repeatCount == null || repeats < repeatCount))
         {
             await StartPulseImage.ScaleTo(1.10, 800, Easing.SinInOut);
             await StartPulseImage.ScaleTo(0.90, 800, Easing.SinInOut);
             repeats++;
         }
 
-        StopPulseAnimation();
+        // only stop when not the finish animation
+        if (!infinite) StopPulseAnimation();
     }
     
 

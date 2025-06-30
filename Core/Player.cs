@@ -22,7 +22,8 @@ internal class Player
     private decimal? _totalDistanceM = 0;
     private DateTime _startTime;
     private DateTime _lastStatisticsUpdate = DateTime.MinValue;
-    private static readonly TimeSpan StatisticsUpdateInterval = TimeSpan.FromSeconds(5);
+    
+    private static readonly TimeSpan StatisticsUpdateInterval = TimeSpan.FromSeconds(3);
     private bool _firstStatisticsUpdate = true;
 
 
