@@ -44,9 +44,11 @@ internal class GpxProcessor
         if (distanceRan.HasValue)
         {
             Track? track = FindTrack(distanceRan.Value);
-            if (track != null && track.Segments != null)
+            if (track != null && track.Segments != null && track.Segments.Count > 0)
             {
-                TrackSegment segment = track.Segments.Where(s => s.DistanceInMeters <= distanceRan.Value).MaxBy(s => s.DistanceInMeters);
+                TrackSegment? segment = track.Segments
+                    .Where(s => s.DistanceInMeters <= distanceRan.Value)
+                    .MaxBy(s => s.DistanceInMeters);
                 if (segment != null)
                     maxIndex = segment.GpxIndex;
             }
@@ -211,6 +213,32 @@ internal class GpxProcessor
 
                 newTracksIndex++;
             }
+        }
+       
+        if (totalDistance > 0 && segments.Count > 0)
+        {
+            decimal startElevation = tracks[newTracksIndex == 0 ? 0 : lastGpxIndex + 1].StartElevation;
+            decimal endElevation = tracks[tracks.Count - 1].EndElevation;
+            decimal inclinationPercentage = (endElevation - startElevation) / totalDistance * 100;
+            startRunDistance = totalRunDistance;
+            totalRunDistance += totalDistance;
+            lastGpxIndex = tracks.Count - 1;
+
+            newTracks.Add(new Track
+            {
+                Index = newTracksIndex,
+                GpxLastIndex = lastGpxIndex,
+                DistanceInMeters = totalDistance,
+                AscendInMeters = totalAscend,
+                DescendInMeters = totalDescend,
+                TotalDistanceInMeters = totalRunDistance,
+                InclinationInDegrees = inclinationPercentage,
+                TrackStartDistanceInMeters = startRunDistance,
+                PreviousTrackDescended = false,
+                StartElevation = startElevation,
+                EndElevation = endElevation,
+                Segments = segments
+            });
         }
 
         // did the previous track descend?

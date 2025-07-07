@@ -19,7 +19,7 @@ public partial class ActivityScreen : ContentPage
     private bool _isFirstSegment=true;
     private bool _pulseActive = false;
     private decimal? _nextAnimationDistance = null;
-    private readonly decimal[] _milestones = { 0.25m, 0.5m, 0.75m, 0.995m };
+    private readonly decimal[] _milestones = { 0.25m, 0.5m, 0.75m, 0.993m };
     private int _nextMilestoneIndex = 0;
 
     public ActivityScreen(string gpxFilePath, bool simulate=false)
@@ -56,17 +56,15 @@ public partial class ActivityScreen : ContentPage
         {
             RouteVideo.Source = MediaSource.FromFile(videoPath);
             RouteVideo.ShouldLoopPlayback = false;
-            RouteVideo.ShouldAutoPlay = false;
-            RouteVideo.Pause();
             RouteVideo.Speed = 0.5;
         }
         else
         {
             RouteVideo.ShouldLoopPlayback = true;
-            RouteVideo.ShouldAutoPlay = true;
             RouteVideo.Speed = 1;
-            RouteVideo.Play();
         }
+        RouteVideo.ShouldAutoPlay = false;
+        RouteVideo.Pause(); 
         RouteVideo.IsVisible = true;
     }
 
@@ -98,8 +96,10 @@ public partial class ActivityScreen : ContentPage
         {
             _isFirstSegment = (totalDistanceInMeters < 10);
 
-            if (!_isFirstSegment)  StopPulseAnimation();
-       
+            bool isAtFinish = _nextMilestoneIndex > 0 && _milestones[_nextMilestoneIndex - 1] == 0.993m;
+            if (!_isFirstSegment && !isAtFinish)
+                StopPulseAnimation();
+
             PlotView.Model = _graphPlotter.RenderDistanceOverlay(totalDistanceInMeters, nextSegmentInMeters);
         });
     }
@@ -111,11 +111,18 @@ public partial class ActivityScreen : ContentPage
         // Ensure UI updates are on the main thread
         MainThread.BeginInvokeOnMainThread(() =>
         {
+            // Ensure that the totaldistance does not exceed the totaldistanceInMeters
+            if (stats.CurrentDistanceM > _gpxProcessor.TotalDistanceInMeters)
+            {
+                stats.CurrentDistanceM = _gpxProcessor.TotalDistanceInMeters;
+            }
+            
             DistanceLabel.Text = $"{stats.CurrentDistanceM:N0} / {_gpxProcessor.TotalDistanceInMeters:N0}";
             SegmentLabel.Text = $"{stats.SegmentRemainingM:N0}";
             SpeedLabel.Text = $"{stats.CurrentSpeedMinKM:mm\\:ss}";
             HeartrateLabel.Text = $"{stats.CurrentHeartRate}";
-       
+            AscendLabel.Text = $"{stats.TotalInclinationM:N0}";
+
             // store the statistics for later use
             _playerStatistics = stats;
 
@@ -136,7 +143,7 @@ public partial class ActivityScreen : ContentPage
                 decimal milestoneDistance = totalDistance * _milestones[_nextMilestoneIndex];
                 if (currentDistance >= milestoneDistance)
                 {
-                    int? repeat = (_milestones[_nextMilestoneIndex] == 0.995m) ? null : 3;
+                    int? repeat = (_milestones[_nextMilestoneIndex] == 0.993m) ? null : 3;
                     StartPulseAnimation(repeat, _milestones[_nextMilestoneIndex]);
                     _nextMilestoneIndex++;
                 }
@@ -237,13 +244,13 @@ public partial class ActivityScreen : ContentPage
             case 0.75m:
                 StartPulseImage.Source = "almostthere.png";
                 break;
-            case 0.995m:
+            case 0.993m:
                 StartPulseImage.Source = "finish.png";
                 break;
         }
 
         int repeats = 0;
-        bool infinite = (milestone == 0.995m || milestone == 1.0m) && repeatCount == null;
+        bool infinite = (milestone >= 0.993m ) && repeatCount == null;
         while (_pulseActive && (infinite || repeatCount == null || repeats < repeatCount))
         {
             await StartPulseImage.ScaleTo(1.10, 800, Easing.SinInOut);

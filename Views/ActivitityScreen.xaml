@@ -29,23 +29,26 @@
                    VerticalOptions="Start"
                    HorizontalOptions="FillAndExpand"
                    Margin="0">
-                <Grid ColumnDefinitions="2*,2*,2*,2*" RowDefinitions="Auto,Auto" ColumnSpacing="10">
+                <Grid ColumnDefinitions="2.2*,2*, 2*, 2*,2*" RowDefinitions="Auto,Auto" ColumnSpacing="10">
                     <StackLayout Grid.Column="0" Spacing="2">
                         <Label Text="Distance meters" FontAttributes="None" FontSize="14" TextColor="White" HorizontalTextAlignment="Center" />
-                        <Label x:Name="DistanceLabel" Text="0 / 0" FontAttributes="Bold" FontSize="26" TextColor="Orange" HorizontalTextAlignment="Center"/>
+                        <Label x:Name="DistanceLabel" Text="0 / 0" FontAttributes="Bold" FontSize="30" TextColor="Orange" HorizontalTextAlignment="Center" FontFamily="OpenSansBold"/>
                     </StackLayout>
                     <StackLayout Grid.Column="1" Grid.Row="0" Spacing="2">
                         <Label Text="Segment remaining meters" FontAttributes="None" FontSize="14" TextColor="White" HorizontalTextAlignment="Center"/>
-                        <Label x:Name="SegmentLabel" Text="0" FontAttributes="Bold" FontSize="26" TextColor="Orange" HorizontalTextAlignment="Center"/>
+                        <Label x:Name="SegmentLabel" Text="0" FontAttributes="Bold" FontSize="30" TextColor="Orange" HorizontalTextAlignment="Center" FontFamily="OpenSansBold"/>
                     </StackLayout>
-
-                    <StackLayout Grid.Column="2" Spacing="2">
+                    <StackLayout Grid.Column="2" Grid.Row="0" Spacing="2">
+                        <Label Text="Total ascend meters" FontAttributes="None" FontSize="14" TextColor="White" HorizontalTextAlignment="Center"/>
+                        <Label x:Name="AscendLabel" Text="0" FontAttributes="Bold" FontSize="30" TextColor="Orange" HorizontalTextAlignment="Center" FontFamily="OpenSansBold"/>
+                    </StackLayout>
+                    <StackLayout Grid.Column="3" Spacing="2">
                         <Label Text="Heartrate BPM" FontAttributes="None" FontSize="14" TextColor="White" HorizontalTextAlignment="Center"/>
-                        <Label x:Name="HeartrateLabel" Text="0" FontAttributes="Bold" FontSize="26" TextColor="Orange" HorizontalTextAlignment="Center"/>
+                        <Label x:Name="HeartrateLabel" Text="0" FontAttributes="Bold" FontSize="30" TextColor="Orange" HorizontalTextAlignment="Center" FontFamily="OpenSansBold"/>
                     </StackLayout>
-                    <StackLayout Grid.Column="3" Grid.Row="0" Spacing="2">
+                    <StackLayout Grid.Column="4" Grid.Row="0" Spacing="2">
                         <Label Text="Speed Min/KM" FontAttributes="None" FontSize="14" TextColor="White" HorizontalTextAlignment="Center"/>
-                        <Label x:Name="SpeedLabel" Text="00:00" FontAttributes="Bold" FontSize="26" TextColor="Orange" HorizontalTextAlignment="Center"/>
+                        <Label x:Name="SpeedLabel" Text="00:00" FontAttributes="Bold" FontSize="30" TextColor="Orange" HorizontalTextAlignment="Center" FontFamily="OpenSansBold"/>
                     </StackLayout>
                 </Grid>
             </Frame>

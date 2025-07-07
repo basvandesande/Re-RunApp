@@ -23,7 +23,7 @@ internal class Player
     private DateTime _startTime;
     private DateTime _lastStatisticsUpdate = DateTime.MinValue;
     
-    private static readonly TimeSpan StatisticsUpdateInterval = TimeSpan.FromSeconds(3);
+    private static readonly TimeSpan StatisticsUpdateInterval = TimeSpan.FromSeconds(4);
     private bool _firstStatisticsUpdate = true;
 
 
