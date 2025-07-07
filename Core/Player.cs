@@ -9,7 +9,7 @@ internal class Player
     private readonly GpxProcessor _gpx;
     private readonly ITreadmill _treadmill;
     private readonly IHeartRate _heartRate;
-    private readonly SpeedSettings? _speedSettings;
+    private readonly RunSettings? _runSettings;
     private bool _isPlaying = false;
 
     private CancellationTokenSource? _cancellationTokenSource;
@@ -28,10 +28,10 @@ internal class Player
 
 
 
-    public Player(GpxProcessor gpx, ITreadmill treadmill, IHeartRate heartRate, SpeedSettings speedSettings)
+    public Player(GpxProcessor gpx, ITreadmill treadmill, IHeartRate heartRate, RunSettings runSettings)
     {
         _gpx = gpx ?? throw new Exception("GpxProcessor is null");
-        _speedSettings = speedSettings;
+        _runSettings = runSettings;
 
         _treadmill = treadmill ?? throw new Exception("Treadmill is null");
         _treadmill.OnStatisticsUpdate += Treadmill_OnStatisticsUpdate;
@@ -234,7 +234,7 @@ internal class Player
 
     private async Task AdjustTreadmillSpeedAsync(Track track, Track? previousTrack)
     {
-        if (_speedSettings != null && _speedSettings.AutoSpeedControl)
+        if (_runSettings != null && _runSettings.AutoSpeedControl)
         {
             // calculate the delay based on the inclination difference and ascend / descend
             int deltaIncline = (int)Math.Abs(track.InclinationInDegrees - (previousTrack?.InclinationInDegrees ?? 0));
@@ -245,19 +245,19 @@ internal class Player
             
             // set the speeds
             if (track.InclinationInDegrees < 0)
-                 speed = (decimal)_speedSettings.Speed0to5 + 0.5m;
+                 speed = (decimal)_runSettings.Speed0to5 + 0.5m;
             if (track.InclinationInDegrees <= 5)
-                 speed = (decimal)_speedSettings.Speed0to5;
+                 speed = (decimal)_runSettings.Speed0to5;
             else if (track.InclinationInDegrees <= 8)
-                speed = (decimal)_speedSettings.Speed6to8;
+                speed = (decimal)_runSettings.Speed6to8;
             else if (track.InclinationInDegrees <= 10)
-                speed = (decimal)_speedSettings.Speed8to10;
+                speed = (decimal)_runSettings.Speed8to10;
             else if (track.InclinationInDegrees <= 12)
-                speed = (decimal)_speedSettings.Speed11to12;
+                speed = (decimal)_runSettings.Speed11to12;
             else if (track.InclinationInDegrees <= 15)
-                speed = (decimal)_speedSettings.Speed13to15;
+                speed = (decimal)_runSettings.Speed13to15;
             else
-                speed = (decimal)_speedSettings.Speed13to15 - 0.5m;
+                speed = (decimal)_runSettings.Speed13to15 - 0.5m;
 
             await Task.Delay(delayMs);
             await _treadmill.ChangeSpeedAsync(speed);

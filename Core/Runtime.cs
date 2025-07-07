@@ -9,7 +9,7 @@ internal class Runtime
     internal static HeartRate HeartRate { get; set; } = new HeartRate();
     internal static HeartRateSimulator HeartRateSimulator { get; set; } = new HeartRateSimulator();
 
-    internal static SpeedSettings? SpeedSettings { get; set; }
+    internal static RunSettings? RunSettings { get; set; }
 
     public static void DeleteDeviceIdFile(string deviceIdFile)
     {

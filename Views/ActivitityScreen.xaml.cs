@@ -34,7 +34,7 @@ public partial class ActivityScreen : ContentPage
 
         if (simulate) _heartRate.Enabled = true; // Enable heart rate simulation if in simulation mode
 
-        _player = new Player(_gpxProcessor, _treadmill, _heartRate, Runtime.SpeedSettings);
+        _player = new Player(_gpxProcessor, _treadmill, _heartRate, Runtime.RunSettings);
         _player.OnStatisticsUpdate += OnStatisticsUpdate;
         _player.OnTrackChange += OnTrackChange; 
         _player.OnTrackReady += OnTrackReady;
@@ -47,7 +47,7 @@ public partial class ActivityScreen : ContentPage
     {
         PlotView.Model = _graphPlotter.PlotGraph(_gpxProcessor, false);
 
-        this.Title = Path.GetFileNameWithoutExtension(_gpxFilePath);
+        this.Title = _gpxProcessor?.Gpx?.trk.name;
 
         string videoPath = Path.ChangeExtension(_gpxFilePath, ".mp4");
         _hasVideo = File.Exists(videoPath);

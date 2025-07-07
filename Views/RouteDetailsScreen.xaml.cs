@@ -150,19 +150,25 @@ public partial class RouteDetailsScreen : ContentPage
     {
         string speedSettingsFilePath = Path.ChangeExtension(_gpxFilePath, ".speedsettings");
 
-        var settings = new SpeedSettings
+        var settings = new RunSettings
         {
             Speed0to5 = double.Parse(Speed0to5Label.Text, System.Globalization.CultureInfo.InvariantCulture),
             Speed6to8 = double.Parse(Speed6to8Label.Text, System.Globalization.CultureInfo.InvariantCulture),
             Speed8to10 = double.Parse(Speed8to10Label.Text, System.Globalization.CultureInfo.InvariantCulture),
             Speed11to12 = double.Parse(Speed11to12Label.Text, System.Globalization.CultureInfo.InvariantCulture),
             Speed13to15 = double.Parse(Speed13to15Label.Text, System.Globalization.CultureInfo.InvariantCulture),
-            AutoSpeedControl = AutoSpeedControlCheckBox.IsChecked
+            AutoSpeedControl = AutoSpeedControlCheckBox.IsChecked,
+            Name = RouteNameLabel.Text.Replace("Name: ", "").Trim(),
+            // Favourite = FavouriteIcon.Source == "favourite_icon.png", // Assuming you have a favourite icon
+            // Level = Intensity.Moderate // You can set this based on user input or other logic
+            TotalDistance = _gpxProcessor.TotalDistanceInMeters,
+            TotalAscend = _gpxProcessor.TotalElevationInMeters,
+            // todo
         };
         File.WriteAllText(speedSettingsFilePath, System.Text.Json.JsonSerializer.Serialize(settings));
         
         // update the speedsettings while saving...
-        Runtime.SpeedSettings = settings;
+        Runtime.RunSettings = settings;
 
     }
 
@@ -173,7 +179,7 @@ public partial class RouteDetailsScreen : ContentPage
         if (File.Exists(speedSettingsFilePath))
         {
             string jsonContent = File.ReadAllText(speedSettingsFilePath);
-            var settings = System.Text.Json.JsonSerializer.Deserialize<SpeedSettings>(jsonContent);
+            var settings = System.Text.Json.JsonSerializer.Deserialize<RunSettings>(jsonContent);
 
             if (settings != null)
             {
@@ -183,10 +189,22 @@ public partial class RouteDetailsScreen : ContentPage
                 Speed11to12Label.Text = settings.Speed11to12.ToString("F1", System.Globalization.CultureInfo.InvariantCulture);
                 Speed13to15Label.Text = settings.Speed13to15.ToString("F1", System.Globalization.CultureInfo.InvariantCulture);
                 AutoSpeedControlCheckBox.IsChecked = settings.AutoSpeedControl;
+                RouteNameLabel.Text = $"Name: {settings.Name}";
+                //if (settings.Favourite)
+                //{
+                //    FavouriteIcon.Source = "favourite_icon.png"; // Assuming you have a favourite icon
+                //}
+                //else
+                //{
+                //    FavouriteIcon.Source = "not_favourite_icon.png"; // Assuming you have a not favourite icon
+                //}
+                TotalAscendLabel.Text = $"Total Ascend: {settings.TotalAscend:F0} m";
+                TotalDistanceLabel.Text = $"Total Distance: {settings.TotalDistance / 1000:F1} km";
+                // todo intensity + favourite + title
             }
 
             // initialize the speedsettings
-            Runtime.SpeedSettings = settings;
+            Runtime.RunSettings = settings;
         }
     }
     
