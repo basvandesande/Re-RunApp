@@ -1,13 +1,144 @@
+<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Re_RunApp.Views.SummaryScreen"
-             Title="Summary"
-             BackgroundColor="White" >
-    <StackLayout>
-        <Label Text="Activity Summary" />
+             Title=""
+             BackgroundColor="#33475b">
+    <Grid>
+        <!-- Background Image -->
+        <Image Source="statistics_background.jpg" Aspect="AspectFill" />
+
+        <!-- Title and Subtitle -->
+        <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Fill">
+
+            <Image x:Name="StatisticsImage" 
+                   Source="statistics.png"
+                   WidthRequest="600"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Start"
+                   Aspect="AspectFit"
+                   Margin="0,-50,0,0" />
+
+            <Frame BackgroundColor="#33475b"
+                   CornerRadius="10"
+                   HorizontalOptions="Fill"
+                   Margin="20,0,20,0"
+                   HeightRequest="400"
+                   Padding="10"
+                   HasShadow="False"
+                   Opacity="0.8"
+                   BorderColor="#33475b">
+                <Grid ColumnDefinitions="2*,2*,2*" 
+                      RowDefinitions="2*,Auto,Auto,Auto,Auto,Auto,Auto,Auto" 
+                      RowSpacing="10">
+                    <!-- Top Row: Title -->
+                    <Label x:Name="TitleLabel"
+                           Text="Run Summary" 
+                           TextColor="White" 
+                           FontSize="Header" 
+                           HorizontalOptions="Center" 
+                           VerticalOptions="Center" 
+                           Grid.Row="0" 
+                           Grid.ColumnSpan="3" />
+
+                    <Label Text="Distance (km)" 
+                           TextColor="White" 
+                           FontSize="Medium" 
+                           VerticalOptions="Center" 
+                           Grid.Row="1" />
+                    <Label x:Name="DistanceLabel"
+                           Text="5.2 km" 
+                           TextColor="White" 
+                           FontSize="Medium" 
+                           VerticalOptions="Center" 
+                           Grid.Row="1" 
+                           Grid.Column="1" />
+                    
+                    <Label Text="Duration" 
+                           TextColor="White" 
+                           FontSize="Medium" 
+                           VerticalOptions="Center" 
+                           Grid.Row="2" />
+                    <Label x:Name="DurationLabel"
+                           Text="30:15" 
+                           TextColor="White" 
+                           FontSize="Medium" 
+                           VerticalOptions="Center" 
+                           Grid.Row="2" 
+                           Grid.Column="1" />
+
+                    <Label Text="Average Speed (min/km)" 
+                           TextColor="White" 
+                           FontSize="Medium" 
+                           VerticalOptions="Center" 
+                           Grid.Row="3" />
+                    <Label x:Name="AverageSpeedLabel"
+                           Text="07:34" 
+                           TextColor="White" 
+                           FontSize="Medium" 
+                           VerticalOptions="Center" 
+                           Grid.Row="3" 
+                           Grid.Column="1" />
+
+                    <Label Text="Average Heart rate (bpm)" 
+                           TextColor="White" 
+                           FontSize="Medium" 
+                           VerticalOptions="Center" 
+                           Grid.Row="4" />
+                    <Label x:Name="AverageHeartRateLabel"
+                           Text="144" 
+                           TextColor="White" 
+                           FontSize="Medium" 
+                           VerticalOptions="Center" 
+                           Grid.Row="4" 
+                           Grid.Column="1" />
+
+                    <Label Text="Total ascend (m)" 
+                           TextColor="White" 
+                           FontSize="Medium" 
+                           VerticalOptions="Center" 
+                           Grid.Row="5" />
+                    <Label x:Name="AscendLabel"
+                           Text="1.200" 
+                           TextColor="White" 
+                           FontSize="Medium" 
+                           VerticalOptions="Center" 
+                           Grid.Row="5" 
+                           Grid.Column="1" />
+
+                    <Label Text="" 
+                           TextColor="White" 
+                           FontSize="Medium" 
+                           VerticalOptions="Center"
+                           HorizontalOptions="Center"
+                           Grid.Row="6" 
+                           Grid.Column="2" />
+
+
+                    <CheckBox x:Name="StraveCheckbox"
+                              VerticalOptions="Center" 
+                              Grid.Row="7" 
+                              Grid.Column="2" />
+                    <Label Text="Send statistics to Strava" 
+                           TextColor="White" 
+                           FontSize="Medium" 
+                           VerticalOptions="Center"
+                           HorizontalOptions="Center"
+                           Grid.Row="7" 
+                           Grid.Column="2" />
+
+                </Grid>
+            </Frame>
+        </VerticalStackLayout>
+
+        <!-- Button at the bottom -->
         <Button Text="Exit" 
-                Clicked="OnExitClicked"  
-                FontSize="Large"
-                HeightRequest="50" />
-    </StackLayout>
+                Clicked="OnExitClicked"
+                VerticalOptions="End" 
+                HorizontalOptions="Fill" 
+                Margin="20,0,20,20" 
+                BackgroundColor="#F97C00"
+                HeightRequest="50" 
+                FontSize="Large" />
+    </Grid>
 </ContentPage>

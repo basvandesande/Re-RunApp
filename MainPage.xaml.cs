@@ -32,7 +32,6 @@ public partial class MainPage : ContentPage
 
     private async void StartLogoPulse()
     {
-        _pulseActive = true;
         while (_pulseActive)
         {
             await LogoImage.ScaleTo(1.02, 1400, Easing.SinInOut);

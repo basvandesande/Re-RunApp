@@ -158,7 +158,7 @@ public partial class RouteDetailsScreen : ContentPage
             Speed11to12 = double.Parse(Speed11to12Label.Text, System.Globalization.CultureInfo.InvariantCulture),
             Speed13to15 = double.Parse(Speed13to15Label.Text, System.Globalization.CultureInfo.InvariantCulture),
             AutoSpeedControl = AutoSpeedControlCheckBox.IsChecked,
-            Name = RouteNameLabel.Text.Replace("Name: ", "").Trim(),
+            Name = _gpxProcessor.Gpx.trk.name,
             // Favourite = FavouriteIcon.Source == "favourite_icon.png", // Assuming you have a favourite icon
             // Level = Intensity.Moderate // You can set this based on user input or other logic
             TotalDistance = _gpxProcessor.TotalDistanceInMeters,
@@ -189,7 +189,7 @@ public partial class RouteDetailsScreen : ContentPage
                 Speed11to12Label.Text = settings.Speed11to12.ToString("F1", System.Globalization.CultureInfo.InvariantCulture);
                 Speed13to15Label.Text = settings.Speed13to15.ToString("F1", System.Globalization.CultureInfo.InvariantCulture);
                 AutoSpeedControlCheckBox.IsChecked = settings.AutoSpeedControl;
-                RouteNameLabel.Text = $"Name: {settings.Name}";
+                RouteNameLabel.Text = _gpxProcessor.Gpx.trk.name;
                 //if (settings.Favourite)
                 //{
                 //    FavouriteIcon.Source = "favourite_icon.png"; // Assuming you have a favourite icon
