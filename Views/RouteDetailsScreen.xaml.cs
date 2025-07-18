@@ -66,10 +66,10 @@ public partial class RouteDetailsScreen : ContentPage
         _gpxProcessor.GetRun();
 
         // Set route details
-        RouteNameLabel.Text = $"Name: {_gpxProcessor.Gpx?.trk.name}";
-        TotalDistanceLabel.Text = $"Total Distance: {_gpxProcessor.TotalDistanceInMeters / 1000:F1} km";
-        TotalElevationLabel.Text = $"Total Elevation: {(_gpxProcessor.FindMaximumElevation() - _gpxProcessor.FindMinimumElevation()):F0} m";
-        TotalAscendLabel.Text = $"Total Ascend: {_gpxProcessor.TotalElevationInMeters:F0}  m";
+        RouteNameLabel.Text = _gpxProcessor.Gpx?.trk.name;
+        TotalDistanceLabel.Text = $"{_gpxProcessor.TotalDistanceInMeters / 1000:F1}";
+        TotalElevationLabel.Text = $"{(_gpxProcessor.FindMaximumElevation() - _gpxProcessor.FindMinimumElevation()):F0}";
+        TotalAscendLabel.Text = $"{_gpxProcessor.TotalElevationInMeters:F0}";
     }
 
     private async void OnStartClicked(object sender, EventArgs e)
@@ -189,7 +189,6 @@ public partial class RouteDetailsScreen : ContentPage
                 Speed11to12Label.Text = settings.Speed11to12.ToString("F1", System.Globalization.CultureInfo.InvariantCulture);
                 Speed13to15Label.Text = settings.Speed13to15.ToString("F1", System.Globalization.CultureInfo.InvariantCulture);
                 AutoSpeedControlCheckBox.IsChecked = settings.AutoSpeedControl;
-                RouteNameLabel.Text = _gpxProcessor.Gpx.trk.name;
                 //if (settings.Favourite)
                 //{
                 //    FavouriteIcon.Source = "favourite_icon.png"; // Assuming you have a favourite icon
@@ -198,8 +197,6 @@ public partial class RouteDetailsScreen : ContentPage
                 //{
                 //    FavouriteIcon.Source = "not_favourite_icon.png"; // Assuming you have a not favourite icon
                 //}
-                TotalAscendLabel.Text = $"Total Ascend: {settings.TotalAscend:F0} m";
-                TotalDistanceLabel.Text = $"Total Distance: {settings.TotalDistance / 1000:F1} km";
                 // todo intensity + favourite + title
             }
 

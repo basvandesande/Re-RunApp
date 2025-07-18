@@ -144,11 +144,12 @@ internal class Player
                 {
                     if (_heartRate.Enabled) current.HeartRate = _heartRate.CurrentRate;
 
-                    // update the statistics in the gpx file as accurate as possible
-                    _ = Task.Run(() => UpdateGpxStatistics(index, maxIndex, startTime));
-
                     index++;
 
+                    // update the statistics in the gpx file as accurate as possible
+                    _ = Task.Run(() => UpdateGpxStatistics(index-1, maxIndex, startTime));
+
+               
                     if (index >= maxIndex)
                     {
                         // Indicate the track change (this is just to set the progress bar to done :)
@@ -215,10 +216,12 @@ internal class Player
             // Get the duration per segment
             int segmentTimeInSeconds = (int)(segment.DistanceInMeters / totalDistance * totalSeconds);
             startTime = startTime.AddSeconds(segmentTimeInSeconds);
-            _gpx.Gpx.trk.trkseg[segment.GpxIndex].time = startTime;
-            
-            // ik denk dat hier het trackpointextension opject nog null is, check de gpx file init
-            //    _gpx.Gpx.trk.trkseg[segment.GpxIndex].extensions.TrackPointExtension.hr = (byte)_gpx.Tracks[index].HeartRate;
+            var trackSegment = _gpx.Gpx.trk.trkseg[segment.GpxIndex];
+            trackSegment.time = startTime;
+
+            if (trackSegment.extensions == null) trackSegment.extensions = new ();
+            if (trackSegment.extensions.TrackPointExtension==null) trackSegment.extensions.TrackPointExtension = new ();
+            trackSegment.extensions.TrackPointExtension.hr = (byte)_gpx.Tracks[index].HeartRate;
         }
     }
 
@@ -234,34 +237,39 @@ internal class Player
 
     private async Task AdjustTreadmillSpeedAsync(Track track, Track? previousTrack)
     {
-        if (_runSettings != null && _runSettings.AutoSpeedControl)
-        {
-            // calculate the delay based on the inclination difference and ascend / descend
-            int deltaIncline = (int)Math.Abs(track.InclinationInDegrees - (previousTrack?.InclinationInDegrees ?? 0));
-            if (deltaIncline == 0) return;
-            
-            decimal speed = 0;
-            int  delayMs = deltaIncline * 150;
-            
-            // set the speeds
-            if (track.InclinationInDegrees < 0)
-                 speed = (decimal)_runSettings.Speed0to5 + 0.5m;
-            if (track.InclinationInDegrees <= 5)
-                 speed = (decimal)_runSettings.Speed0to5;
-            else if (track.InclinationInDegrees <= 8)
-                speed = (decimal)_runSettings.Speed6to8;
-            else if (track.InclinationInDegrees <= 10)
-                speed = (decimal)_runSettings.Speed8to10;
-            else if (track.InclinationInDegrees <= 12)
-                speed = (decimal)_runSettings.Speed11to12;
-            else if (track.InclinationInDegrees <= 15)
-                speed = (decimal)_runSettings.Speed13to15;
-            else
-                speed = (decimal)_runSettings.Speed13to15 - 0.5m;
+        if (_runSettings == null || !_runSettings.AutoSpeedControl)
+            return;
 
-            await Task.Delay(delayMs);
-            await _treadmill.ChangeSpeedAsync(speed);
+        //Calculate the desired speed based on the current incline
+        decimal GetSpeed(decimal incline)
+        {
+            if (incline < 0)
+                return (decimal)_runSettings.Speed0to5 + 0.5m;
+            if (incline <= 5)
+                return (decimal)_runSettings.Speed0to5;
+            if (incline <= 8)
+                return (decimal)_runSettings.Speed6to8;
+            if (incline <= 10)
+                return (decimal)_runSettings.Speed8to10;
+            if (incline <= 12)
+                return (decimal)_runSettings.Speed11to12;
+            if (incline <= 15)
+                return (decimal)_runSettings.Speed13to15;
+            return (decimal)_runSettings.Speed13to15 - 0.3m;
         }
+
+        decimal newSpeed = GetSpeed(track.InclinationInDegrees);
+        decimal prevSpeed = previousTrack != null ? GetSpeed(previousTrack.InclinationInDegrees) : newSpeed;
+
+        int deltaIncline = (int)Math.Abs(track.InclinationInDegrees - (previousTrack?.InclinationInDegrees ?? 0));
+        int delayMs = deltaIncline * 150;
+
+        // bailout if current speed and current incline dont change
+        if (deltaIncline == 0 && newSpeed == prevSpeed)
+            return;
+
+        await Task.Delay(delayMs);
+        await _treadmill.ChangeSpeedAsync(newSpeed);
     }
 
     public void Dispose()

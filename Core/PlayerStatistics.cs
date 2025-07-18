@@ -10,6 +10,7 @@ public class PlayerStatistics
     public decimal? TotalInclinationM { get; set; } = 0;
     public decimal? TotalDeclinationM { get; set; } = 0;
     public int? CurrentHeartRate { get; set; } = 0;
+    public List<int> HeartRateSamples { get; } = new();
 
 
     public TimeSpan? CurrentSpeedMinKM => CurrentSpeedKMH.HasValue && CurrentSpeedKMH > 0

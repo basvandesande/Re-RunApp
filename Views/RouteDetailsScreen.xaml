@@ -28,33 +28,75 @@
                 </Label.GestureRecognizers>
             </Label>
         </Grid>
+        
         <!-- Bottom Section with Two Columns -->
         <Grid Grid.Row="1" ColumnDefinitions="2*,1*" Padding="10">
-            <!-- Route Details -->
-            <StackLayout Grid.Column="0" Padding="10" BackgroundColor="#f0f0f0">
-                <Label Text="Route Details" FontSize="22" FontAttributes="Bold" />
-                <Label x:Name="RouteNameLabel" Text="Name: " FontSize="18" />
-                <Label x:Name="TotalDistanceLabel" Text="Total Distance: " FontSize="18" />
-                <Label x:Name="TotalElevationLabel" Text="Total Elevation: " FontSize="18" />
-                <Label x:Name="TotalAscendLabel" Text="Total Ascend: " FontSize="18" />
+            <StackLayout Padding="10" BackgroundColor="#f0f0f0">
+                <Label x:Name="RouteNameLabel" 
+                       Text="Route Name" 
+                       FontSize="22" 
+                       FontAttributes="Bold" VerticalOptions="Center" />
+
+                <!-- Two-column Grid for Route Details -->
+                <Grid ColumnDefinitions="2*,4*" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="10" Margin="0,10,0,0">
+                    <!-- Row 1: Total Distance -->
+                    <Label Text="Total Distance (km):" 
+                           FontSize="18" 
+                           VerticalOptions="Center" 
+                           Grid.Row="1" />
+                    <Label x:Name="TotalDistanceLabel" 
+                           Text="5.2 km" 
+                           FontSize="18" 
+                           VerticalOptions="Center" 
+                           Grid.Row="1" 
+                           Grid.Column="1" />
+
+                    <!-- Row 2: Total Elevation -->
+                    <Label Text="Total Elevation (m):" 
+                           FontSize="18" 
+                           VerticalOptions="Center" 
+                           Grid.Row="2" />
+                    <Label x:Name="TotalElevationLabel" 
+                           Text="250 m" 
+                           FontSize="18" 
+                           VerticalOptions="Center" 
+                           Grid.Row="2" 
+                           Grid.Column="1" />
+
+                    <!-- Row 3: Total Ascend -->
+                    <Label Text="Total Ascend (m):" 
+                           FontSize="18" 
+                           VerticalOptions="Center" 
+                           Grid.Row="3" />
+                    <Label x:Name="TotalAscendLabel" 
+                           Text="300 m" 
+                           FontSize="18" 
+                           VerticalOptions="Center" 
+                           Grid.Row="3" 
+                           Grid.Column="1" />
+                </Grid>
 
                 <!-- Row with two buttons below the route details -->
-                <HorizontalStackLayout Margin="0,15,0,0" Spacing="15" VerticalOptions="End">
+                <HorizontalStackLayout Margin="0,15,0,0" Spacing="15" VerticalOptions="EndAndExpand">
                     <Button Text="+ Treadmill" 
                             x:Name="ConnectTreadmillButton"
                             Clicked="OnConnectTreadmillClicked"
-                            HorizontalOptions="FillAndExpand" VerticalOptions="End"/>
+                            HorizontalOptions="FillAndExpand" />
                     <Button Text="+ Heart sensor" 
                             x:Name="ConnectHeartRateButton"
                             Clicked="OnConnectHeartRateClicked"
-                            HorizontalOptions="FillAndExpand"/>
+                            HorizontalOptions="FillAndExpand" />
                 </HorizontalStackLayout>
             </StackLayout>
-
+            
+            
             <!-- Speed Settings -->
             <StackLayout Grid.Column="1" Padding="10" BackgroundColor="#f0f0f0">
-                <Label Text="Speed Settings (km/h)" FontSize="22" FontAttributes="Bold" />
-                <Grid ColumnDefinitions="2*,3*,1*" RowDefinitions="Auto,Auto,Auto,Auto,Auto, Auto">
+                <HorizontalStackLayout Margin="0,2" Spacing="10">
+                    <CheckBox x:Name="AutoSpeedControlCheckBox" IsChecked="True" VerticalOptions="Center" HorizontalOptions="Center" />
+                    <Label Text="Enable cruise control (km/h)" FontSize="22" FontAttributes="Bold" VerticalOptions="Center" />
+                </HorizontalStackLayout>
+                <Grid ColumnDefinitions="2*,3*,1*" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
                     <Label Text="0-5%" Grid.Row="0" Grid.Column="0" FontSize="18" VerticalOptions="Center" />
                     <HorizontalStackLayout Grid.Row="0" Grid.Column="1" Margin="0,2" Spacing="10">
                         <Button Text="-" WidthRequest="40" FontSize="18" Clicked="OnDecreaseSpeed0to5" BackgroundColor="green" />
@@ -94,11 +136,6 @@
                         <Button Text="+" WidthRequest="40" FontSize="18" Clicked="OnIncreaseSpeed13to15" BackgroundColor="DarkRed"/>
                     </HorizontalStackLayout>
                     <Label Text="km/h" Grid.Row="4" Grid.Column="2" FontSize="18" VerticalOptions="Center" />
-
-                    <CheckBox x:Name="AutoSpeedControlCheckBox" IsChecked="True" Grid.Row="5"  Grid.Column="0" VerticalOptions="Center" HorizontalOptions="Center" />
-                    <HorizontalStackLayout Grid.Row="5" Grid.Column="1" Margin="0,2" Spacing="10">
-                        <Label Text="Allow Cruise Control" FontSize="18" VerticalOptions="Center"/>
-                    </HorizontalStackLayout>
                 </Grid>
             </StackLayout>
         </Grid>

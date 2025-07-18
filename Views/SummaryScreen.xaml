@@ -35,13 +35,13 @@
                     <Label x:Name="TitleLabel"
                            Text="Run Summary" 
                            TextColor="White" 
-                           FontSize="Header" 
+                           FontSize="Large"  
                            HorizontalOptions="Center" 
                            VerticalOptions="Center" 
                            Grid.Row="0" 
                            Grid.ColumnSpan="3" />
 
-                    <Label Text="Distance (km)" 
+                    <Label Text="Distance (m)" 
                            TextColor="White" 
                            FontSize="Medium" 
                            VerticalOptions="Center" 
@@ -92,29 +92,32 @@
                            VerticalOptions="Center" 
                            Grid.Row="4" 
                            Grid.Column="1" />
-
-                    <Label Text="Total ascend (m)" 
+                    <Label Text="Maximum Heart rate (bpm)" 
                            TextColor="White" 
                            FontSize="Medium" 
                            VerticalOptions="Center" 
                            Grid.Row="5" />
-                    <Label x:Name="AscendLabel"
-                           Text="1.200" 
+                    <Label x:Name="MaxHeartRateLabel"
+                           Text="144" 
                            TextColor="White" 
                            FontSize="Medium" 
                            VerticalOptions="Center" 
                            Grid.Row="5" 
                            Grid.Column="1" />
 
-                    <Label Text="" 
+                    <Label Text="Total ascend (m)" 
                            TextColor="White" 
                            FontSize="Medium" 
-                           VerticalOptions="Center"
-                           HorizontalOptions="Center"
+                           VerticalOptions="Center" 
+                           Grid.Row="6" />
+                    <Label x:Name="AscendLabel"
+                           Text="1.200" 
+                           TextColor="White" 
+                           FontSize="Medium" 
+                           VerticalOptions="Center" 
                            Grid.Row="6" 
-                           Grid.Column="2" />
-
-
+                           Grid.Column="1" />
+                  
                     <CheckBox x:Name="StraveCheckbox"
                               VerticalOptions="Center" 
                               Grid.Row="7" 

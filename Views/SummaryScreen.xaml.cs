@@ -19,13 +19,29 @@ public partial class SummaryScreen : ContentPage
         base.OnAppearing();
         StartStatisticsPulse();
 
+        int avgHeartRate = 0;
+        int maxHeartRate = 0;
+        if (_statistics.HeartRateSamples.Count > 0)
+        {
+            avgHeartRate = (int)_statistics.HeartRateSamples.Average();
+            maxHeartRate = _statistics.HeartRateSamples.Max();
+        }
+
+        TimeSpan avgSpeedMinKm = TimeSpan.FromMinutes(0);
+        if (_statistics.CurrentDistanceM.HasValue && _statistics.SecondsElapsed > 0)
+        {
+            var avgSpeedKmh = (decimal)_statistics.CurrentDistanceM.Value / (decimal)_statistics.SecondsElapsed * 3.6m;
+
+            avgSpeedMinKm=TimeSpan.FromMinutes(60 / (double)avgSpeedKmh);
+        }
+
         AscendLabel.Text = $"{_statistics.TotalInclinationM:N0}";
-        AverageHeartRateLabel.Text = $"{_statistics.CurrentHeartRate}";
-        AverageSpeedLabel.Text = $"{_statistics.CurrentSpeedMinKM:mm\\:ss}";
+        AverageHeartRateLabel.Text = $"{avgHeartRate}";
+        MaxHeartRateLabel.Text = $"{maxHeartRate}";
+        AverageSpeedLabel.Text = $"{avgSpeedMinKm:mm\\:ss}";
         DistanceLabel.Text = $"{_statistics.CurrentDistanceM:N0}";
         DurationLabel.Text = $"{TimeSpan.FromSeconds(_statistics.SecondsElapsed):hh\\:mm\\:ss}";
-        TitleLabel.Text = Runtime.RunSettings?.Name;
-
+        TitleLabel.Text = $"#Treadmill - {Runtime.RunSettings?.Name}";
     }
 
     protected override void OnDisappearing()
@@ -47,5 +63,4 @@ public partial class SummaryScreen : ContentPage
             await StatisticsImage.ScaleTo(0.98, 1400, Easing.SinInOut);
         }
     }
-
 }

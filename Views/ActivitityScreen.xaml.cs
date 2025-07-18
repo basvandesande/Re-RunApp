@@ -123,6 +123,9 @@ public partial class ActivityScreen : ContentPage
             HeartrateLabel.Text = $"{stats.CurrentHeartRate}";
             AscendLabel.Text = $"{stats.TotalInclinationM:N0}";
 
+            if (stats.CurrentHeartRate.HasValue)
+                stats.HeartRateSamples.Add(stats.CurrentHeartRate.Value);
+
             // store the statistics for later use
             _playerStatistics = stats;
 
