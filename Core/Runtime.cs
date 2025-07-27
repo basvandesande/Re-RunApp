@@ -10,6 +10,13 @@ internal class Runtime
     internal static HeartRateSimulator HeartRateSimulator { get; set; } = new HeartRateSimulator();
 
     internal static RunSettings? RunSettings { get; set; }
+    internal static StravaSettings? StravaSettings { get; set; }
+
+    // Load Strava settings at startup
+    static Runtime()
+    {
+        StravaSettings = ConfigurationManager.LoadStravaSettings();
+    }
 
     public static void DeleteDeviceIdFile(string deviceIdFile)
     {

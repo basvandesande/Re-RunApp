@@ -1,0 +1,74 @@
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Re_RunApp.Views.StravaSettingsScreen"
+             Title="Strava Settings"
+             BackgroundColor="#80000000">
+	<!-- Semi-transparent background -->
+
+	<Grid HorizontalOptions="Center" VerticalOptions="Center" BackgroundColor="#E0E0E0"> <!-- Light gray background -->
+		<Frame BackgroundColor="White"
+               CornerRadius="0"
+               Padding="20"
+               WidthRequest="400"
+               HeightRequest="400"
+			   HasShadow="True"
+               BorderColor="Black"> 
+			<VerticalStackLayout Spacing="15">
+				<!-- Title with Strava Logo -->
+				<HorizontalStackLayout HorizontalOptions="Center" Spacing="10">
+					<Image Source="strava_logo.png"
+                           HeightRequest="100"
+                           WidthRequest="300"
+                           Aspect="AspectFit" />
+				</HorizontalStackLayout>
+
+				<!-- Two-column Grid for Labels and Entries -->
+				<Grid ColumnDefinitions="Auto, *" RowDefinitions="Auto, Auto, Auto" RowSpacing="10" >
+					<!-- Row 1: Client ID -->
+					<Label Text="Client ID"
+                           FontSize="16"
+                           VerticalOptions="Center"
+                           Grid.Row="0"
+                           Grid.Column="0" />
+					<Entry x:Name="ClientIdEntry"
+                           Placeholder="Enter Client ID"
+                           Keyboard="Numeric"
+                           Grid.Row="0"
+                           Grid.Column="1" />
+
+					<!-- Row 2: Client Secret -->
+					<Label Text="Client Secret"
+                           FontSize="16"
+                           VerticalOptions="Center"
+                           Grid.Row="1"
+                           Grid.Column="0" />
+					<Entry x:Name="ClientSecretEntry"
+                           Placeholder="Enter Client Secret"
+                           IsPassword="True"
+                           Grid.Row="1"
+                           Grid.Column="1" />
+
+					<!-- Row 3: Redirect URL -->
+					<Label Text="Redirect URL"
+                           FontSize="16"
+                           VerticalOptions="Center"
+                           Grid.Row="2"
+                           Grid.Column="0" />
+					<Entry x:Name="RedirectUrlEntry"
+						   Text="http://localhost"
+                           Placeholder="http://localhost"
+                           Keyboard="Url"
+                           Grid.Row="2"
+                           Grid.Column="1" />
+				</Grid>
+
+				<!-- Save Button -->
+				<Button Text="Save"
+						FontSize="22"
+                        HorizontalOptions="Fill"
+                        Margin="0,25,0,0" 
+                        Clicked="OnSaveButtonClicked" />
+			</VerticalStackLayout>
+		</Frame>
+	</Grid>
+</ContentPage>

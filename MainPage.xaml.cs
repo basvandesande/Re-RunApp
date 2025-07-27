@@ -26,9 +26,14 @@ public partial class MainPage : ContentPage
         var build = AppInfo.Current.BuildString;
         var year = (DateTime.Now.Year==2025)? "2025" : $"2025-{DateTime.Now.Year}";
         VersionLabel.Text = $"© Re-RunApp  v{version} (build {build})   - © {year} Bas van de Sande - azurecodingarchitect.com";
-
-
     }
+
+    private async void OnSettingsIconTapped(object sender, EventArgs e)
+    {
+        // Show the Strava settings screen as a modal popup
+        await Navigation.PushModalAsync(new StravaSettingsScreen(),true);
+    }
+
 
     private async void StartLogoPulse()
     {

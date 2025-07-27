@@ -65,11 +65,13 @@ internal class GpxProcessor
     {
         if (_gpx == null) return;
         _gpx.creator = "Re-Run - running app";
-        _gpx.metadata.link.href = "https://azurecodingarchitect.com";
         _gpx.metadata.time = _startTime;
-        _gpx.metadata.link.text = "Azure Coding Architect";
+        if (_gpx.metadata.link == null)  _gpx.metadata.link = new gpxMetadataLink();
+      
+        _gpx.metadata.link.href = "https://azurecodingarchitect.com";
+        _gpx.metadata.link.text = "Re-Run by Azure Coding Architect";
         _gpx.trk.name = $"Re-Run: virtual run - {_gpx.trk.name}";
-        _gpx.trk.type = "virtual running";
+        _gpx.trk.type = "running";
     }
 
     public Track[] GetRun()

@@ -7,10 +7,12 @@ public partial class SummaryScreen : ContentPage
 {
     private PlayerStatistics _statistics;
     private bool _pulseActive = true;
+    private string _updatedGpxData;
 
-    public SummaryScreen(PlayerStatistics statistics)
+    public SummaryScreen(PlayerStatistics statistics, string updatedGpxData)
     {
         _statistics = statistics ?? throw new ArgumentNullException(nameof(statistics));
+        _updatedGpxData = updatedGpxData ?? throw new ArgumentNullException(nameof(updatedGpxData));
         InitializeComponent();
     }
 

@@ -8,6 +8,17 @@
         <!-- Background Image -->
         <Image Source="lake.jpg" Aspect="AspectFill" />
 
+        <Image Source="settings_icon_white.png"
+               x:Name="SettingsIcon"
+               HorizontalOptions="End"
+               VerticalOptions="Start"
+               Margin="20"
+               HeightRequest="40"
+               WidthRequest="40">
+            <Image.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnSettingsIconTapped" />
+            </Image.GestureRecognizers>
+        </Image>
         <!-- Title and Subtitle -->
         <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center">
             

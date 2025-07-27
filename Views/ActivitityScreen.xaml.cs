@@ -206,7 +206,11 @@ public partial class ActivityScreen : ContentPage
 
     private async void OnFinishClicked(object sender, EventArgs e)
     {
-        await Navigation.PushAsync(new SummaryScreen(_playerStatistics));
+        // ensure we have the proper gpx data that we can send out (dates, heart rate, distance, etc.)
+        _gpxProcessor.UpdateGpxData(_playerStatistics.CurrentDistanceM);
+        string updatedGpxData = _gpxProcessor.GetSerializedGpxData();
+
+        await Navigation.PushAsync(new SummaryScreen(_playerStatistics, updatedGpxData));
     }
 
     private async void OnStopClicked(object sender, EventArgs e)
