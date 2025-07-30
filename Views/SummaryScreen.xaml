@@ -118,7 +118,7 @@
                            Grid.Row="6" 
                            Grid.Column="1" />
                   
-                    <CheckBox x:Name="StraveCheckbox"
+                    <CheckBox x:Name="StravaCheckbox"
                               VerticalOptions="Center" 
                               Grid.Row="7" 
                               Grid.Column="2" />

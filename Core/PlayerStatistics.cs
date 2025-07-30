@@ -2,6 +2,7 @@
 
 public class PlayerStatistics
 {
+    public DateTime StartTime { get; set; } = DateTime.Now;
     public decimal? CurrentSpeedKMH { get; set; } = 0;
     public decimal? CurrentDistanceM { get; set; } = 0;
     public decimal? SegmentRemainingM { get; set; } = 0;

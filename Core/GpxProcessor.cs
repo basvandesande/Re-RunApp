@@ -69,8 +69,8 @@ internal class GpxProcessor
         if (_gpx.metadata.link == null)  _gpx.metadata.link = new gpxMetadataLink();
       
         _gpx.metadata.link.href = "https://azurecodingarchitect.com";
-        _gpx.metadata.link.text = "Re-Run by Azure Coding Architect";
-        _gpx.trk.name = $"Re-Run: virtual run - {_gpx.trk.name}";
+        _gpx.metadata.link.text = "Posted by the Re-Run app!";
+        _gpx.trk.name = $"#Treadmill - {_gpx.trk.name}";
         _gpx.trk.type = "running";
     }
 
