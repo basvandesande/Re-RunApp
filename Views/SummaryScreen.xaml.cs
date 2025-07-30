@@ -308,54 +308,54 @@ public partial class SummaryScreen : ContentPage
         }
     }
 
-    private async Task<bool> PostActivityToStravaAsync(string accessToken)
-    {
-        try
-        {
-            using var client = new HttpClient();
-            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+    //private async Task<bool> PostActivityToStravaAsync(string accessToken)
+    //{
+    //    try
+    //    {
+    //        using var client = new HttpClient();
+    //        client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
 
-            var activity = new StravaActivity
-            {
-                Name = $"#Treadmill - {Runtime.RunSettings?.Name}",
-                Type = "Run",
-                SportType = "VirtualRun",
-                StartDateLocal = _statistics.StartTime.ToString("yyyy-MM-ddTHH:mm:ssZ"),
-                ElapsedTime =  (int)_statistics.SecondsElapsed,
-                Distance = (int)_statistics.CurrentDistanceM,
-                Description = "Posted from the Re-Run App!",
-            };
+    //        var activity = new StravaActivity
+    //        {
+    //            Name = $"#Treadmill - {Runtime.RunSettings?.Name}",
+    //            Type = "Run",
+    //            SportType = "VirtualRun",
+    //            StartDateLocal = _statistics.StartTime.ToString("yyyy-MM-ddTHH:mm:ssZ"),
+    //            ElapsedTime =  (int)_statistics.SecondsElapsed,
+    //            Distance = (int)_statistics.CurrentDistanceM,
+    //            Description = "Posted from the Re-Run App!",
+    //        };
 
 
-            string json = JsonSerializer.Serialize(activity, new JsonSerializerOptions
-            {
-                WriteIndented = true
-            });
-            var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+    //        string json = JsonSerializer.Serialize(activity, new JsonSerializerOptions
+    //        {
+    //            WriteIndented = true
+    //        });
+    //        var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
-            var response = await client.PostAsync("https://www.strava.com/api/v3/activities", content);
-            var responseString = await response.Content.ReadAsStringAsync();
+    //        var response = await client.PostAsync("https://www.strava.com/api/v3/activities", content);
+    //        var responseString = await response.Content.ReadAsStringAsync();
 
-            Console.WriteLine($"Activity post response: {responseString}");
+    //        Console.WriteLine($"Activity post response: {responseString}");
 
-            if (response.IsSuccessStatusCode)
-            {
-                var activityResponse = JsonSerializer.Deserialize<StravaActivityResponse>(responseString);
-                Console.WriteLine($"Activity created with ID: {activityResponse?.Id}");
-                return true;
-            }
-            else
-            {
-                Console.WriteLine($"Failed to post activity: {responseString}");
-                return false;
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error posting activity: {ex.Message}");
-            return false;
-        }
-    }
+    //        if (response.IsSuccessStatusCode)
+    //        {
+    //            var activityResponse = JsonSerializer.Deserialize<StravaActivityResponse>(responseString);
+    //            Console.WriteLine($"Activity created with ID: {activityResponse?.Id}");
+    //            return true;
+    //        }
+    //        else
+    //        {
+    //            Console.WriteLine($"Failed to post activity: {responseString}");
+    //            return false;
+    //        }
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        Console.WriteLine($"Error posting activity: {ex.Message}");
+    //        return false;
+    //    }
+    //}
 
     private async Task<bool> UploadGpxToStravaAsync(string accessToken)
     {
