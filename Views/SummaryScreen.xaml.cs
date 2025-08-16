@@ -373,7 +373,7 @@ public partial class SummaryScreen : ContentPage
             form.Add(new StringContent("gpx"), "data_type"); // Specify the file type
             form.Add(new StringContent($"#Treadmill - {Runtime.RunSettings?.Name}"), "name"); // Optional: Activity name
             form.Add(new StringContent("0"), "trainer"); // Optional: Mark as trainer activity
-            form.Add(new StringContent("Posted from the Re-Run App!"), "description"); // Add the description
+            form.Add(new StringContent("Virtual run posted from the Re-Run App!"), "description"); // Add the description
 
             var response = await client.PostAsync("https://www.strava.com/api/v3/uploads", form);
             var responseString = await response.Content.ReadAsStringAsync();

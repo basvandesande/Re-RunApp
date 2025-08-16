@@ -1,153 +1,167 @@
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+﻿<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:oxy="clr-namespace:OxyPlot.Maui.Skia;assembly=OxyPlot.Maui.Skia"
              x:Class="Re_RunApp.Views.RouteDetailsScreen"
              Title="Route Details"
-             BackgroundColor="White" >
-    <Grid RowDefinitions="2*,2.4*,Auto"> <!-- Added Auto for the Start button -->
-        <Grid Grid.Row="0">
-            <!-- PlotView als achtergrond -->
-            <oxy:PlotView x:Name="PlotView"
-                          VerticalOptions="FillAndExpand"
-                          HorizontalOptions="FillAndExpand" />
+             BackgroundColor="White">
 
-            <!-- Hyperlink Label als overlay -->
-            <Label Text="Simulator"
-                   x:Name="SimulatorLabel"
-                   TextColor="DarkGray"
-                   FontAttributes="Bold"
-                   TextDecorations="Underline"
-                   Padding="8,2"
-                   FontSize="14"
-                   BackgroundColor="#AAFFFFFF"
-                   HorizontalOptions="End"
-                   VerticalOptions="Start"
-                   Margin="10">
-                <Label.GestureRecognizers>
-                    <TapGestureRecognizer Tapped="OnHyperlinkTapped"/>
-                </Label.GestureRecognizers>
-            </Label>
-        </Grid>
-        
-        <!-- Bottom Section with Two Columns -->
+    <Grid RowDefinitions="2*,2.4*,Auto">
+        <!-- Achtergrondafbeelding -->
+        <Image Source="routedetails_background.jpg"
+               Aspect="AspectFill"
+               Grid.RowSpan="3"
+               Grid.ColumnSpan="3"
+               Opacity="1" />
+
+        <!-- PlotView direct in rij 0 -->
+        <oxy:PlotView x:Name="PlotView"
+                      Grid.Row="0"
+                      VerticalOptions="Fill"
+                      HorizontalOptions="FillAndExpand" />
+
+        <!-- Simulator-label als overlay in rij 0 -->
+        <Label Text="Simulator"
+               x:Name="SimulatorLabel"
+               TextColor="#33475b"
+               FontAttributes="Bold"
+               TextDecorations="Underline"
+               Padding="8,2"
+               FontSize="14"
+               HorizontalOptions="End"
+               VerticalOptions="Start"
+               Margin="10"
+               Grid.Row="0">
+            <Label.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnHyperlinkTapped"/>
+            </Label.GestureRecognizers>
+        </Label>
+
+        <!-- Route info en speed settings in rij 1 -->
         <Grid Grid.Row="1" ColumnDefinitions="2*,1*" Padding="10">
-            <StackLayout Padding="10" BackgroundColor="#f0f0f0">
-                <Label x:Name="RouteNameLabel" 
-                       Text="Route Name" 
-                       FontSize="22" 
-                       FontAttributes="Bold" VerticalOptions="Center" />
+            <Frame Grid.ColumnSpan="2"
+                CornerRadius="10"
+                BackgroundColor="#33475b"
+                Opacity="0.8"
+                BorderColor="#33475b"
+                Padding="0"
+                HasShadow="False">
+                <Grid ColumnDefinitions="2*,1*">
+                    <!-- Route-informatie -->
+                    <StackLayout Padding="10" >
+                        <Label x:Name="RouteNameLabel" 
+                                TextColor="White" 
+                                Text="Route Name" 
+                                FontSize="22" 
+                                FontAttributes="Bold" VerticalOptions="Center" />
 
-                <!-- Two-column Grid for Route Details -->
-                <Grid ColumnDefinitions="2*,4*" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="10" Margin="0,10,0,0">
-                    <!-- Row 1: Total Distance -->
-                    <Label Text="Total Distance (km):" 
-                           FontSize="18" 
-                           VerticalOptions="Center" 
-                           Grid.Row="1" />
-                    <Label x:Name="TotalDistanceLabel" 
-                           Text="5.2 km" 
-                           FontSize="18" 
-                           VerticalOptions="Center" 
-                           Grid.Row="1" 
-                           Grid.Column="1" />
+                        <!-- Two-column Grid for Route Details -->
+                        <Grid ColumnDefinitions="2*,4*" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="15" Margin="0,10,0,0">
+                            <!-- Row 1: Total Distance -->
+                            <Label Text="Total Distance (km):" 
+                                   TextColor="White" 
+                                   FontSize="18" 
+                                   VerticalOptions="Center" 
+                                   Grid.Row="1" />
+                            <Label x:Name="TotalDistanceLabel" 
+                                   TextColor="White" 
+                                   Text="5.2 km" 
+                                   FontSize="18" 
+                                   VerticalOptions="Center" 
+                                   Grid.Row="1" 
+                                   Grid.Column="1" />
 
-                    <!-- Row 2: Total Elevation -->
-                    <Label Text="Total Elevation (m):" 
-                           FontSize="18" 
-                           VerticalOptions="Center" 
-                           Grid.Row="2" />
-                    <Label x:Name="TotalElevationLabel" 
-                           Text="250 m" 
-                           FontSize="18" 
-                           VerticalOptions="Center" 
-                           Grid.Row="2" 
-                           Grid.Column="1" />
+                            <!-- Row 2: Total Elevation -->
+                            <Label Text="Total Elevation (m):" 
+                                   TextColor="White" 
+                                   FontSize="18" 
+                                   VerticalOptions="Center" 
+                                   Grid.Row="2" />
+                            <Label x:Name="TotalElevationLabel" 
+                                   TextColor="White" 
+                                   Text="250 m" 
+                                   FontSize="18" 
+                                   VerticalOptions="Center" 
+                                   Grid.Row="2" 
+                                   Grid.Column="1" />
 
-                    <!-- Row 3: Total Ascend -->
-                    <Label Text="Total Ascend (m):" 
-                           FontSize="18" 
-                           VerticalOptions="Center" 
-                           Grid.Row="3" />
-                    <Label x:Name="TotalAscendLabel" 
-                           Text="300 m" 
-                           FontSize="18" 
-                           VerticalOptions="Center" 
-                           Grid.Row="3" 
-                           Grid.Column="1" />
+                            <!-- Row 3: Total Ascend -->
+                            <Label Text="Total Ascend (m):" 
+                                   TextColor="White" 
+                                   FontSize="18" 
+                                   VerticalOptions="Center" 
+                                   Grid.Row="3" />
+                            <Label x:Name="TotalAscendLabel" 
+                                   TextColor="White" 
+                                   Text="300 m" 
+                                   FontSize="18" 
+                                   VerticalOptions="Center" 
+                                   Grid.Row="3" 
+                                   Grid.Column="1" />
+                        </Grid>
+
+                        <!-- Row with two buttons below the route details -->
+                        <HorizontalStackLayout Margin="0,15,0,0" Spacing="15" VerticalOptions="EndAndExpand">
+                            <Button Text="+ Treadmill" 
+                                    x:Name="ConnectTreadmillButton"
+                                    Clicked="OnConnectTreadmillClicked"
+                                    HorizontalOptions="FillAndExpand" />
+                            <Button Text="+ Heart sensor" 
+                                    x:Name="ConnectHeartRateButton"
+                                    Clicked="OnConnectHeartRateClicked"
+                                    HorizontalOptions="FillAndExpand" />
+                        </HorizontalStackLayout>
+                    </StackLayout>
+
+                    <!-- Speed Settings -->
+                    <StackLayout Grid.Column="1" Padding="10" >
+                        <HorizontalStackLayout Margin="0,2" Spacing="10">
+                            <CheckBox x:Name="AutoSpeedControlCheckBox" IsChecked="True" VerticalOptions="Center" HorizontalOptions="Center" />
+                            <Label Text="Enable cruise control (km/h)" TextColor="White"  FontSize="22" FontAttributes="Bold" VerticalOptions="Center" />
+                        </HorizontalStackLayout>
+                        <Grid ColumnDefinitions="2*,1*,1*,1*,1*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="5">
+                            <!-- Row 0: 0-5% -->
+                            <Label Text="0-5%" TextColor="White" Grid.Row="0" Grid.Column="0" FontSize="18" VerticalOptions="Center" />
+                            <Button Text="-" Grid.Row="0" Grid.Column="1" WidthRequest="40" FontSize="18" Clicked="OnDecreaseSpeed0to5" BackgroundColor="Green" />
+                            <Label x:Name="Speed0to5Label"  TextColor="White" Text="8.0" Grid.Row="0" Grid.Column="2" FontSize="18" VerticalOptions="Center" HorizontalOptions="Center" />
+                            <Button Text="+" Grid.Row="0" Grid.Column="3" WidthRequest="40" FontSize="18" Clicked="OnIncreaseSpeed0to5" BackgroundColor="Green" />
+
+                            <!-- Row 1: 6-8% -->
+                            <Label Text="6-8%" TextColor="White" Grid.Row="1" Grid.Column="0" FontSize="18" VerticalOptions="Center" />
+                            <Button Text="-" Grid.Row="1" Grid.Column="1" WidthRequest="40" FontSize="18" Clicked="OnDecreaseSpeed6to8" BackgroundColor="Yellow" />
+                            <Label x:Name="Speed6to8Label" Text="7.3" TextColor="White" Grid.Row="1" Grid.Column="2" FontSize="18" VerticalOptions="Center" HorizontalOptions="Center" />
+                            <Button Text="+" Grid.Row="1" Grid.Column="3" WidthRequest="40" FontSize="18" Clicked="OnIncreaseSpeed6to8" BackgroundColor="Yellow" />
+
+                            <!-- Row 2: 8-10% -->
+                            <Label Text="8-10%" TextColor="White" Grid.Row="2" Grid.Column="0" FontSize="18" VerticalOptions="Center" />
+                            <Button Text="-" Grid.Row="2" Grid.Column="1" WidthRequest="40" FontSize="18" Clicked="OnDecreaseSpeed8to10" BackgroundColor="Orange" />
+                            <Label x:Name="Speed8to10Label" Text="7.0" TextColor="White" Grid.Row="2" Grid.Column="2" FontSize="18" VerticalOptions="Center" HorizontalOptions="Center" />
+                            <Button Text="+" Grid.Row="2" Grid.Column="3" WidthRequest="40" FontSize="18" Clicked="OnIncreaseSpeed8to10" BackgroundColor="Orange" />
+
+                            <!-- Row 3: 11-12% -->
+                            <Label Text="11-12%" TextColor="White" Grid.Row="3" Grid.Column="0" FontSize="18" VerticalOptions="Center" />
+                            <Button Text="-" Grid.Row="3" Grid.Column="1" WidthRequest="40" FontSize="18" Clicked="OnDecreaseSpeed11to12" BackgroundColor="Red" />
+                            <Label x:Name="Speed11to12Label" Text="6.7" TextColor="White" Grid.Row="3" Grid.Column="2" FontSize="18" VerticalOptions="Center" HorizontalOptions="Center" />
+                            <Button Text="+" Grid.Row="3" Grid.Column="3" WidthRequest="40" FontSize="18" Clicked="OnIncreaseSpeed11to12" BackgroundColor="Red" />
+
+                            <!-- Row 4: 13-15% -->
+                            <Label Text="13-15%" TextColor="White" Grid.Row="4" Grid.Column="0" FontSize="18" VerticalOptions="Center" />
+                            <Button Text="-" Grid.Row="4" Grid.Column="1" WidthRequest="40" FontSize="18" Clicked="OnDecreaseSpeed13to15" BackgroundColor="DarkRed" />
+                            <Label x:Name="Speed13to15Label" Text="6.3" TextColor="White" Grid.Row="4" Grid.Column="2" FontSize="18" VerticalOptions="Center" HorizontalOptions="Center" />
+                            <Button Text="+" Grid.Row="4" Grid.Column="3" WidthRequest="40" FontSize="18" Clicked="OnIncreaseSpeed13to15" BackgroundColor="DarkRed" />
+                        </Grid>
+                    </StackLayout>
                 </Grid>
-
-                <!-- Row with two buttons below the route details -->
-                <HorizontalStackLayout Margin="0,15,0,0" Spacing="15" VerticalOptions="EndAndExpand">
-                    <Button Text="+ Treadmill" 
-                            x:Name="ConnectTreadmillButton"
-                            Clicked="OnConnectTreadmillClicked"
-                            HorizontalOptions="FillAndExpand" />
-                    <Button Text="+ Heart sensor" 
-                            x:Name="ConnectHeartRateButton"
-                            Clicked="OnConnectHeartRateClicked"
-                            HorizontalOptions="FillAndExpand" />
-                </HorizontalStackLayout>
-            </StackLayout>
-            
-            
-            <!-- Speed Settings -->
-            <StackLayout Grid.Column="1" Padding="10" BackgroundColor="#f0f0f0">
-                <HorizontalStackLayout Margin="0,2" Spacing="10">
-                    <CheckBox x:Name="AutoSpeedControlCheckBox" IsChecked="True" VerticalOptions="Center" HorizontalOptions="Center" />
-                    <Label Text="Enable cruise control (km/h)" FontSize="22" FontAttributes="Bold" VerticalOptions="Center" />
-                </HorizontalStackLayout>
-                <Grid ColumnDefinitions="2*,3*,1*" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
-                    <Label Text="0-5%" Grid.Row="0" Grid.Column="0" FontSize="18" VerticalOptions="Center" />
-                    <HorizontalStackLayout Grid.Row="0" Grid.Column="1" Margin="0,2" Spacing="10">
-                        <Button Text="-" WidthRequest="40" FontSize="18" Clicked="OnDecreaseSpeed0to5" BackgroundColor="green" />
-                        <Label x:Name="Speed0to5Label" Text="8.0"  FontSize="18" VerticalOptions="Center" HorizontalOptions="CenterAndExpand" />
-                        <Button Text="+" WidthRequest="40" FontSize="18" Clicked="OnIncreaseSpeed0to5" BackgroundColor="Green" />
-                    </HorizontalStackLayout>
-                    <Label Text="km/h" Grid.Row="0" Grid.Column="2" FontSize="18" VerticalOptions="Center" />
-
-                    <Label Text="6-8%" Grid.Row="1" Grid.Column="0" FontSize="18" VerticalOptions="Center" />
-                    <HorizontalStackLayout Grid.Row="1" Grid.Column="1" Margin="0,2" Spacing="10">
-                        <Button Text="-" WidthRequest="40" FontSize="18" Clicked="OnDecreaseSpeed6to8" BackgroundColor="Yellow"/>
-                        <Label x:Name="Speed6to8Label" Text="7.3" FontSize="18" VerticalOptions="Center" HorizontalOptions="CenterAndExpand" />
-                        <Button Text="+" WidthRequest="40" FontSize="18" Clicked="OnIncreaseSpeed6to8" BackgroundColor="Yellow" />
-                    </HorizontalStackLayout>
-                    <Label Text="km/h" Grid.Row="1" Grid.Column="2" FontSize="18" VerticalOptions="Center" />
-
-                    <Label Text="8-10%" Grid.Row="2" Grid.Column="0" FontSize="18" VerticalOptions="Center" />
-                    <HorizontalStackLayout Grid.Row="2" Grid.Column="1" Margin="0,2" Spacing="10">
-                        <Button Text="-" WidthRequest="40" FontSize="18" Clicked="OnDecreaseSpeed8to10" BackgroundColor="Orange" />
-                        <Label x:Name="Speed8to10Label" Text="7.0" FontSize="18" VerticalOptions="Center" HorizontalOptions="CenterAndExpand" />
-                        <Button Text="+" WidthRequest="40" FontSize="18" Clicked="OnIncreaseSpeed8to10"  BackgroundColor="orange"/>
-                    </HorizontalStackLayout>
-                    <Label Text="km/h" Grid.Row="2" Grid.Column="2" FontSize="18" VerticalOptions="Center" />
-
-                    <Label Text="11-12%" Grid.Row="3" Grid.Column="0" FontSize="18" VerticalOptions="Center" />
-                    <HorizontalStackLayout Grid.Row="3" Grid.Column="1" Margin="0,2" Spacing="10">
-                        <Button Text="-" WidthRequest="40" FontSize="18" Clicked="OnDecreaseSpeed11to12" BackgroundColor="Red"/>
-                        <Label x:Name="Speed11to12Label" Text="6.7" FontSize="18" VerticalOptions="Center" HorizontalOptions="CenterAndExpand" />
-                        <Button Text="+" WidthRequest="40" FontSize="18" Clicked="OnIncreaseSpeed11to12" BackgroundColor="Red"/>
-                    </HorizontalStackLayout>
-                    <Label Text="km/h" Grid.Row="3" Grid.Column="2" FontSize="18" VerticalOptions="Center" />
-
-                    <Label Text="13-15%" Grid.Row="4" Grid.Column="0" FontSize="18" VerticalOptions="Center" />
-                    <HorizontalStackLayout Grid.Row="4" Grid.Column="1" Margin="0,2" Spacing="10">
-                        <Button Text="-" WidthRequest="40" FontSize="18" Clicked="OnDecreaseSpeed13to15" BackgroundColor="DarkRed"/>
-                        <Label x:Name="Speed13to15Label" Text="6.3" FontSize="18" VerticalOptions="Center" HorizontalOptions="CenterAndExpand" />
-                        <Button Text="+" WidthRequest="40" FontSize="18" Clicked="OnIncreaseSpeed13to15" BackgroundColor="DarkRed"/>
-                    </HorizontalStackLayout>
-                    <Label Text="km/h" Grid.Row="4" Grid.Column="2" FontSize="18" VerticalOptions="Center" />
-                </Grid>
-            </StackLayout>
+            </Frame>
         </Grid>
 
-        <!-- Start Button -->
+        <!-- Start Button in rij 2 -->
         <Button x:Name="StartButton" 
                 Text="Start" Grid.Row="2" HorizontalOptions="FillAndExpand"  
                 VerticalOptions="Center" 
                 Margin="10" 
                 Clicked="OnStartClicked" 
                 FontSize="Large"
-                HeightRequest="50" 
+                HeightRequest="55" 
                 IsEnabled="False"/>
     </Grid>
 </ContentPage>

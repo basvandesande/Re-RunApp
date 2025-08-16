@@ -2,60 +2,155 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              x:Class="Re_RunApp.Views.RouteSelectionScreen"
-             Title="Select Route" 
-             BackgroundColor="White" >
-    <Grid RowDefinitions="7*,3*,Auto"
-          Margin="20,0,20,0"> <!-- 20 eenheden marge links en rechts -->
-        <!-- ListView met routes -->
-        <ListView x:Name="RouteListView"
-                  Grid.Row="0"
-                  SelectionMode="Single"
-                  ItemSelected="OnRouteSelected">
-            <ListView.ItemTemplate>
-                <DataTemplate>
-                    <ViewCell>
-                        <StackLayout Orientation="Horizontal" Padding="10">
-                            <Label Text="{Binding FileName}" 
-                                   FontSize="16" 
-                                   VerticalOptions="Center" />
-                        </StackLayout>
-                    </ViewCell>
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
+             Title="Select Route"
+             BackgroundColor="White">
+    <Grid RowDefinitions="6*,30,4*,Auto">
+        <!-- Achtergrondafbeelding over de hele breedte -->
+        <Image Source="coast_background.jpg"
+               Aspect="AspectFill"
+               Grid.RowSpan="4"
+               Opacity="0.8" />
 
-        <!-- Grid voor route details en video -->
-        <Grid x:Name="DetailsGrid" Grid.Row="1" ColumnDefinitions="*,2*">
-            <!-- Route details -->
-            <StackLayout Padding="10">
-                <Label Text="Route Details" FontSize="20" FontAttributes="Bold" />
-                <Label x:Name="TitleLabel" Text="Title: " FontSize="16" />
-                <Label x:Name="DistanceLabel" Text="Distance: " FontSize="16" />
-                <Label x:Name="ElevationLabel" Text="Elevation: " FontSize="16" />
-            </StackLayout>
+        <!-- ListView met routes in lichtgrijs vlak -->
+        <Frame Grid.Row="0"
+               CornerRadius="10"
+               BackgroundColor="#f0f0f0"
+               BorderColor="#f0f0f0"
+               Padding="0"
+               HasShadow="False"
+               Opacity="0.7"
+               Margin="20,20,20,0">
+            <ListView x:Name="RouteListView"
+                      SelectionMode="Single"
+                      ItemSelected="OnRouteSelected"
+                      SeparatorVisibility="Default">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <ViewCell>
+                            <StackLayout Orientation="Horizontal" Padding="14,8" BackgroundColor="Transparent">
+                                <Label Text="{Binding FileName}"
+                                       FontSize="18"
+                                       TextColor="Black"
+                                       FontAttributes="Bold"
+                                       VerticalOptions="Center" />
+                            </StackLayout>
+                        </ViewCell>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </Frame>
 
-            <!-- Video -->
-            <toolkit:MediaElement x:Name="RouteVideo"
-                                  Grid.Column="1"
-                                  ShouldAutoPlay="True"
-                                  Aspect="AspectFill"
-                                  ShouldLoopPlayback="True"
-                                  ShouldShowPlaybackControls="False"
-                                  ShouldMute="True"
-                                  HorizontalOptions="End"
-                                  VerticalOptions="Center"
-                                  Source="embed://nomedia.mp4"
-                                  Margin="0,0,20,0" />
-        </Grid>
+        <!-- Lege ruimte tussen lijst en details -->
+        <BoxView Grid.Row="1" HeightRequest="30" BackgroundColor="Transparent" />
+
+        <!-- Grid voor route details -->
+        <Frame Grid.Row="2"
+               CornerRadius="10"
+               BackgroundColor="#33475b"    
+               Opacity="0.85"
+               BorderColor="#33475b"
+               Padding="0"
+               HasShadow="False"
+               Margin="20,0,20,0">
+            <Grid x:Name="DetailsGrid" Padding="16" ColumnDefinitions="1.2*, 4*, 1*" RowSpacing="15" RowDefinitions="Auto,Auto,Auto,Auto">
+                <!-- Titel voor de details -->
+                <Label Text="Route Details" 
+                       FontSize="22" 
+                       FontAttributes="Bold" 
+                       TextColor="White" 
+                       Grid.ColumnSpan="3" 
+                       Margin="0,0,0,10" />
+
+                <!-- Rij 1: Title -->
+                <Label Text="Title:" 
+                       FontSize="18" 
+                       TextColor="White" 
+                       Grid.Row="1" Grid.Column="0" 
+                       VerticalOptions="Center" />
+                <Label x:Name="TitleLabel" 
+                       FontSize="18" 
+                       TextColor="White" 
+                       Grid.Row="1" Grid.Column="1" 
+                       VerticalOptions="Center" />
+
+                <!-- Rij 2: Distance -->
+                <Label Text="Total Distance (km):" 
+                       FontSize="18" 
+                       TextColor="White" 
+                       Grid.Row="2" Grid.Column="0" 
+                       VerticalOptions="Center" />
+                <Label x:Name="DistanceLabel" 
+                       FontSize="18" 
+                       TextColor="White" 
+                       Grid.Row="2" Grid.Column="1" 
+                       VerticalOptions="Center" />
+
+                <!-- Rij 3: Elevation -->
+                <Label Text="Total Elevation (m):" 
+                       FontSize="18" 
+                       TextColor="White" 
+                       Grid.Row="3" Grid.Column="0" 
+                       VerticalOptions="Center" />
+                <Label x:Name="ElevationLabel" 
+                       FontSize="18" 
+                       TextColor="White" 
+                       Grid.Row="3" Grid.Column="1" 
+                       VerticalOptions="Center" />
+            </Grid>
+        </Frame>
+
+        <!-- Video styled as a polaroid photo, with text below -->
+        <Frame Grid.RowSpan="4"
+               Grid.Column="1"
+               BackgroundColor="White"
+               BorderColor="Black"
+               CornerRadius="2"
+               Padding="10,10,10,40" 
+               HasShadow="True"
+               Margin="700,200,0,0"
+               VerticalOptions="Start"
+               HorizontalOptions="Center"
+               Rotation="3"
+               ZIndex="1"> 
+            <Grid RowDefinitions="Auto,*">
+                <!-- Video -->
+                <toolkit:MediaElement x:Name="RouteVideo"
+                                      Grid.Row="0"
+                                      ShouldAutoPlay="True"
+                                      Aspect="AspectFill"
+                                      ShouldLoopPlayback="True"
+                                      ShouldShowPlaybackControls="False"
+                                      ShouldMute="True"
+                                      Source="embed://nomedia.mp4"
+                                      HeightRequest="120"
+                                      WidthRequest="200"
+                                      BackgroundColor="Transparent" />
+
+                <!-- Text below the video -->
+                <Label Text="27-08-2025"
+                       x:Name="DateLabel"
+                       Grid.Row="1"
+                       FontSize="36"
+                       FontFamily="PermanentMarker"
+                       TextColor="#000E1C"
+                       HorizontalOptions="Start"
+                       VerticalOptions="End"
+                       Padding="15"
+                       Opacity="0.7"
+                       Rotation="-3" />
+            </Grid>
+        </Frame>
 
         <!-- Next-knop -->
         <Button x:Name="NextButton"
-                Grid.Row="2"
+                Grid.Row="3"
                 Text="Next"
                 Clicked="OnNextClicked"
                 HorizontalOptions="Fill"
-                Margin="0,10,0,10"
-                HeightRequest="50"
-                FontSize="Large" />
+                Margin="20,10,20,10"
+                HeightRequest="55"
+                FontSize="Large"
+                TextColor="White"
+                CornerRadius="10"/>
     </Grid>
 </ContentPage>

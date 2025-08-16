@@ -21,6 +21,7 @@ public static class MauiProgram
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                 fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
                 fonts.AddFont("NotoSansCJKsc-Regular.otf", "NotoSansCJKsc");
+                fonts.AddFont("PermanentMarker-Regular.ttf", "PermanentMarker");
             });
 
 

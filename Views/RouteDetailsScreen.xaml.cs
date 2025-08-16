@@ -1,7 +1,8 @@
-namespace Re_RunApp.Views;
+﻿namespace Re_RunApp.Views;
 
 using OxyPlot;
 using Re_RunApp.Core;
+using System.Runtime.CompilerServices;
 
 public partial class RouteDetailsScreen : ContentPage
 {
@@ -9,6 +10,7 @@ public partial class RouteDetailsScreen : ContentPage
     private readonly string _gpxFilePath;
     private bool _useSimulation = false;
     private bool _startButtonEnabled = false;
+    private bool _heartRateEnabled = false;
 
     public RouteDetailsScreen(string gpxFilePath)
     {
@@ -40,8 +42,11 @@ public partial class RouteDetailsScreen : ContentPage
     {
         base.OnAppearing();
 
-        _startButtonEnabled =  await Runtime.Treadmill.ConnectToDevice(false); 
+        _heartRateEnabled = await Runtime.HeartRate.ConnectToDevice(false);
+        _startButtonEnabled =  await Runtime.Treadmill.ConnectToDevice(false);
+    
         StartButton.IsEnabled = _startButtonEnabled;
+        if (_heartRateEnabled) StartButton.Text = "Start + ❤";
     }
 
     private async void OnConnectTreadmillClicked(object sender, EventArgs e)
@@ -54,10 +59,19 @@ public partial class RouteDetailsScreen : ContentPage
 
     private async void OnConnectHeartRateClicked(object sender, EventArgs e)
     {
+        Runtime.HeartRate.Enabled = true;
         Runtime.HeartRate.DeleteDeviceIdFile();
 
-        var connected = await Runtime.HeartRate.ConnectToDevice(true);
-        Runtime.HeartRate.Enabled=connected;
+        try
+        {
+            _heartRateEnabled = await Runtime.HeartRate.ConnectToDevice(true);
+            StartButton.Text = _heartRateEnabled ? "Start + ❤" : "Start";
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error connecting to heart rate device: {ex.Message}");
+            await DisplayAlert("Error", "An error occurred while connecting to the heart rate device.", "OK");
+        }
     }
 
     private void LoadRouteDetails()
@@ -76,14 +90,9 @@ public partial class RouteDetailsScreen : ContentPage
     {
         SaveSpeedSettings();
 
-        // connect to heartrate monitor if not already connected
         if (!_useSimulation)
         {
-            Runtime.HeartRate.Enabled = await Runtime.HeartRate.ConnectToDevice(false);
-        }
-        else
-        {
-            Runtime.HeartRateSimulator.Enabled = await Runtime.HeartRateSimulator.ConnectToDevice(false);
+            Runtime.HeartRate.Enabled = _heartRateEnabled;
         }
         await Navigation.PushAsync(new ActivityScreen(_gpxFilePath, _useSimulation));
     }
@@ -159,8 +168,6 @@ public partial class RouteDetailsScreen : ContentPage
             Speed13to15 = double.Parse(Speed13to15Label.Text, System.Globalization.CultureInfo.InvariantCulture),
             AutoSpeedControl = AutoSpeedControlCheckBox.IsChecked,
             Name = _gpxProcessor.Gpx.trk.name,
-            // Favourite = FavouriteIcon.Source == "favourite_icon.png", // Assuming you have a favourite icon
-            // Level = Intensity.Moderate // You can set this based on user input or other logic
             TotalDistance = _gpxProcessor.TotalDistanceInMeters,
             TotalAscend = _gpxProcessor.TotalElevationInMeters,
             // todo
@@ -189,18 +196,7 @@ public partial class RouteDetailsScreen : ContentPage
                 Speed11to12Label.Text = settings.Speed11to12.ToString("F1", System.Globalization.CultureInfo.InvariantCulture);
                 Speed13to15Label.Text = settings.Speed13to15.ToString("F1", System.Globalization.CultureInfo.InvariantCulture);
                 AutoSpeedControlCheckBox.IsChecked = settings.AutoSpeedControl;
-                //if (settings.Favourite)
-                //{
-                //    FavouriteIcon.Source = "favourite_icon.png"; // Assuming you have a favourite icon
-                //}
-                //else
-                //{
-                //    FavouriteIcon.Source = "not_favourite_icon.png"; // Assuming you have a not favourite icon
-                //}
-                // todo intensity + favourite + title
             }
-
-            // initialize the speedsettings
             Runtime.RunSettings = settings;
         }
     }

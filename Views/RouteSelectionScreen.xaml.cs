@@ -46,9 +46,10 @@ public partial class RouteSelectionScreen : ContentPage
 
             var routeDetails = GetRouteDetails(fullPath);
 
-            TitleLabel.Text = $"Title: {routeDetails.Title}";
-            DistanceLabel.Text = $"Distance: {routeDetails.Distance / 1000:F1} km";
-            ElevationLabel.Text = $"Elevation: {routeDetails.Elevation:F0} m";
+            TitleLabel.Text = routeDetails.Title;
+            DistanceLabel.Text = $"{routeDetails.Distance / 1000:F1}";
+            ElevationLabel.Text = $"{routeDetails.Elevation:F0}";
+            DateLabel.Text = $"{routeDetails.Date:ddd, d MMMM yyyy}";
 
             string videoPath = Path.ChangeExtension(fullPath, ".mp4");
             if (File.Exists(videoPath))
@@ -66,13 +67,13 @@ public partial class RouteSelectionScreen : ContentPage
         NextButton.IsEnabled = (e.SelectedItem is not null);
     }
 
-    private (string Title, decimal Distance, decimal Elevation) GetRouteDetails(string fullPath)
+    private (string Title, decimal Distance, decimal Elevation, DateTime Date) GetRouteDetails(string fullPath)
     {
         var gpxProcessor = new GpxProcessor();
         gpxProcessor.LoadGpxData(fullPath);
         gpxProcessor.GetRun();
 
-        return (gpxProcessor.Gpx.trk.name, gpxProcessor.TotalDistanceInMeters, gpxProcessor.TotalElevationInMeters);
+        return (gpxProcessor.Gpx.trk.name, gpxProcessor.TotalDistanceInMeters, gpxProcessor.TotalElevationInMeters, gpxProcessor.Gpx.metadata.time);
     }
     
     private async void OnNextClicked(object sender, EventArgs e)
