@@ -6,7 +6,7 @@
              BackgroundColor="White">
     <Grid RowDefinitions="6*,30,4*,Auto">
         <!-- Achtergrondafbeelding over de hele breedte -->
-        <Image Source="coast_background.jpg"
+        <Image Source="routeselection_background.jpg"
                Aspect="AspectFill"
                Grid.RowSpan="4"
                Opacity="0.8" />

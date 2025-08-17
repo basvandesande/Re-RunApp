@@ -112,15 +112,23 @@ public partial class SummaryScreen : ContentPage
 
     private void StartAuthentication()
     {
-        _webView = new WebView
+        // Clear any existing content in the popup
+        PopupContent.Children.Clear();
+
+        // Create and add the WebView for Strava authentication
+        var webView = new WebView
         {
             BackgroundColor = Colors.White,
             Source = $"https://www.strava.com/oauth/authorize?client_id={Runtime.StravaSettings.ClientId}&redirect_uri={Runtime.StravaSettings.RedirectUrl}&response_type=code&scope={SCOPE}"
         };
 
-        // Use Navigating instead of Navigated to intercept BEFORE the page loads
-        _webView.Navigating += WebView_Navigating;
-        Content = _webView;
+        // Attach the Navigating event to handle redirects
+        webView.Navigating += WebView_Navigating;
+
+        PopupContent.Children.Add(webView);
+
+        // Show the popup
+        WebViewPopup.IsVisible = true;
     }
 
     private async void WebView_Navigating(object sender, WebNavigatingEventArgs e)
@@ -199,40 +207,51 @@ public partial class SummaryScreen : ContentPage
     {
         await MainThread.InvokeOnMainThreadAsync(() =>
         {
-            Content = new StackLayout
+            // Clear the popup content
+            PopupContent.Children.Clear();
+
+            // Add success content to the popup
+            PopupContent.Children.Add(new StackLayout
             {
                 VerticalOptions = LayoutOptions.Center,
                 HorizontalOptions = LayoutOptions.Center,
                 Spacing = 20,
                 Padding = new Thickness(40),
                 Children =
+                {
+                    new Label
                     {
-                        new Label
+                        Text = "✅",
+                        FontSize = 48,
+                        HorizontalOptions = LayoutOptions.Center
+                    },
+                    new Label
+                    {
+                        Text = "Success!",
+                        FontSize = 24,
+                        FontAttributes = FontAttributes.Bold,
+                        HorizontalOptions = LayoutOptions.Center
+                    },
+                    new Label
+                    {
+                        Text = "Activity posted to Strava successfully!",
+                        HorizontalOptions = LayoutOptions.Center,
+                        HorizontalTextAlignment = TextAlignment.Center
+                    },
+                    new Button
+                    {
+                        Text = "Done",
+                        Command = new Command(async () =>
                         {
-                            Text = "✅",
-                            FontSize = 48,
-                            HorizontalOptions = LayoutOptions.Center
-                        },
-                        new Label
-                        {
-                            Text = "Success!",
-                            FontSize = 24,
-                            FontAttributes = FontAttributes.Bold,
-                            HorizontalOptions = LayoutOptions.Center
-                        },
-                        new Label
-                        {
-                            Text = "Activity posted to Strava successfully!",
-                            HorizontalOptions = LayoutOptions.Center,
-                            HorizontalTextAlignment = TextAlignment.Center
-                        },
-                        new Button
-                        {
-                            Text = "Done",
-                            Command = new Command(async () => await Shell.Current.GoToAsync("//MainPage"))
-                        }
+                            WebViewPopup.IsVisible = false; // Hide the popup
+                            await Shell.Current.GoToAsync("//MainPage");
+                        })
                     }
-            };
+                }
+            });
+
+            // Ensure the popup is visible
+            WebViewPopup.IsVisible = true;
         });
     }
 
@@ -240,40 +259,51 @@ public partial class SummaryScreen : ContentPage
     {
         await MainThread.InvokeOnMainThreadAsync(() =>
         {
-            Content = new StackLayout
+            // Clear the popup content
+            PopupContent.Children.Clear();
+
+            // Add error content to the popup
+            PopupContent.Children.Add(new StackLayout
             {
                 VerticalOptions = LayoutOptions.Center,
                 HorizontalOptions = LayoutOptions.Center,
                 Spacing = 20,
                 Padding = new Thickness(40),
                 Children =
+                {
+                    new Label
                     {
-                        new Label
+                        Text = "❌",
+                        FontSize = 48,
+                        HorizontalOptions = LayoutOptions.Center
+                    },
+                    new Label
+                    {
+                        Text = "Error",
+                        FontSize = 24,
+                        FontAttributes = FontAttributes.Bold,
+                        HorizontalOptions = LayoutOptions.Center
+                    },
+                    new Label
+                    {
+                        Text = errorMessage,
+                        HorizontalOptions = LayoutOptions.Center,
+                        HorizontalTextAlignment = TextAlignment.Center
+                    },
+                    new Button
+                    {
+                        Text = "Exit",
+                        Command = new Command(async () =>
                         {
-                            Text = "❌",
-                            FontSize = 48,
-                            HorizontalOptions = LayoutOptions.Center
-                        },
-                        new Label
-                        {
-                            Text = "Error",
-                            FontSize = 24,
-                            FontAttributes = FontAttributes.Bold,
-                            HorizontalOptions = LayoutOptions.Center
-                        },
-                        new Label
-                        {
-                            Text = errorMessage,
-                            HorizontalOptions = LayoutOptions.Center,
-                            HorizontalTextAlignment = TextAlignment.Center
-                        },
-                        new Button
-                        {
-                            Text = "Exit",
-                            Command = new Command(async () => await Shell.Current.GoToAsync("//MainPage"))
-                        }
+                            WebViewPopup.IsVisible = false; // Hide the popup
+                            await Shell.Current.GoToAsync("//MainPage");
+                        })
                     }
-            };
+                }
+            });
+
+            // Ensure the popup is visible
+            WebViewPopup.IsVisible = true;
         });
     }
 
