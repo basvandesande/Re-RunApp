@@ -83,5 +83,25 @@ internal class Runtime
             return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Re-Run");
         }
     }       
+
+
+    public static decimal GetSpeed(decimal incline)
+    {
+        if (incline < 0)
+            return (decimal)RunSettings.Speed0to5 + 0.5m;
+        if (incline <= 5)
+            return (decimal)RunSettings.Speed0to5;
+        if (incline <= 8)
+            return (decimal)RunSettings.Speed6to8;
+        if (incline <= 10)
+            return (decimal)RunSettings.Speed8to10;
+        if (incline <= 12)
+            return (decimal)RunSettings.Speed11to12;
+        if (incline <= 15)
+            return (decimal)RunSettings.Speed13to15;
+
+        return (decimal)RunSettings.Speed13to15 - 0.3m;
+    }
+
 }
 

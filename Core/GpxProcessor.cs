@@ -8,9 +8,13 @@ internal class GpxProcessor
     public gpx? Gpx { get => _gpx; }
     public Track[] Tracks { get => _tracks; }
 
+    public (decimal seconds, decimal distance, decimal speed)[] SecondsDistancesSpeedsToSkip { get; private set; } = [];
+    public decimal TotalOriginalLengthInMeters { get; private set; } = 0;
+
     private gpx? _gpx;
     private Track[] _tracks = [];
     private DateTime _startTime;
+    
 
     private const decimal DISTANCE_OFFSET_START = 25;
 
@@ -74,21 +78,53 @@ internal class GpxProcessor
         _gpx.trk.type = "running";
     }
 
-    public Track[] GetRun()
+    public Track[] GetRun(decimal skipMeters=0)
     {
         if (_gpx == null) return [];
 
         List<Track> tracks = ProcessGpxSegments(_gpx);
         tracks = CreateNewTracks(tracks);
+
+        if (skipMeters > 0)
+        {
+            int lastIndex=GetTracksToSkip(skipMeters, [.. tracks]);
+            
+            // set the seconds to skip (array per segment)
+            SecondsDistancesSpeedsToSkip = GetSecondsDistancesSpeedsToSkip(lastIndex, [.. tracks]);
+            TotalOriginalLengthInMeters = tracks[tracks.Count - 1].TotalDistanceInMeters + DISTANCE_OFFSET_START;
+
+            // rebuild a new underlying gpx with the remaining segments
+            Track lastTrack = tracks[lastIndex];
+            _gpx.trk.trkseg = [.. _gpx.trk.trkseg.Skip(lastTrack.GpxLastIndex+1)];
+
+            tracks = ProcessGpxSegments(_gpx);
+            tracks = CreateNewTracks(tracks);
+        }
+
         tracks.Insert(0, GetIntroTrack(tracks[0].StartElevation)); //set the initial elevation
         _tracks = [.. tracks];
 
-        Console.WriteLine($"Tracks created, total distance {_tracks[_tracks.Length - 1].TotalDistanceInMeters:F0}");
-        
         TotalDistanceInMeters = _tracks[_tracks.Length - 1].TotalDistanceInMeters;
+        if (skipMeters == 0) TotalOriginalLengthInMeters = TotalDistanceInMeters;
 
         return _tracks;
     }
+
+    public (decimal seconds, decimal distance, decimal speed)[] GetSecondsDistancesSpeedsToSkip(int lastIndex, Track[] tracks)
+    { 
+        List<(decimal seconds, decimal distance, decimal speed)> secondsdistancesSpeeds = [];
+
+        for (int i = 0; i <= lastIndex; i++)
+        {
+            Track track = tracks[i];
+            decimal speed = Runtime.GetSpeed(track.InclinationInDegrees); 
+            decimal duration = track.DistanceInMeters / (speed * 1000 / 3600); // convert to seconds 
+            secondsdistancesSpeeds.Add( (duration, track.DistanceInMeters, speed) );
+        }
+
+        return [.. secondsdistancesSpeeds];
+    }
+
 
     public string GetSerializedGpxData()
     {
@@ -281,4 +317,22 @@ internal class GpxProcessor
 
     public Track? FindTrack(decimal distance) => _gpx == null ? null : _tracks.FirstOrDefault(t => t.TrackStartDistanceInMeters <= distance && t.TotalDistanceInMeters > distance);
 
+    private int GetTracksToSkip(decimal skipMeters, Track[] tracks)
+{
+    if (tracks == null || tracks.Length == 0 || skipMeters <= 0)
+        return 0;
+
+    decimal cumulativeDistance = 0;
+    for (int i = 0; i < tracks.Length; i++)
+    {
+        cumulativeDistance += tracks[i].DistanceInMeters;
+        if (cumulativeDistance >= skipMeters)
+        {
+            return i; // Return the index of the last track to skip
+        }
+    }
+
+    // If skipMeters exceeds the total distance, skip all tracks
+    return tracks.Length;
+}
 }

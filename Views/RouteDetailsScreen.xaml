@@ -5,19 +5,18 @@
              Title="Route Details"
              BackgroundColor="White">
 
-    <Grid RowDefinitions="2*,2.4*,Auto">
+    <Grid RowDefinitions="2*,Auto ,2.6*,Auto">
         <!-- Achtergrondafbeelding -->
         <Image Source="routedetails_background.jpg"
                Aspect="AspectFill"
-               Grid.RowSpan="3"
+               Grid.RowSpan="4"
                Grid.ColumnSpan="3"
                Opacity="1" />
 
-        <!-- PlotView direct in rij 0 -->
+        <!-- PlotView -->
         <oxy:PlotView x:Name="PlotView"
-                      Grid.Row="0"
-                      VerticalOptions="Fill"
-                      HorizontalOptions="FillAndExpand" />
+                        VerticalOptions="FillAndExpand"
+                        HorizontalOptions="FillAndExpand" />
 
         <!-- Simulator-label als overlay in rij 0 -->
         <Label Text="Simulator"
@@ -36,8 +35,21 @@
             </Label.GestureRecognizers>
         </Label>
 
+        <!-- Slider -->
+        <Slider x:Name="RouteStartSlider"
+        Grid.Row="1"
+        Margin="70,0,25,0"
+        Minimum="0"
+        Maximum="1"
+        Value="1"
+        Rotation="180"
+        FlowDirection="LeftToRight"
+        HorizontalOptions="FillAndExpand"
+        VerticalOptions="End"
+        ValueChanged="OnRouteStartSliderValueChanged" />
+
         <!-- Route info en speed settings in rij 1 -->
-        <Grid Grid.Row="1" ColumnDefinitions="2*,1*" Padding="10">
+        <Grid Grid.Row="2" ColumnDefinitions="2*,1*" Padding="10">
             <Frame Grid.ColumnSpan="2"
                 CornerRadius="10"
                 BackgroundColor="#33475b"
@@ -115,7 +127,11 @@
                     <!-- Speed Settings -->
                     <StackLayout Grid.Column="1" Padding="10" >
                         <HorizontalStackLayout Margin="0,2" Spacing="10">
-                            <CheckBox x:Name="AutoSpeedControlCheckBox" IsChecked="True" VerticalOptions="Center" HorizontalOptions="Center" />
+                            <CheckBox x:Name="AutoSpeedControlCheckBox"
+                                      IsChecked="True"
+                                      VerticalOptions="Center"
+                                      HorizontalOptions="Center"
+                                      CheckedChanged="OnAutoSpeedControlCheckedChanged" />
                             <Label Text="Enable cruise control (km/h)" TextColor="White"  FontSize="22" FontAttributes="Bold" VerticalOptions="Center" />
                         </HorizontalStackLayout>
                         <Grid ColumnDefinitions="2*,1*,1*,1*,1*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="5">
@@ -156,7 +172,7 @@
 
         <!-- Start Button in rij 2 -->
         <Button x:Name="StartButton" 
-                Text="Start" Grid.Row="2" HorizontalOptions="FillAndExpand"  
+                Text="Start" Grid.Row="3" HorizontalOptions="FillAndExpand"  
                 VerticalOptions="Center" 
                 Margin="10" 
                 Clicked="OnStartClicked" 

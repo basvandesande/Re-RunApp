@@ -11,6 +11,7 @@ public partial class RouteDetailsScreen : ContentPage
     private bool _useSimulation = false;
     private bool _startButtonEnabled = false;
     private bool _heartRateEnabled = false;
+    private decimal _skipMeters = 0;
 
     public RouteDetailsScreen(string gpxFilePath)
     {
@@ -25,11 +26,6 @@ public partial class RouteDetailsScreen : ContentPage
 
     private void RouteDetailsScreen_Loaded(object? sender, EventArgs e)
     { 
-        LoadRouteDetails();
-        LoadSpeedSettings(); // Load speed settings if the file exists
-        
-        var graphPlotter = new GraphPlotter();
-        PlotView.Model = graphPlotter.PlotGraph(_gpxProcessor,false);
     }
 
     
@@ -41,6 +37,16 @@ public partial class RouteDetailsScreen : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
+
+        LoadRouteDetails();
+        LoadSpeedSettings(); // Load speed settings if the file exists
+        _skipMeters = 0;
+        _useSimulation = false;
+        _startButtonEnabled = false;
+        _heartRateEnabled = false;
+
+        var graphPlotter = new GraphPlotter();
+        PlotView.Model = graphPlotter.PlotGraph(_gpxProcessor, false);
 
         _heartRateEnabled = await Runtime.HeartRate.ConnectToDevice(false);
         _startButtonEnabled =  await Runtime.Treadmill.ConnectToDevice(false);
@@ -78,12 +84,13 @@ public partial class RouteDetailsScreen : ContentPage
     {
         _gpxProcessor.LoadGpxData(_gpxFilePath);
         _gpxProcessor.GetRun();
-
+        
         // Set route details
         RouteNameLabel.Text = _gpxProcessor.Gpx?.trk.name;
         TotalDistanceLabel.Text = $"{_gpxProcessor.TotalDistanceInMeters / 1000:F1}";
         TotalElevationLabel.Text = $"{(_gpxProcessor.FindMaximumElevation() - _gpxProcessor.FindMinimumElevation()):F0}";
         TotalAscendLabel.Text = $"{_gpxProcessor.TotalElevationInMeters:F0}";
+        RouteStartSlider.Value = 1;
     }
 
     private async void OnStartClicked(object sender, EventArgs e)
@@ -94,7 +101,7 @@ public partial class RouteDetailsScreen : ContentPage
         {
             Runtime.HeartRate.Enabled = _heartRateEnabled;
         }
-        await Navigation.PushAsync(new ActivityScreen(_gpxFilePath, _useSimulation));
+        await Navigation.PushAsync(new ActivityScreen(_gpxFilePath, _useSimulation, _skipMeters));
     }
 
     private void OnIncreaseSpeed0to5(object sender, EventArgs e)
@@ -196,6 +203,8 @@ public partial class RouteDetailsScreen : ContentPage
                 Speed11to12Label.Text = settings.Speed11to12.ToString("F1", System.Globalization.CultureInfo.InvariantCulture);
                 Speed13to15Label.Text = settings.Speed13to15.ToString("F1", System.Globalization.CultureInfo.InvariantCulture);
                 AutoSpeedControlCheckBox.IsChecked = settings.AutoSpeedControl;
+
+                RouteStartSlider.IsEnabled = AutoSpeedControlCheckBox.IsChecked;
             }
             Runtime.RunSettings = settings;
         }
@@ -213,5 +222,22 @@ public partial class RouteDetailsScreen : ContentPage
         DisplayAlert("Developer Information", msg, "OK");
     }
 
-    
+    private void OnRouteStartSliderValueChanged(object sender, ValueChangedEventArgs e)
+    {
+        // determine the start point of the route (how many meters to skip) 
+        _skipMeters = (1 - (decimal)e.NewValue) * _gpxProcessor.TotalDistanceInMeters;
+
+    }
+
+    private void OnAutoSpeedControlCheckedChanged(object sender, CheckedChangedEventArgs e)
+    {
+        // Check the new state of the checkbox
+        RouteStartSlider.IsEnabled = e.Value;
+
+        if (!RouteStartSlider.IsEnabled )
+        {
+            RouteStartSlider.Value=1;
+            _skipMeters = 0; // Reset skip meters if auto speed control is disabled
+        }
+    }
 }

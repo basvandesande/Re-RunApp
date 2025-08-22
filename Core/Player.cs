@@ -210,17 +210,25 @@ internal class Player
         int totalSeconds = (DateTime.UtcNow - startTime).Seconds;
         decimal totalDistance = _gpx.Tracks[index].DistanceInMeters;
 
-        // loop thru the segments in the current track
+        // Variabele to keep the current time
+        DateTime currentSegmentTime = startTime;
+
+        // Loop door de segmenten in de huidige track
         foreach (var segment in _gpx.Tracks[index].Segments)
         {
-            // Get the duration per segment
+            // calculate the duration of the current segment based on its distance
             int segmentTimeInSeconds = (int)(segment.DistanceInMeters / totalDistance * totalSeconds);
-            startTime = startTime.AddSeconds(segmentTimeInSeconds);
-            var trackSegment = _gpx.Gpx.trk.trkseg[segment.GpxIndex];
-            trackSegment.time = startTime;
 
-            if (trackSegment.extensions == null) trackSegment.extensions = new ();
-            if (trackSegment.extensions.TrackPointExtension==null) trackSegment.extensions.TrackPointExtension = new ();
+            // Update time for current segment
+            currentSegmentTime = currentSegmentTime.AddSeconds(segmentTimeInSeconds);
+
+            // Update time in the GPX-segment
+            var trackSegment = _gpx.Gpx.trk.trkseg[segment.GpxIndex];
+            trackSegment.time = currentSegmentTime;
+
+            // check if the extensions and heartrate extension exist and add the heart rate
+            if (trackSegment.extensions == null) trackSegment.extensions = new();
+            if (trackSegment.extensions.TrackPointExtension == null) trackSegment.extensions.TrackPointExtension = new();
             trackSegment.extensions.TrackPointExtension.hr = (byte)_gpx.Tracks[index].HeartRate;
         }
     }
@@ -240,26 +248,8 @@ internal class Player
         if (_runSettings == null || !_runSettings.AutoSpeedControl)
             return;
 
-        //Calculate the desired speed based on the current incline
-        decimal GetSpeed(decimal incline)
-        {
-            if (incline < 0)
-                return (decimal)_runSettings.Speed0to5 + 0.5m;
-            if (incline <= 5)
-                return (decimal)_runSettings.Speed0to5;
-            if (incline <= 8)
-                return (decimal)_runSettings.Speed6to8;
-            if (incline <= 10)
-                return (decimal)_runSettings.Speed8to10;
-            if (incline <= 12)
-                return (decimal)_runSettings.Speed11to12;
-            if (incline <= 15)
-                return (decimal)_runSettings.Speed13to15;
-            return (decimal)_runSettings.Speed13to15 - 0.3m;
-        }
-
-        decimal newSpeed = GetSpeed(track.InclinationInDegrees);
-        decimal prevSpeed = previousTrack != null ? GetSpeed(previousTrack.InclinationInDegrees) : newSpeed;
+        decimal newSpeed = Runtime.GetSpeed(track.InclinationInDegrees);
+        decimal prevSpeed = previousTrack != null ? Runtime.GetSpeed(previousTrack.InclinationInDegrees) : newSpeed;
 
         int deltaIncline = (int)Math.Abs(track.InclinationInDegrees - (previousTrack?.InclinationInDegrees ?? 0));
         int delayMs = deltaIncline * 150;

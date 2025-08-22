@@ -21,17 +21,18 @@ public partial class ActivityScreen : ContentPage
     private decimal? _nextAnimationDistance = null;
     private readonly decimal[] _milestones = { 0.25m, 0.5m, 0.75m, 0.993m };
     private int _nextMilestoneIndex = 0;
-
-    public ActivityScreen(string gpxFilePath, bool simulate=false)
+    
+    public ActivityScreen(string gpxFilePath, bool simulate=false, decimal skipMeters=0)
     {
         InitializeComponent();
 
         _gpxFilePath = gpxFilePath;
         _gpxProcessor.LoadGpxData(_gpxFilePath);
-        _gpxProcessor.GetRun();
+        _gpxProcessor.GetRun(skipMeters);
+
         _treadmill = (!simulate)? Runtime.Treadmill: Runtime.TreadmillSimulator;
         _heartRate = (!simulate) ? Runtime.HeartRate : Runtime.HeartRateSimulator;
-
+       
         if (simulate) _heartRate.Enabled = true; // Enable heart rate simulation if in simulation mode
 
         _player = new Player(_gpxProcessor, _treadmill, _heartRate, Runtime.RunSettings);
@@ -41,10 +42,18 @@ public partial class ActivityScreen : ContentPage
      
         this.Loaded += ActivityScreen_Loaded;
         this.Unloaded += ActivityScreen_Unloaded;
+
+        RouteVideo.MediaOpened += OnMediaOpened;
+
     }
 
     private void ActivityScreen_Loaded(object? sender, EventArgs e)
+    {  }
+
+    protected override void OnAppearing()
     {
+        base.OnAppearing();
+
         PlotView.Model = _graphPlotter.PlotGraph(_gpxProcessor, false);
 
         this.Title = _gpxProcessor?.Gpx?.trk.name;
@@ -56,7 +65,7 @@ public partial class ActivityScreen : ContentPage
         {
             RouteVideo.Source = MediaSource.FromFile(videoPath);
             RouteVideo.ShouldLoopPlayback = false;
-            RouteVideo.Speed = 0.5;
+
         }
         else
         {
@@ -64,10 +73,9 @@ public partial class ActivityScreen : ContentPage
             RouteVideo.Speed = 1;
         }
         RouteVideo.ShouldAutoPlay = false;
-        RouteVideo.Pause(); 
+        RouteVideo.Pause();
         RouteVideo.IsVisible = true;
     }
-
 
     private void ActivityScreen_Unloaded(object? sender, EventArgs e)
     {
@@ -188,6 +196,57 @@ public partial class ActivityScreen : ContentPage
     }
 
 
+    private void FastForwardVideo()
+    {
+        // we have a list of seconds to skip, so we can fast forward the video
+        // we adjust the playback speed per item in the list
+        // because we can calculate the remaining dis
+        decimal? totalDistanceM = _gpxProcessor.TotalOriginalLengthInMeters;
+        decimal? distanceCoveredM = 0;
+        double videoPositionSeconds = 0;
+        for (int i = 0; i < _gpxProcessor.SecondsDistancesSpeedsToSkip.Length; i++)
+        {
+            distanceCoveredM+= _gpxProcessor.SecondsDistancesSpeedsToSkip[i].distance;
+            
+            // calculate the position and speed of the runner in this segment
+            // we need this to know the remaining time to run
+            decimal speedKmh = _gpxProcessor.SecondsDistancesSpeedsToSkip[i].speed;
+            double remainingDistanceM = (double)(totalDistanceM - distanceCoveredM);
+            double secondsToGo = Math.Max(0, remainingDistanceM / (double)(speedKmh / 3.6m));
+
+            // for the video we need to know how many seconds are left to play
+            // based on that we know what playback speed to use. 
+            double remainingVideoSeconds = RouteVideo.Duration.TotalSeconds - videoPositionSeconds;
+            double speed = (secondsToGo > 0) ? (remainingVideoSeconds / secondsToGo) : 0;
+
+            // This playback factor can be used to calculate the time that the track is recorded in the video
+            videoPositionSeconds += (double)_gpxProcessor.SecondsDistancesSpeedsToSkip[i].seconds * speed;
+        }
+
+
+        if (videoPositionSeconds > 0)
+        {
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                RouteVideo.SeekTo(TimeSpan.FromSeconds(videoPositionSeconds));
+            });
+        }
+    }
+
+
+    private void OnMediaOpened(object? sender, EventArgs e)
+    {
+        if (RouteVideo.Duration.TotalSeconds > 0)
+        {
+            // Perform actions that depend on the video duration
+            if (_gpxProcessor?.SecondsDistancesSpeedsToSkip.Length > 0)
+            {
+                FastForwardVideo();
+            }
+        }
+    }
+
+
     private async void OnStartClicked(object sender, EventArgs e)
     {   
         // swap buttons
@@ -269,5 +328,4 @@ public partial class ActivityScreen : ContentPage
         if (!infinite) StopPulseAnimation();
     }
     
-
 }
