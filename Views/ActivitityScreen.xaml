@@ -1,4 +1,4 @@
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+﻿<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              xmlns:oxy="clr-namespace:OxyPlot.Maui.Skia;assembly=OxyPlot.Maui.Skia"
@@ -20,7 +20,7 @@
                                       Source="embed://nomedia.mp4"         
                                       Speed="0.5"
                                       VerticalOptions="Center" ShouldKeepScreenOn="True" />
-                            </Frame>
+            </Frame>
 
             <!-- Overlay: Semi-transparent Statistics Bar -->
             <Frame BackgroundColor="#60101010"  
@@ -52,16 +52,47 @@
                     </StackLayout>
                 </Grid>
             </Frame>
-            <Image x:Name="StartPulseImage"
-            Source="start.png"
-            Opacity="0.7"
-            IsVisible="False"
-            HorizontalOptions="Center"
-            VerticalOptions="Center"
-            WidthRequest="600"
-            HeightRequest="250"
-            InputTransparent="True" />
 
+            <!-- Rewind and Forward Buttons -->
+            <Grid HorizontalOptions="End" VerticalOptions="End" Margin="10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Rewind Button -->
+                <Button x:Name="RewindButton"
+                        Text="&lt;&lt;"
+                        WidthRequest="50"
+                        HeightRequest="50"
+                        BackgroundColor="Gray"
+                        TextColor="White"
+                        CornerRadius="5"
+                        Clicked="OnRewindClicked"
+                        Grid.Column="0" />
+
+                <!-- Forward Button -->
+                <Button x:Name="ForwardButton"
+                        Text="&gt;&gt;"
+                        WidthRequest="50"
+                        HeightRequest="50"
+                        BackgroundColor="Gray"
+                        TextColor="White"
+                        CornerRadius="5"
+                        Clicked="OnForwardClicked"
+                        Grid.Column="1"
+                        Margin="5,0,0,0" />
+            </Grid>
+
+            <Image x:Name="StartPulseImage"
+                   Source="start.png"
+                   Opacity="0.7"
+                   IsVisible="False"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center"
+                   WidthRequest="600"
+                   HeightRequest="250"
+                   InputTransparent="True" />
         </Grid>
 
         <!-- Below Video: Route Map -->

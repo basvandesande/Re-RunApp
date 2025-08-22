@@ -50,7 +50,7 @@ public partial class ActivityScreen : ContentPage
     private void ActivityScreen_Loaded(object? sender, EventArgs e)
     {  }
 
-    protected override void OnAppearing()
+    protected override async void OnAppearing()
     {
         base.OnAppearing();
 
@@ -63,18 +63,54 @@ public partial class ActivityScreen : ContentPage
 
         if (_hasVideo)
         {
+            // Subscribe to MediaOpened before setting the source
+            RouteVideo.MediaOpened -= OnMediaOpened;
+            RouteVideo.MediaOpened += OnMediaOpened;
+
+           
             RouteVideo.Source = MediaSource.FromFile(videoPath);
             RouteVideo.ShouldLoopPlayback = false;
 
+            await Task.Run(async () =>
+            {
+                int retries = 10;
+                while (RouteVideo.Duration.TotalSeconds == 0 && retries > 0)
+                {
+                    await Task.Delay(100);
+                    retries--;
+                }
+
+                if (RouteVideo.Duration.TotalSeconds > 0)
+                {
+                    MainThread.BeginInvokeOnMainThread(() =>
+                    {
+                        FastForwardVideo();
+                    });
+                }
+            });
         }
         else
         {
             RouteVideo.ShouldLoopPlayback = true;
             RouteVideo.Speed = 1;
+
         }
+
+        RewindButton.IsVisible = _hasVideo;
+        ForwardButton.IsVisible = _hasVideo;
+
+
         RouteVideo.ShouldAutoPlay = false;
         RouteVideo.Pause();
         RouteVideo.IsVisible = true;
+    }
+
+    protected override void OnDisappearing()
+    {
+        base.OnDisappearing();
+
+        // Unsubscribe from the MediaOpened event
+        RouteVideo.MediaOpened -= OnMediaOpened;
     }
 
     private void ActivityScreen_Unloaded(object? sender, EventArgs e)
@@ -248,7 +284,11 @@ public partial class ActivityScreen : ContentPage
 
 
     private async void OnStartClicked(object sender, EventArgs e)
-    {   
+    {
+        // Verberg de rewind- en forward-knoppen
+        RewindButton.IsVisible = false;
+        ForwardButton.IsVisible = false;
+
         // swap buttons
         StartButton.IsVisible = false;
         StopButton.IsVisible = true;
@@ -326,6 +366,22 @@ public partial class ActivityScreen : ContentPage
 
         // only stop when not the finish animation
         if (!infinite) StopPulseAnimation();
+    }
+
+    private void OnRewindClicked(object sender, EventArgs e)
+    {
+        if (_hasVideo && RouteVideo.Position.TotalSeconds > 2)
+        {
+            RouteVideo.SeekTo(RouteVideo.Position - TimeSpan.FromSeconds(2));
+        }
+    }
+
+    private void OnForwardClicked(object sender, EventArgs e)
+    {
+        if (_hasVideo && RouteVideo.Position.TotalSeconds + 2 < RouteVideo.Duration.TotalSeconds)
+        {
+            RouteVideo.SeekTo(RouteVideo.Position + TimeSpan.FromSeconds(2));
+        }
     }
     
 }
