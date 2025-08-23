@@ -97,10 +97,17 @@ public partial class RouteDetailsScreen : ContentPage
     {
         SaveSpeedSettings();
 
+
         if (!_useSimulation)
         {
             Runtime.HeartRate.Enabled = _heartRateEnabled;
         }
+        else
+        {
+            Runtime.HeartRate.Enabled = true;
+            await Runtime.HeartRateSimulator.ConnectToDevice(false);
+        }
+
         await Navigation.PushAsync(new ActivityScreen(_gpxFilePath, _useSimulation, _skipMeters));
     }
 
