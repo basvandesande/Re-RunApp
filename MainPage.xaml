@@ -37,14 +37,30 @@
                    FontSize="Subtitle" />
         </VerticalStackLayout>
 
-        <!-- Button at the bottom -->
-        <Button Text="Start" 
-                Clicked="OnStartClicked" 
-                VerticalOptions="End" 
-                HorizontalOptions="Fill" 
-                Margin="20,0,20,20" 
-                BackgroundColor="#F97C00"
-                HeightRequest="50" 
-                FontSize="Large" />
+        <!-- Disclaimer and Button -->
+        <VerticalStackLayout VerticalOptions="End" HorizontalOptions="Fill" Margin="20,0,20,20" Spacing="10">
+            <HorizontalStackLayout>
+                <CheckBox x:Name="DisclaimerCheckBox" CheckedChanged="OnDisclaimerCheckedChanged" />
+                <Label x:Name="DisclaimerLabel" VerticalOptions="Center">
+                    <Label.FormattedText>
+                        <FormattedString>
+                            <Span Text="I accept the " TextColor="White" FontSize="Small" />
+                            <Span Text="legal disclaimer" TextColor="White" FontSize="Small" TextDecorations="Underline">
+                                <Span.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnDisclaimerTapped" />
+                                </Span.GestureRecognizers>
+                            </Span>
+                        </FormattedString>
+                    </Label.FormattedText>
+                </Label>
+            </HorizontalStackLayout>
+            <Button Text="Start" 
+                    Clicked="OnStartClicked" 
+                    IsEnabled="False" 
+                    x:Name="StartButton"
+                    BackgroundColor="#F97C00"
+                    HeightRequest="50" 
+                    FontSize="Large" />
+        </VerticalStackLayout>
     </Grid>
 </ContentPage>

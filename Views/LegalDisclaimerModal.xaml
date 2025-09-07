@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Re_RunApp.Views.LegalDisclaimerModal"
+             BackgroundColor="#80000000"  
+             Title="Legal Disclaimer">
+    <Grid>
+        <!-- Centered Frame for the Popup -->
+        <Frame BackgroundColor="#33475b"
+               CornerRadius="20"
+               Padding="20"
+               WidthRequest="800"
+               HeightRequest="500"
+               HorizontalOptions="Center"
+               VerticalOptions="Center"
+               HasShadow="True">
+            <Grid RowDefinitions="*, Auto">
+                <!-- Scrollable Content -->
+                <ScrollView Grid.Row="0">
+                    <Label x:Name="DisclaimerLabel"
+                           Text="Welcome to the Legal Disclaimer page. We value your privacy and are committed to protecting your personal data. This legal disclaimer outlines our policies and procedures regarding the collection, use, and disclosure of your information when you use our mobile application and informs you about your privacy rights and how the law protects you. Please read this disclaimer carefully. If you do not agree with the terms of this disclaimer, please do not use our application."
+                           TextColor="White"
+                           FontSize="Medium" />
+                </ScrollView>
+
+                <!-- Close Button -->
+                <Button Grid.Row="1"
+                        Text="Close"
+                        BackgroundColor="#F97C00"
+                        TextColor="White"
+                        HeightRequest="50"
+                        VerticalOptions="End"
+                        FontSize="Large"
+                        Clicked="OnCloseButtonClicked" />
+            </Grid>
+        </Frame>
+    </Grid>
+</ContentPage>
