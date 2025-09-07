@@ -1,6 +1,6 @@
 ﻿# 🏃‍♂️ Re-Run
 
-![Re-Run Preview](Resources/Images/preview.png)
+![Re-Run Preview](preview/Running.png)
 
 Welcome to **Re-Run**, an open-source passion project built with **.NET MAUI**. This app is designed to enhance your running experience by connecting with Bluetooth-enabled treadmills and providing features like route tracking, heart rate monitoring, and more. Currently, it runs on **Windows** and **Android**, but the dream is to take it further — **iOS**, **macOS**, and maybe even a **smart fridge** someday! 😄
 
