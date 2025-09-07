@@ -25,7 +25,7 @@ public partial class MainPage : ContentPage
         var version = AppInfo.Current.VersionString;
         var build = AppInfo.Current.BuildString;
         var year = (DateTime.Now.Year==2025)? "2025" : $"2025-{DateTime.Now.Year}";
-        VersionLabel.Text = $"Version {version}  //  © {year} Bas van de Sande  //  AzureCodingArchitect.com";
+        VersionLabel.Text = $"Version {version}  //  © {year} Bas van de Sande  //  RunningApps.eu";
     }
 
     private async void OnSettingsIconTapped(object sender, EventArgs e)

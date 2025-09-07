@@ -49,6 +49,10 @@
 	  <GenerateTestArtifacts>True</GenerateTestArtifacts>
 	  <AppInstallerUri>\\diskstation\backup</AppInstallerUri>
 	  <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
+	  <Title>Re-Run</Title>
+	  <Copyright>Copyright (c)2025  Bas van de Sande </Copyright>
+	  <PackageProjectUrl>https://runningapps.eu</PackageProjectUrl>
+	  <PackageIcon>logo.png</PackageIcon>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -96,6 +100,13 @@
 	  <MauiXaml Update="Views\StravaSettingsScreen.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="Resources\AppIcon\logo.png">
+	    <Pack>True</Pack>
+	    <PackagePath>\</PackagePath>
+	  </None>
 	</ItemGroup>
 
 </Project>
