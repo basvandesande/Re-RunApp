@@ -207,26 +207,27 @@ internal class Player
     {
         if (index >= maxIndex) return;
 
-        int totalSeconds = (DateTime.UtcNow - startTime).Seconds;
+        // Calculate the total time and distance for the current track
+        decimal totalSeconds = (decimal)(DateTime.UtcNow - startTime).TotalSeconds;
         decimal totalDistance = _gpx.Tracks[index].DistanceInMeters;
 
-        // Variabele to keep the current time
+        // Variable to keep track of the current time
         DateTime currentSegmentTime = startTime;
 
-        // Loop door de segmenten in de huidige track
+        // Loop through the segments in the current track
         foreach (var segment in _gpx.Tracks[index].Segments)
         {
-            // calculate the duration of the current segment based on its distance
-            int segmentTimeInSeconds = (int)(segment.DistanceInMeters / totalDistance * totalSeconds);
+            // Calculate the duration of the current segment based on its distance
+            decimal segmentTimeInSeconds = (segment.DistanceInMeters / totalDistance) * totalSeconds;
 
-            // Update time for current segment
-            currentSegmentTime = currentSegmentTime.AddSeconds(segmentTimeInSeconds);
+            // Update the time for the current segment
+            currentSegmentTime = currentSegmentTime.AddSeconds((double)segmentTimeInSeconds);
 
-            // Update time in the GPX-segment
+            // Update the time in the GPX segment
             var trackSegment = _gpx.Gpx.trk.trkseg[segment.GpxIndex];
             trackSegment.time = currentSegmentTime;
 
-            // check if the extensions and heartrate extension exist and add the heart rate
+            // Ensure extensions and heart rate extension exist, then add the heart rate
             if (trackSegment.extensions == null) trackSegment.extensions = new();
             if (trackSegment.extensions.TrackPointExtension == null) trackSegment.extensions.TrackPointExtension = new();
             trackSegment.extensions.TrackPointExtension.hr = (byte)_gpx.Tracks[index].HeartRate;
