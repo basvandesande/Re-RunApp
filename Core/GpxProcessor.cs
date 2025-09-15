@@ -296,7 +296,7 @@ internal class GpxProcessor
     }
 
 
-    private static decimal GetDistance(double lat1, double lon1, double lat2, double lon2)
+    internal static decimal GetDistance(double lat1, double lon1, double lat2, double lon2)
     {
         double R = 6371000; // Radius of the Earth in meters
         double dLat = ToRadians(lat2 - lat1);

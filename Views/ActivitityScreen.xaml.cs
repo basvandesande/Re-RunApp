@@ -21,7 +21,8 @@ public partial class ActivityScreen : ContentPage
     private decimal? _nextAnimationDistance = null;
     private readonly decimal[] _milestones = { 0.25m, 0.5m, 0.75m, 0.993m };
     private int _nextMilestoneIndex = 0;
-    
+    private bool _simulate = false;
+
     public ActivityScreen(string gpxFilePath, bool simulate=false, decimal skipMeters=0)
     {
         InitializeComponent();
@@ -32,7 +33,8 @@ public partial class ActivityScreen : ContentPage
 
         _treadmill = (!simulate)? Runtime.Treadmill: Runtime.TreadmillSimulator;
         _heartRate = (!simulate) ? Runtime.HeartRate : Runtime.HeartRateSimulator;
-       
+        _simulate = simulate;
+
         if (simulate) _heartRate.Enabled = true; // Enable heart rate simulation if in simulation mode
 
         _player = new Player(_gpxProcessor, _treadmill, _heartRate, Runtime.RunSettings);
@@ -164,7 +166,7 @@ public partial class ActivityScreen : ContentPage
             DistanceLabel.Text = $"{stats.CurrentDistanceM:N0} / {_gpxProcessor.TotalDistanceInMeters:N0}";
             SegmentLabel.Text = $"{stats.SegmentRemainingM:N0}";
             SpeedLabel.Text = $"{stats.CurrentSpeedMinKM:mm\\:ss}";
-            HeartrateLabel.Text = $"{stats.CurrentHeartRate}";
+            HeartrateLabel.Text =  stats.CurrentHeartRate > 0 ?  $"{stats.CurrentHeartRate}" : "--";
             AscendLabel.Text = $"{stats.TotalInclinationM:N0}";
 
             if (stats.CurrentHeartRate.HasValue)
@@ -309,6 +311,10 @@ public partial class ActivityScreen : ContentPage
         _gpxProcessor.UpdateGpxData(_playerStatistics.CurrentDistanceM);
         string updatedGpxData = _gpxProcessor.GetSerializedGpxData();
 
+        // always write out the last run gpx (can be used for troubleshooting)
+        var fileName = Path.Combine(Runtime.GetAppFolder(), "LastRun.gpx");
+        File.WriteAllText(fileName, updatedGpxData);
+       
         await Navigation.PushAsync(new SummaryScreen(_playerStatistics, updatedGpxData));
     }
 

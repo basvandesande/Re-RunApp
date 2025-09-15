@@ -124,12 +124,17 @@ internal class Player
 
     public decimal? GetDistanceRan() => _playerStatistics.CurrentDistanceM;
 
+    private List<(DateTime time, int? hr)> _trackPointTimestamps = new();
+
     private async Task BackgroundLoop(CancellationToken token)
     {
         int index = 0;
         int maxIndex = _gpx.Tracks.Length;
         Track current = _gpx.Tracks[index];
         Track previous = _gpx.Tracks[index];
+
+        // Calculate cumulative distances for the current track
+        var cumulativeDistances = CalculateCumulativeDistances(_gpx.Gpx.trk.trkseg);
 
         Console.WriteLine("Device is running...");
         
@@ -140,6 +145,19 @@ internal class Player
             DateTime startTime = DateTime.UtcNow;
             while (!token.IsCancellationRequested)
             {
+
+                // Get the current distance from the treadmill telemetry
+                double currentDistance = (double)(GetDistanceRan() ?? 0);
+
+                // Determine the active track point
+                int activeTrackPointIndex = GetActiveTrackPointIndex(currentDistance, cumulativeDistances);
+
+                // Update the timestamp for the active track point
+                if (_trackPointTimestamps.Count <= activeTrackPointIndex)
+                {
+                    _trackPointTimestamps.Add((DateTime.UtcNow, _playerStatistics.CurrentHeartRate));
+                }
+
                 if (_totalDistanceM > current.TotalDistanceInMeters)
                 {
                     if (_heartRate.Enabled) current.HeartRate = _heartRate.CurrentRate;
@@ -147,9 +165,10 @@ internal class Player
                     index++;
 
                     // update the statistics in the gpx file as accurate as possible
-                    _ = Task.Run(() => UpdateGpxStatistics(index-1, maxIndex, startTime));
+                    // obsolete, 
+                    //_ = Task.Run(() => UpdateGpxStatistics(index-1, maxIndex, startTime));
 
-               
+
                     if (index >= maxIndex)
                     {
                         // Indicate the track change (this is just to set the progress bar to done :)
@@ -199,38 +218,24 @@ internal class Player
         }
         finally
         {
+            UpdateGpxStatistics();
             Console.WriteLine("Device stopped.");
         }
     }
 
-    private void UpdateGpxStatistics(int index, int maxIndex, DateTime startTime)
+    private void UpdateGpxStatistics()
     {
-        if (index >= maxIndex) return;
-
-        // Calculate the total time and distance for the current track
-        decimal totalSeconds = (decimal)(DateTime.UtcNow - startTime).TotalSeconds;
-        decimal totalDistance = _gpx.Tracks[index].DistanceInMeters;
-
-        // Variable to keep track of the current time
-        DateTime currentSegmentTime = startTime;
-
-        // Loop through the segments in the current track
-        foreach (var segment in _gpx.Tracks[index].Segments)
+        for (int i=0; i< _trackPointTimestamps.Count; i++)
         {
-            // Calculate the duration of the current segment based on its distance
-            decimal segmentTimeInSeconds = (segment.DistanceInMeters / totalDistance) * totalSeconds;
-
-            // Update the time for the current segment
-            currentSegmentTime = currentSegmentTime.AddSeconds((double)segmentTimeInSeconds);
-
-            // Update the time in the GPX segment
-            var trackSegment = _gpx.Gpx.trk.trkseg[segment.GpxIndex];
-            trackSegment.time = currentSegmentTime;
-
-            // Ensure extensions and heart rate extension exist, then add the heart rate
-            if (trackSegment.extensions == null) trackSegment.extensions = new();
-            if (trackSegment.extensions.TrackPointExtension == null) trackSegment.extensions.TrackPointExtension = new();
-            trackSegment.extensions.TrackPointExtension.hr = (byte)_gpx.Tracks[index].HeartRate;
+            var (time, hr) = _trackPointTimestamps[i];
+            var trackPoint = _gpx.Gpx.trk.trkseg[i];
+            trackPoint.time = time;
+            if (hr.HasValue)
+            {
+                if (trackPoint.extensions == null) trackPoint.extensions = new();
+                if (trackPoint.extensions.TrackPointExtension == null) trackPoint.extensions.TrackPointExtension = new();
+                trackPoint.extensions.TrackPointExtension.hr = (byte)hr.Value;
+            }
         }
     }
 
@@ -274,5 +279,41 @@ internal class Player
         {
             _heartRate.OnHeartPulse -= HeartRate_OnHeartPulse;
         }
+    }
+
+    // Calculate cumulative distances for all track points in the track
+    private List<double> CalculateCumulativeDistances(gpxTrkTrkpt[] trackPoints)
+    {
+        var cumulativeDistances = new List<double> { 0 }; // Start with 0 for the first point
+
+        for (int i = 1; i < trackPoints.Length; i++)
+        {
+            // Calculate the distance between the current and previous track point
+            double distance = (double)GpxProcessor.GetDistance(
+                trackPoints[i - 1].lat, trackPoints[i - 1].lon,
+                trackPoints[i].lat, trackPoints[i].lon);
+
+            // Add the distance to the cumulative total
+            cumulativeDistances.Add(cumulativeDistances[i - 1] + distance);
+        }
+
+        return cumulativeDistances;
+    }
+
+    
+    // Determine the active track point based on the current distance
+    private int GetActiveTrackPointIndex(double currentDistance, List<double> cumulativeDistances)
+    {
+        for (int i = 0; i < cumulativeDistances.Count - 1; i++)
+        {
+            // Check if the current distance falls between two cumulative distances
+            if (currentDistance >= cumulativeDistances[i] && currentDistance < cumulativeDistances[i + 1])
+            {
+                return i;
+            }
+        }
+
+        // If the distance exceeds the total, return the last track point
+        return cumulativeDistances.Count - 1;
     }
 }

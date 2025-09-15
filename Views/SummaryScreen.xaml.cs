@@ -45,8 +45,8 @@ public partial class SummaryScreen : ContentPage
         }
 
         AscendLabel.Text = $"{_statistics.TotalInclinationM:N0}";
-        AverageHeartRateLabel.Text = $"{avgHeartRate}";
-        MaxHeartRateLabel.Text = $"{maxHeartRate}";
+        AverageHeartRateLabel.Text = avgHeartRate > 0 ? $"{avgHeartRate}" : "--";
+        MaxHeartRateLabel.Text = maxHeartRate > 0 ? $"{maxHeartRate}" : "--";
         AverageSpeedLabel.Text = $"{avgSpeedMinKm:mm\\:ss}";
         DistanceLabel.Text = $"{_statistics.CurrentDistanceM:N0}";
         DurationLabel.Text = $"{TimeSpan.FromSeconds(_statistics.SecondsElapsed):hh\\:mm\\:ss}";
@@ -84,29 +84,6 @@ public partial class SummaryScreen : ContentPage
             await StatisticsImage.ScaleTo(1.02, 1400, Easing.SinInOut);
             await StatisticsImage.ScaleTo(0.98, 1400, Easing.SinInOut);
         }
-    }
-
-    private async Task ShowLoadingPage()
-    {
-        await MainThread.InvokeOnMainThreadAsync(() =>
-        {
-            Content = new StackLayout
-            {
-                VerticalOptions = LayoutOptions.Center,
-                HorizontalOptions = LayoutOptions.Center,
-                Children =
-                    {
-                        new ActivityIndicator { IsRunning = true, Color = Colors.Blue },
-                        new Label
-                        {
-                            Text = "Processing authentication and posting activity...",
-                            HorizontalOptions = LayoutOptions.Center,
-                            Margin = new Thickness(20),
-                            FontSize = 28
-                        }
-                    }
-            };
-        });
     }
 
 
@@ -201,6 +178,36 @@ public partial class SummaryScreen : ContentPage
             _webView.Navigating -= WebView_Navigating;
             _webView = null;
         }
+    }
+
+    private async Task ShowLoadingPage()
+    {
+        await MainThread.InvokeOnMainThreadAsync(() =>
+        {
+            // Clear the popup content
+            PopupContent.Children.Clear();
+
+            PopupContent.Children.Add(new StackLayout
+            {
+                VerticalOptions = LayoutOptions.Center,
+                HorizontalOptions = LayoutOptions.Center,
+                Children =
+                    {
+                        new ActivityIndicator { IsRunning = true, Color = Colors.Blue },
+                        new Label
+                        {
+                            Text = "Processing authentication and posting activity...",
+                            HorizontalOptions = LayoutOptions.Center,
+                            Margin = new Thickness(20),
+                            FontSize = 28
+                        }
+                    }
+            });
+
+            // Ensure the popup is visible
+            WebViewPopup.IsVisible = true;
+
+        });
     }
 
     private async Task ShowSuccessPage()
