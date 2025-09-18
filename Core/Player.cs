@@ -17,6 +17,7 @@ internal class Player
     public event Action<PlayerStatistics> OnTrackReady;
     public event Action<decimal,decimal> OnTrackChange; 
     public event Action<PlayerStatistics> OnStatisticsUpdate;
+    public event Action? OnPlaybackStopped;
     private PlayerStatistics _playerStatistics = new();
 
     private decimal? _totalDistanceM = 0;
@@ -215,6 +216,8 @@ internal class Player
         catch (TaskCanceledException)
         {
             Console.WriteLine("Background loop canceled.");
+            // Invoke the new event to notify subscribers (like ActivityScreen) that playback stopped
+            OnPlaybackStopped?.Invoke();
         }
         finally
         {

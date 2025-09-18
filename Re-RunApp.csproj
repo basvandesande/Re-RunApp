@@ -23,7 +23,7 @@
 		<ApplicationTitle>Re-RunApp</ApplicationTitle>
 
 		<!-- App Identifier -->
-		<ApplicationId>com.azurecodingarchitect.rerunapp</ApplicationId>
+		<ApplicationId>eu.runningapps.rerunapp</ApplicationId>
 
 		<!-- Versions -->
 		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
@@ -87,13 +87,18 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <EmbeddedResource Include="Resources\Raw\nomedia.mp4" />
 	  <EmbeddedResource Include="Resources\Files\Stelvio.gpx" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Maui.Controls" Version="9.0.80" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <MauiAsset Update="Resources\Raw\default.mp4">
+	    <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+	  </MauiAsset>
 	</ItemGroup>
 
 	<ItemGroup>
