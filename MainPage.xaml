@@ -31,7 +31,7 @@
                    Aspect="AspectFit"/>
           
             <Label x:Name="VersionLabel" 
-                   Text="version... - © 2025 Bas van de Sande - runningapps.eu"
+                   Text="version... - © 2025 Bas van de Sande - azurecodingarchitect.com"
                    HorizontalTextAlignment="Center" 
                    TextColor="#C9CBCC"
                    FontSize="Subtitle" />

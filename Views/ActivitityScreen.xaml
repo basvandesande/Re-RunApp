@@ -17,7 +17,7 @@
                                       ShouldShowPlaybackControls="False"
                                       ShouldMute="True"
                                       HorizontalOptions="CenterAndExpand"  
-                                      Source="embed://default.mp4"         
+                                      Source="embed://nomedia.mp4"         
                                       Speed="0.5"
                                       VerticalOptions="Center" ShouldKeepScreenOn="True" />
             </Frame>

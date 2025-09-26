@@ -72,7 +72,7 @@ internal class GpxProcessor
         _gpx.metadata.time = _startTime;
         if (_gpx.metadata.link == null)  _gpx.metadata.link = new gpxMetadataLink();
       
-        _gpx.metadata.link.href = "https://runningapps.eu";
+        _gpx.metadata.link.href = "https://azurecodingarchitect.com";
         _gpx.metadata.link.text = "Posted by the Re-Run app!";
         _gpx.trk.name = $"#Treadmill - {_gpx.trk.name}";
         _gpx.trk.type = "running";

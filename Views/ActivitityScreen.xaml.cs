@@ -18,6 +18,7 @@ public partial class ActivityScreen : ContentPage
     private bool _hasVideo = false;
     private bool _isFirstSegment=true;
     private bool _pulseActive = false;
+    private decimal? _nextAnimationDistance = null;
     private readonly decimal[] _milestones = { 0.25m, 0.5m, 0.75m, 0.993m };
     private int _nextMilestoneIndex = 0;
     private bool _simulate = false;
@@ -40,7 +41,7 @@ public partial class ActivityScreen : ContentPage
         _player.OnStatisticsUpdate += OnStatisticsUpdate;
         _player.OnTrackChange += OnTrackChange; 
         _player.OnTrackReady += OnTrackReady;
-        _player.OnPlaybackStopped += _player_OnPlaybackStopped;     
+     
         this.Loaded += ActivityScreen_Loaded;
         this.Unloaded += ActivityScreen_Unloaded;
 
@@ -92,9 +93,8 @@ public partial class ActivityScreen : ContentPage
         }
         else
         {
-            RouteVideo.Source = MediaSource.FromResource("default.mp4"); // A default video in the resources       
             RouteVideo.ShouldLoopPlayback = true;
-            RouteVideo.Speed = 0.2;
+            RouteVideo.Speed = 1;
 
         }
 
@@ -318,18 +318,12 @@ public partial class ActivityScreen : ContentPage
         await Navigation.PushAsync(new SummaryScreen(_playerStatistics, updatedGpxData));
     }
 
-    private void _player_OnPlaybackStopped()
+    private async void OnStopClicked(object sender, EventArgs e)
     {
-        // handle the screen with the player + buttons
         StartButton.IsVisible = false;
         StopButton.IsVisible = false;
         FinishButton.IsVisible = true;
         RouteVideo.Pause();
-    }
-
-    private async void OnStopClicked(object sender, EventArgs e)
-    {
-        // stop the player, the player invoked an event that the playback is stopped
         await _player.StopAsync();
     }
 
@@ -350,7 +344,7 @@ public partial class ActivityScreen : ContentPage
         _pulseActive = true;
         StartPulseImage.IsVisible = true;
 
-        // Choose the right animation
+        // Kies juiste afbeelding
         switch (milestone)
         {
             case 0.25m:
