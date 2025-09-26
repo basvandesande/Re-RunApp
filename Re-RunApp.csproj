@@ -83,12 +83,11 @@
 
 	<ItemGroup>
 	  <None Remove="Resources\Files\nomedia.mp4" />
-	  <None Remove="Resources\Files\Stelvio.gpx" />
 	</ItemGroup>
 
 	<ItemGroup>
 	  <EmbeddedResource Include="Resources\Raw\nomedia.mp4" />
-	  <EmbeddedResource Include="Resources\Files\Stelvio.gpx" />
+	  <EmbeddedResource Include="Resources\Files\prato-gomagoi.gpx" />
 	</ItemGroup>
 
 	<ItemGroup>

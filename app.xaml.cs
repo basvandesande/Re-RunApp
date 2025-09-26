@@ -24,12 +24,12 @@ public partial class App : Application
             Directory.CreateDirectory(folder);
         }
 
-        string gpxFilePath = Path.Combine(folder, "Stelvio - part I.gpx");
+        string gpxFilePath = Path.Combine(folder, "Climbing from Prato to Gomagoi.gpx");
 
         if (!File.Exists(gpxFilePath))
         {
             var assembly = Assembly.GetExecutingAssembly();
-            string resourceName = "Re_RunApp.Resources.Files.Stelvio.gpx";
+            string resourceName = "Re_RunApp.Resources.Files.prato-gomagoi.gpx";
 
             using (Stream? stream = assembly.GetManifestResourceStream(resourceName))
             {

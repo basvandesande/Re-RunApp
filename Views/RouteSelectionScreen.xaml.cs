@@ -17,6 +17,9 @@ public partial class RouteSelectionScreen : ContentPage
         string folder = Runtime.GetAppFolder();
         string[] files = Directory.GetFiles(folder, "*.gpx");
 
+        // remove LastRun.gpx from the list of files
+        files = files.Where(f => !f.EndsWith("LastRun.gpx", StringComparison.OrdinalIgnoreCase)).ToArray();
+
         var fileList = files.Select(file => new
         {
             FullPath = file,
