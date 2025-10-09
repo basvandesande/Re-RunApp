@@ -2,6 +2,7 @@ namespace Re_RunApp.Views;
 
 using CommunityToolkit.Maui.Views;
 using Re_RunApp.Core;
+using Windows.Media.Audio;
 
 public partial class RouteSelectionScreen : ContentPage
 {
@@ -32,9 +33,73 @@ public partial class RouteSelectionScreen : ContentPage
         {
             RouteListView.SelectedItem = fileList[0];
         }
+
+        // Show/hide the Open Folder button based on platform (if it exists)
+        try
+        {
+            if (OpenFolderButton != null)
+            {
+                OpenFolderButton.IsVisible = DeviceInfo.Platform == DevicePlatform.WinUI || 
+                                           DeviceInfo.Platform == DevicePlatform.MacCatalyst ||
+                                           OperatingSystem.IsWindows(); // Additional check for Windows
+            }
+        }
+        catch
+        {
+            // Button might not be loaded yet, ignore
+        }
     }
 
+    private async void OnOpenFolderClicked(object sender, EventArgs e)
+    {
+        try
+        {
+            string folderPath = Runtime.GetAppFolder();
 
+            await DisplayAlert("Data folder location", $"The .gpx and .mp4 files can be stored in this folder:\r\n\r\n{folderPath}\r\n\r\nThe .gpx and .mp4 file should have the same name!", "OK");
+
+
+            // Debug information
+            System.Diagnostics.Debug.WriteLine($"Attempting to open folder: {folderPath}");
+            System.Diagnostics.Debug.WriteLine($"Current Platform: {DeviceInfo.Platform}");
+            
+            // Check if directory exists before the call
+            bool existsBeforeCall = Directory.Exists(folderPath);
+            System.Diagnostics.Debug.WriteLine($"Directory exists before call: {existsBeforeCall}");
+            
+            bool success = Runtime.OpenFolderInExplorer(folderPath);
+            
+            // Check if directory exists after the call
+            bool existsAfterCall = Directory.Exists(folderPath);
+            System.Diagnostics.Debug.WriteLine($"Directory exists after call: {existsAfterCall}");
+            
+            if (!success)
+            {
+                // Show detailed information in the alert
+                string platformInfo = $"Platform: {DeviceInfo.Platform}\n";
+                string pathInfo = $"Folder path: {folderPath}\n";
+                string existsBeforeInfo = $"Existed before call: {existsBeforeCall}\n";
+                string existsAfterInfo = $"Exists after call: {existsAfterCall}\n";
+                string parentDirInfo = $"Parent directory exists: {Directory.Exists(Path.GetDirectoryName(folderPath))}\n";
+                
+                await DisplayAlert("Debug Information", 
+                    $"Could not open folder automatically.\n\n{platformInfo}{pathInfo}{existsBeforeInfo}{existsAfterInfo}{parentDirInfo}", 
+                    "OK");
+            }
+            else
+            {
+                // Remove the success dialog - it's annoying for users
+                // Just log success instead
+                System.Diagnostics.Debug.WriteLine($"Successfully opened folder: {folderPath}");
+            }
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("Error", 
+                $"Failed to open folder: {ex.Message}\n\nPlatform: {DeviceInfo.Platform}\n\nStack trace: {ex.StackTrace}", 
+                "OK");
+        }
+    }
 
     private void OnRouteSelected(object sender, SelectedItemChangedEventArgs e)
     {

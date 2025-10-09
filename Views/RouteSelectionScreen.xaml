@@ -141,16 +141,29 @@
             </Grid>
         </Frame>
 
-        <!-- Next-knop -->
-        <Button x:Name="NextButton"
-                Grid.Row="3"
-                Text="Next"
-                Clicked="OnNextClicked"
-                HorizontalOptions="Fill"
-                Margin="20,10,20,10"
-                HeightRequest="55"
-                FontSize="Large"
-                TextColor="White"
-                CornerRadius="10"/>
+        <!-- Buttons Grid -->
+        <Grid Grid.Row="3" ColumnDefinitions="0.5*, 2*" ColumnSpacing="10" Margin="20,10,20,10">
+            <!-- Open Folder Button -->
+            <Button x:Name="OpenFolderButton"
+                    Grid.Column="0"
+                    Text="Data Folder"
+                    Clicked="OnOpenFolderClicked"
+                    HorizontalOptions="Fill"
+                    HeightRequest="55"
+                    FontSize="Medium"
+                    TextColor="White"
+                    CornerRadius="10"/>
+            
+            <!-- Next Button -->
+            <Button x:Name="NextButton"
+                    Grid.Column="1"
+                    Text="Next"
+                    Clicked="OnNextClicked"
+                    HorizontalOptions="Fill"
+                    HeightRequest="55"
+                    FontSize="Large"
+                    TextColor="White"
+                    CornerRadius="10"/>
+        </Grid>
     </Grid>
 </ContentPage>

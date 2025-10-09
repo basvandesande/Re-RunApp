@@ -40,19 +40,20 @@
 	<PropertyGroup>
 	  <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net9.0-windows10.0.20348.0</TargetFrameworks>
 	  <BaseOutputPath>C:\Development\Re-Run\Re-RunApp\bin</BaseOutputPath>
-	  <GenerateAppInstallerFile>True</GenerateAppInstallerFile>
+	  <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
 	  <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
 	  <PackageCertificateKeyFile>Re-RunApp_TemporaryKey.pfx</PackageCertificateKeyFile>
 	  <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
 	  <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
 	  <AppxSymbolPackageEnabled>False</AppxSymbolPackageEnabled>
-	  <GenerateTestArtifacts>True</GenerateTestArtifacts>
+	  <GenerateTestArtifacts>False</GenerateTestArtifacts>
 	  <AppInstallerUri>\\diskstation\backup</AppInstallerUri>
 	  <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
 	  <Title>Re-Run</Title>
 	  <Copyright>Copyright (c)2025  Bas van de Sande </Copyright>
 	  <PackageProjectUrl>https://runningapps.eu</PackageProjectUrl>
 	  <PackageIcon>logo.png</PackageIcon>
+	  <GenerateTemporaryStoreCertificate>True</GenerateTemporaryStoreCertificate>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -80,14 +81,21 @@
 		<!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
 		<MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
 	</ItemGroup>
+	
+	<ItemGroup>
+	  <MauiAsset Remove="Resources\Raw\prato-gomagoi.mp4" />
+	</ItemGroup>
 
 	<ItemGroup>
 	  <None Remove="Resources\Files\nomedia.mp4" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <EmbeddedResource Include="Resources\Raw\nomedia.mp4" />
 	  <EmbeddedResource Include="Resources\Files\prato-gomagoi.gpx" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <EmbeddedResource Include="Resources\Raw\prato-gomagoi.mp4" />
 	</ItemGroup>
 
 	<ItemGroup>

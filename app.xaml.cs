@@ -25,17 +25,26 @@ public partial class App : Application
         }
 
         string gpxFilePath = Path.Combine(folder, "Climbing from Prato to Gomagoi.gpx");
+        string resourceName = "Re_RunApp.Resources.Files.prato-gomagoi.gpx";
+        CopyEmbeddedResourceToFile(resourceName, gpxFilePath);
 
-        if (!File.Exists(gpxFilePath))
+        string videoFilePath = Path.Combine(folder, "Climbing from Prato to Gomagoi.mp4");
+        string videoName = "Re_RunApp.Resources.Raw.prato-gomagoi.mp4";
+        CopyEmbeddedResourceToFile(videoName, videoFilePath);
+    }
+
+
+    private void CopyEmbeddedResourceToFile(string resourceName, string destinationPath)
+    {
+        if (!File.Exists(destinationPath))
         {
             var assembly = Assembly.GetExecutingAssembly();
-            string resourceName = "Re_RunApp.Resources.Files.prato-gomagoi.gpx";
 
             using (Stream? stream = assembly.GetManifestResourceStream(resourceName))
             {
                 if (stream != null)
                 {
-                    using (var fileStream = new FileStream(gpxFilePath, FileMode.Create, FileAccess.Write))
+                    using (var fileStream = new FileStream(destinationPath, FileMode.Create, FileAccess.Write))
                     {
                         stream.CopyTo(fileStream);
                     }
@@ -43,6 +52,5 @@ public partial class App : Application
             }
         }
     }
-
 
 }
