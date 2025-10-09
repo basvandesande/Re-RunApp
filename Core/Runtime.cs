@@ -80,7 +80,7 @@ internal class Runtime
         else
         {
             // Default to the app-specific folder for other platforms  
-            return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Re-Run");
+            return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Re-Run");
         }
     }       
 
