@@ -104,6 +104,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <MauiXaml Update="Views\FolderSelectModal.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="Views\LegalDisclaimerModal.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>

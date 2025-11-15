@@ -19,6 +19,9 @@ public partial class RouteDetailsScreen : ContentPage
 
         _gpxFilePath = gpxFilePath;
 
+        LoadSpeedSettings(); // Load speed settings if the file exists
+
+
         this.Loaded += RouteDetailsScreen_Loaded;
         this.Unloaded += RouteDetailsScreen_Unloaded;
     }
@@ -39,20 +42,20 @@ public partial class RouteDetailsScreen : ContentPage
         base.OnAppearing();
 
         LoadRouteDetails();
-        LoadSpeedSettings(); // Load speed settings if the file exists
-        _skipMeters = 0;
-        _useSimulation = false;
-        _startButtonEnabled = false;
-        _heartRateEnabled = false;
-
+     
         var graphPlotter = new GraphPlotter();
         PlotView.Model = graphPlotter.PlotGraph(_gpxProcessor, false);
 
         _heartRateEnabled = await Runtime.HeartRate.ConnectToDevice(false);
-        _startButtonEnabled =  await Runtime.Treadmill.ConnectToDevice(false);
+
+        if (_useSimulation) 
+            _startButtonEnabled = true;
+        else
+            _startButtonEnabled = await Runtime.Treadmill.ConnectToDevice(false);
     
         StartButton.IsEnabled = _startButtonEnabled;
         if (_heartRateEnabled) StartButton.Text = "Start + ❤";
+
     }
 
     private async void OnConnectTreadmillClicked(object sender, EventArgs e)
@@ -221,6 +224,7 @@ public partial class RouteDetailsScreen : ContentPage
     {
         // toggle the simulation
         _useSimulation = !_useSimulation;
+        
         StartButton.IsEnabled = _useSimulation || _startButtonEnabled;
 
         SimulatorLabel.Text = (StartButton.IsEnabled) ? "Treadmill" : "Simulator";

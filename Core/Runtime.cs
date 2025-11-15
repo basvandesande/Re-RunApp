@@ -1,4 +1,10 @@
-﻿namespace Re_RunApp.Core;
+﻿using System;
+using System.IO;
+using System.Threading.Tasks;
+using Microsoft.Maui.Devices;
+using Microsoft.Maui.Storage;
+
+namespace Re_RunApp.Core;
 
 using InTheHand.Bluetooth;
 
@@ -23,6 +29,28 @@ internal class Runtime
         if (File.Exists(deviceIdFile))
         {
             File.Delete(deviceIdFile);
+        }
+    }
+
+    public static bool IsUserFolderPersisted()
+    {
+        // Return true when a user-selected folder path was persisted and the folder still exists.
+        try
+        {
+            var persistFile = GetPersistedUserFolderFilePath();
+            if (!File.Exists(persistFile))
+                return false;
+
+            var userFolder = File.ReadAllText(persistFile).Trim();
+            if (string.IsNullOrWhiteSpace(userFolder))
+                return false;
+
+            return Directory.Exists(userFolder);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"IsUserFolderPersisted failed: {ex.Message}");
+            return false;
         }
     }
 
@@ -152,12 +180,69 @@ internal class Runtime
         return null;
     }
 
+    // Persisted user folder file path inside the MAUI AppDataDirectory
+    private static string GetPersistedUserFolderFilePath()
+    {
+        var local = Path.Combine(FileSystem.AppDataDirectory, "Re-Run");
+        if (!Directory.Exists(local))
+            Directory.CreateDirectory(local);
+        return Path.Combine(local, "user_folder.txt");
+    }
+
+    // Set the user-selected folder and create the "re-run" subfolder
+    public static void SetUserAppFolder(string selectedFolderPath)
+    {
+        if (string.IsNullOrWhiteSpace(selectedFolderPath))
+            return;
+
+        try
+        {
+            // Persist the user folder path (outside of the chosen folder)
+            var persistFile = GetPersistedUserFolderFilePath();
+            File.WriteAllText(persistFile, selectedFolderPath);
+
+            // Ensure the chosen folder exists and create the subfolder "re-run"
+            var reRunFolder = Path.Combine(selectedFolderPath, "re-run");
+            if (!Directory.Exists(reRunFolder))
+                Directory.CreateDirectory(reRunFolder);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to set user app folder: {ex.Message}");
+        }
+    }
+
+    // Get the app folder — prefer previously chosen folder (and ensure "re-run" exists)
     public static string GetAppFolder()
     {
+        // Check persisted user folder
+        try
+        {
+            var persistFile = GetPersistedUserFolderFilePath();
+            if (File.Exists(persistFile))
+            {
+                var userFolder = File.ReadAllText(persistFile).Trim();
+                if (!string.IsNullOrWhiteSpace(userFolder) && Directory.Exists(userFolder))
+                {
+                    var reRunFolder = Path.Combine(userFolder, "re-run");
+                    if (!Directory.Exists(reRunFolder))
+                    {
+                        try { Directory.CreateDirectory(reRunFolder); }
+                        catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Could not create re-run folder in user folder: {ex.Message}"); }
+                    }
+                    return reRunFolder;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error reading persisted user folder: {ex.Message}");
+        }
+
         // Debug: Print platform information
         System.Diagnostics.Debug.WriteLine($"Current Platform: {DeviceInfo.Platform}");
         System.Diagnostics.Debug.WriteLine($"Platform String: {DeviceInfo.Platform.ToString()}");
-        
+
         if (DeviceInfo.Platform == DevicePlatform.Android)
         {
             string documentsPath = Path.Combine("/storage/emulated/0/Documents", "Re-Run");
@@ -167,9 +252,8 @@ internal class Runtime
             System.Diagnostics.Debug.WriteLine($"Using Android path: {documentsPath}");
             return documentsPath;
         }
-        else //if (OperatingSystem.IsWindows()) // Additional check for Windows
+        else // Default for Windows and other platforms, keep previous LocalApplicationData approach
         {
-            // Use LocalApplicationData for Windows to avoid permission issues
             string localAppData = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "Re-Run");
@@ -190,20 +274,6 @@ internal class Runtime
             System.Diagnostics.Debug.WriteLine($"Using Windows LocalApplicationData path: {localAppData}");
             return localAppData;
         }
-        // ----------------------------------------------------------------------------------------------------
-        // attention: the above 'else' now includes all non-Android platforms, including iOS and MacCatalyst.
-        // ----------------------------------------------------------------------------------------------------
-        //else
-        //{
-        //    // Default to the app-specific folder for other platforms  
-        //    string personalPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Re-Run");
-
-        //    if (!Directory.Exists(personalPath))
-        //        Directory.CreateDirectory(personalPath);
-
-        //    System.Diagnostics.Debug.WriteLine($"Using Personal folder path: {personalPath}");
-        //    return personalPath;
-        //}
     }
 
     public static decimal GetSpeed(decimal incline)
@@ -222,6 +292,79 @@ internal class Runtime
             return (decimal)RunSettings.Speed13to15;
 
         return (decimal)RunSettings.Speed13to15 - 0.3m;
+    }
+
+    private static string GetPersistedUserFolderTokenFilePath()
+    {
+        var local = Path.Combine(FileSystem.AppDataDirectory, "Re-Run");
+        if (!Directory.Exists(local))
+            Directory.CreateDirectory(local);
+        return Path.Combine(local, "user_folder_token.txt");
+    }
+
+    // Persist path + optional FutureAccessList token
+    public static void SetUserAppFolderWithToken(string selectedFolderPath, string? futureAccessToken)
+    {
+        if (string.IsNullOrWhiteSpace(selectedFolderPath))
+            return;
+
+        try
+        {
+            var persistFile = GetPersistedUserFolderFilePath();
+            File.WriteAllText(persistFile, selectedFolderPath);
+
+            if (!string.IsNullOrWhiteSpace(futureAccessToken))
+                File.WriteAllText(GetPersistedUserFolderTokenFilePath(), futureAccessToken);
+
+            var reRunFolder = Path.Combine(selectedFolderPath, "re-run");
+            if (!Directory.Exists(reRunFolder))
+                Directory.CreateDirectory(reRunFolder);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to set user app folder with token: {ex.Message}");
+        }
+    }
+
+    public static string? GetPersistedUserFolderToken()
+    {
+        var tokenFile = GetPersistedUserFolderTokenFilePath();
+        if (File.Exists(tokenFile))
+            return File.ReadAllText(tokenFile).Trim();
+        return null;
+    }
+
+    // Replace the conditional-method with a single always-available method.
+    public static async Task TryRestoreFolderAccessFromTokenAsync()
+    {
+        try
+        {
+#if WINDOWS
+            var token = GetPersistedUserFolderToken();
+            if (string.IsNullOrWhiteSpace(token))
+                return;
+
+            var folder = await Windows.Storage.AccessCache.StorageApplicationPermissions.FutureAccessList.GetFolderAsync(token);
+            if (folder is not null)
+            {
+                var path = folder.Path;
+                var persistFile = GetPersistedUserFolderFilePath();
+               
+                var reRunFolder = Path.Combine(path, "Re-Run");
+                if (!Directory.Exists(reRunFolder))
+                    Directory.CreateDirectory(reRunFolder);
+
+                File.WriteAllText(persistFile, path);
+            }
+#else
+            // no-op on non-Windows platforms
+            await Task.CompletedTask;
+#endif
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Restore from token failed: {ex.Message}");
+        }
     }
 }
 

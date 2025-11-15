@@ -7,7 +7,7 @@ public class TreadmillSimulator : ITreadmill
     private bool _isRunning;
     private CancellationTokenSource _cts;
     private decimal _percentageIncline=0;
-    private decimal _speed = 10; // we need to start with a default speed. cruise control takes over
+    private decimal _speed = 8; // we need to start with a default speed. cruise control takes over
 
     public Task StartAsync()
     {

@@ -25,6 +25,7 @@ internal class Treadmill: ITreadmill
 
     public event Action<TreadmillStatistics>? OnStatisticsUpdate;
     public event Action<string>? OnStatusUpdate;
+    
 
     private decimal _minInclination = 0;
     private decimal _maxInclination = 0;
@@ -192,6 +193,10 @@ internal class Treadmill: ITreadmill
         {
             await ResetAsync();
             await _characteristic.WriteValueWithResponseAsync([0x07]);
+
+            // set initial speed to 5 km/h
+            await Task.Delay(1000);
+            await ChangeSpeedAsync(5);
         }
     }
 

@@ -3,17 +3,37 @@
 using Re_RunApp.Core;
 using Re_RunApp.Views;
 using System.Reflection;
+using System.Threading.Tasks;
 
 public partial class App : Application
 {
     public App()
     {
         InitializeComponent();
-        PrepareFolderAndDefaultFile();    
-        MainPage = new AppShell();
+
+        // Run initialization (restore access + prepare files) asynchronously.
+        // InitializeAsync will set MainPage once done.
+        _ = InitializeAsync();
     }
 
+    private async Task InitializeAsync()
+    {
+        // Try to restore access using persisted FutureAccessList token (if present).
+        // This ensures SetUserAppFolderFromToken can recreate the persisted path before PrepareFolderAndDefaultFile runs.
+        try
+        {
+            await Runtime.TryRestoreFolderAccessFromTokenAsync();
+        }
+        catch
+        {
+            // non-fatal, continue with defaults
+        }
 
+        //PrepareFolderAndDefaultFile();
+
+        // Now show UI
+        MainPage = new AppShell();
+    }
 
     private void PrepareFolderAndDefaultFile()
     {

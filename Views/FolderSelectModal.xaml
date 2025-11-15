@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Re_RunApp.Views.FolderSelectModal"
+             BackgroundColor="#80000000"
+             Title="Select folder">
+    <Grid>
+        <Frame BackgroundColor="#33475b"
+           CornerRadius="12"
+           Padding="20"
+           Margin="20"
+           WidthRequest="700"
+           HeightRequest="260"
+           HorizontalOptions="Center"
+           VerticalOptions="Start"
+           HasShadow="True">
+            <Grid RowDefinitions="*, Auto">
+                <ScrollView Grid.Row="0">
+                    <Label Text="Please choose a folder in which Re‑Run can create a folder for the GPX route files and the corresponding video files. After you press OK, the native folder picker will open; selecting your Documents folder is recommended."
+                 TextColor="White"
+                 FontSize="Medium"
+                 LineBreakMode="WordWrap" />
+                </ScrollView>
+
+                <Button Grid.Row="1"
+                Text="OK"
+                BackgroundColor="#F97C00"
+                TextColor="White"
+                HeightRequest="44"
+                VerticalOptions="End"
+                FontSize="Large"
+                Clicked="OnOkClicked" />
+            </Grid>
+        </Frame>
+    </Grid>
+</ContentPage>

@@ -81,6 +81,9 @@ internal class Player
         {
             Console.WriteLine("Treadmill stopped.");
             Task.Run(async () => await StopAsync());
+
+            // notify the ui that the track is ready (stopped)
+            OnTrackReady?.Invoke(_playerStatistics);
         }
         else
         {
@@ -163,11 +166,6 @@ internal class Player
                     if (_heartRate.Enabled) current.HeartRate = _heartRate.CurrentRate;
 
                     index++;
-
-                    // update the statistics in the gpx file as accurate as possible
-                    // obsolete, 
-                    //_ = Task.Run(() => UpdateGpxStatistics(index-1, maxIndex, startTime));
-
 
                     if (index >= maxIndex)
                     {
@@ -255,8 +253,12 @@ internal class Player
             return;
 
         decimal newSpeed = Runtime.GetSpeed(track.InclinationInDegrees);
-        decimal prevSpeed = previousTrack != null ? Runtime.GetSpeed(previousTrack.InclinationInDegrees) : newSpeed;
 
+        // the speed is always > 0 (nature of treadmill). 
+        // if we don't have a previous track, we assume speed was < 0  before to force speed change
+        decimal prevSpeed = -1;
+        if (previousTrack != null)   prevSpeed = Runtime.GetSpeed(previousTrack.InclinationInDegrees);
+        
         int deltaIncline = (int)Math.Abs(track.InclinationInDegrees - (previousTrack?.InclinationInDegrees ?? 0));
         int delayMs = deltaIncline * 150;
 

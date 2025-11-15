@@ -2,15 +2,67 @@ namespace Re_RunApp.Views;
 
 using CommunityToolkit.Maui.Views;
 using Re_RunApp.Core;
-using Windows.Media.Audio;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
 
 public partial class RouteSelectionScreen : ContentPage
 {
+    private CancellationTokenSource? _resizeCts;
+
     public RouteSelectionScreen()
     {
         InitializeComponent();
         this.Loaded += RouteSelectionScreen_Loaded;
 
+        // handle page size changes (fired during window resize / orientation change)
+        this.SizeChanged += RouteSelectionScreen_SizeChanged;
+    }
+
+    private void RouteSelectionScreen_SizeChanged(object? sender, EventArgs e)
+    {
+        // debounce frequent SizeChanged events
+        _resizeCts?.Cancel();
+        _resizeCts = new CancellationTokenSource();
+        var ct = _resizeCts.Token;
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                // small delay to wait for resize to settle
+                await Task.Delay(120, ct);
+                if (ct.IsCancellationRequested) return;
+
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    // recompute sizes and force layout/measure
+                    ForceVideoScaling();
+
+                    // adjust date label font to fit the visible video width
+                    AdjustDateFontSize();
+
+                    // request re-measure/re-layout for the video and page
+                    RouteVideo?.InvalidateMeasure();
+                    this?.InvalidateMeasure();
+                });
+            }
+            catch (TaskCanceledException)
+            {
+                // expected on debounce
+            }
+            catch
+            {
+                // ignore other issues here
+            }
+        }, ct);
+    }
+
+    protected override void OnDisappearing()
+    {
+        base.OnDisappearing();
+        _resizeCts?.Cancel();
+        this.SizeChanged -= RouteSelectionScreen_SizeChanged;
     }
 
     private void RouteSelectionScreen_Loaded(object? sender, EventArgs e)
@@ -130,6 +182,8 @@ public partial class RouteSelectionScreen : ContentPage
             }
             ForceVideoScaling();
 
+            // adjust date font now that text and layout changed
+            //AdjustDateFontSize();
         }
 
         NextButton.IsEnabled = (e.SelectedItem is not null);
@@ -178,5 +232,41 @@ public partial class RouteSelectionScreen : ContentPage
         }
     }
 
+    // Use the displayed video width as the available width for the date label.
+    private void AdjustDateFontSize()
+    {
+        if (DateLabel == null || RouteVideo == null || string.IsNullOrEmpty(DateLabel.Text))
+            return;
 
+        // Prefer actual measured width of the video element; fallback to WidthRequest or page estimate
+        double available = RouteVideo.Width;
+        if (available <= 0) available = RouteVideo.WidthRequest;
+        if (available <= 0) available = this.Width * 0.25; // fallback estimate
+
+        // subtract some padding room so label doesn't touch edges
+        available -= (DateLabel.Padding.Left + DateLabel.Padding.Right + 12);
+        if (available <= 0) return;
+
+        // use a known base font size for measuring
+        double baseFont = Math.Max(DateLabel.FontSize, 36d);
+        DateLabel.FontSize = baseFont;
+
+        // measure the rendered width at baseFont
+        var measured = DateLabel.Measure(double.PositiveInfinity, double.PositiveInfinity);
+        double measuredWidth = measured.Width;
+        if (measuredWidth <= 0) return;
+
+        // scale font by ratio of available width to measured width
+        double scaled = baseFont * (available / measuredWidth);
+
+        // clamp to sensible min/max
+        double newFont = Math.Clamp(scaled, 10.0, 48.0);
+
+        if (Math.Abs(DateLabel.FontSize - newFont) > 0.5)
+        {
+            DateLabel.FontSize = newFont;
+            DateLabel.InvalidateMeasure();
+            this.InvalidateMeasure();
+        }
+    }
 }

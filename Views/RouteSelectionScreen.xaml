@@ -103,13 +103,13 @@
         <Frame Grid.RowSpan="4"
                Grid.Column="1"
                BackgroundColor="White"
-               BorderColor="Black"
+               BorderColor="#222"
                CornerRadius="2"
                Padding="10,10,10,40" 
                HasShadow="True"
-               Margin="700,200,0,0"
-               VerticalOptions="Start"
-               HorizontalOptions="Center"
+               Margin="0,0,40,100"
+               VerticalOptions="End"
+               HorizontalOptions="End"
                Rotation="3"
                ZIndex="1"> 
             <Grid RowDefinitions="Auto,*">
