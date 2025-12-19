@@ -80,7 +80,16 @@ internal class Player
         if (e == "STOP" || e == "STOP KEY")
         {
             Console.WriteLine("Treadmill stopped.");
-            Task.Run(async () => await StopAsync());
+
+            // Prevent recursive calls to StopAsync triggered by treadmill stop notifications.
+            // Instead, cancel the player's background loop and mark as not playing.
+            try
+            {
+                _cancellationTokenSource?.Cancel();
+            }
+            catch { }
+
+            _isPlaying = false;
 
             // notify the ui that the track is ready (stopped)
             OnTrackReady?.Invoke(_playerStatistics);

@@ -22,6 +22,9 @@ public partial class MainPage : ContentPage
 
     private async void OnStartClicked(object sender, EventArgs e)
     {
+        // by clicking start we assume the disclaimer is accepted
+        // the mechanism is in place to remember this for next app starts
+        SaveDisclaimerState(true);
         await Navigation.PushAsync(new RouteSelectionScreen());
     }
 
@@ -29,6 +32,8 @@ public partial class MainPage : ContentPage
     {
         base.OnAppearing();
 
+        // ensure we have a pulse on return :)
+        _pulseActive = true;
         StartLogoPulse();
      
         var version = AppInfo.Current.VersionString;
@@ -65,6 +70,7 @@ public partial class MainPage : ContentPage
 
     }
 
+
     private async void OnSettingsIconTapped(object sender, EventArgs e)
     {
         // Show the Strava settings screen as a modal popup
@@ -89,49 +95,6 @@ public partial class MainPage : ContentPage
     private async void OnDisclaimerCheckedChanged(object sender, CheckedChangedEventArgs e)
     {
         StartButton.IsEnabled = e.Value;
-        SaveDisclaimerState(e.Value);
-
-        if (!e.Value)
-            return;
-
-        // Try to create a folder in the user's Documents
-        var docs = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-        var target = Path.Combine(docs, "Re-Run");
-
-        try
-        {
-            if (!Directory.Exists(target))
-                Directory.CreateDirectory(target);
-
-            // optional marker file
-            File.WriteAllText(Path.Combine(target, "re-run-created.txt"), DateTime.UtcNow.ToString("s"));
-        }
-        catch (UnauthorizedAccessException)
-        {
-            // Packaged Store app likely blocked — fall back to FolderPicker so user grants access
-            var ok = await DisplayAlert(
-                "Permission required",
-                "I can't create a folder in Documents. Grant access by choosing a folder or enable file access for this app in Windows Settings.",
-                "Pick folder",
-                "Cancel");
-
-            if (ok)
-            {
-                var picker = _serviceProvider.GetService<IFolderPicker>();
-                if (picker != null)
-                {
-                    var picked = await picker.PickFolderAsync();
-                    if (!string.IsNullOrEmpty(picked))
-                    {
-                        Runtime.SetUserAppFolderWithToken(picked, null); // or SetUserAppFolder(picked)
-                    }
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"Failed creating Documents\\Re-Run: {ex.Message}");
-        }
     }
 
     private void SaveDisclaimerState(bool isAccepted)
@@ -167,17 +130,15 @@ public partial class MainPage : ContentPage
             {
                 // Read the state from the file
                 var content = File.ReadAllText(filePath);
-                if (bool.TryParse(content, out var isAccepted))
-                {
-                    // Set the checkbox and button state
-                    DisclaimerCheckBox.IsChecked = isAccepted;
-                    // do we need to hide the label and checkbox
-                    DisclaimerCheckBox.IsVisible = !isAccepted;
-                    DisclaimerLabel.IsVisible = !isAccepted;
+                var isAccepted = string.Compare(content, "true" ,true) == 0;
+                // Set the checkbox and button state
+                DisclaimerCheckBox.IsChecked = isAccepted;
+                // do we need to hide the label and checkbox
+                DisclaimerCheckBox.IsVisible = !isAccepted;
+                DisclaimerLabel.IsVisible = !isAccepted;
 
-                    StartButton.IsEnabled = isAccepted;
-                }
-
+                StartButton.IsEnabled = isAccepted;
+                
             }
         }
         catch (Exception ex)
