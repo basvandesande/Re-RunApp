@@ -155,15 +155,41 @@ public partial class RouteSelectionScreen : ContentPage
 
     private void OnRouteSelected(object sender, SelectedItemChangedEventArgs e)
     {
-        if (e.SelectedItem is not null)
+        // enable/disable next button immediately
+        NextButton.IsEnabled = (e.SelectedItem is not null);
+
+        if (e.SelectedItem is null)
+            return;
+
+        // If page is not yet loaded, defer processing once (no recursion)
+        if (!this.IsLoaded)
         {
-            if (!this.IsLoaded)
+            var selected = e.SelectedItem;
+            EventHandler? handler = null;
+            handler = (s, ev) =>
             {
-                OnRouteSelected(sender, e);
-            }
-            var selectedRoute = (dynamic)e.SelectedItem;
+                this.Loaded -= handler;
+                MainThread.BeginInvokeOnMainThread(() => ProcessSelection(selected));
+            };
+            this.Loaded += handler;
+            return;
+        }
+
+        // Page is loaded - process selection now
+        ProcessSelection(e.SelectedItem);
+    }
+
+    // Move selection processing to a separate method to avoid recursion and make error handling clearer
+    private void ProcessSelection(object selectedItem)
+    {
+        if (selectedItem is null) return;
+
+        try
+        {
+            var selectedRoute = (dynamic)selectedItem;
             string fullPath = selectedRoute.FullPath;
 
+            // Load route details (may throw on corrupt GPX)
             var routeDetails = GetRouteDetails(fullPath);
 
             TitleLabel.Text = routeDetails.Title;
@@ -171,6 +197,7 @@ public partial class RouteSelectionScreen : ContentPage
             ElevationLabel.Text = $"{routeDetails.Elevation:F0}";
             DateLabel.Text = $"{routeDetails.Date:ddd, d MMMM yyyy}";
 
+            // Try to load associated video; fall back gracefully
             string videoPath = Path.ChangeExtension(fullPath, ".mp4");
             if (File.Exists(videoPath))
             {
@@ -178,15 +205,35 @@ public partial class RouteSelectionScreen : ContentPage
             }
             else
             {
-                RouteVideo.Source = MediaSource.FromResource("nomedia.mp4");
+                try
+                {
+                    RouteVideo.Source = MediaSource.FromResource("nomedia.mp4");
+                }
+                catch
+                {
+                    RouteVideo.Source = null;
+                }
             }
+
             ForceVideoScaling();
-
-            // adjust date font now that text and layout changed
-            //AdjustDateFontSize();
         }
+        catch (Exception ex)
+        {
+            // don't crash the UI on bad GPX or IO issues - log and show minimal info
+            System.Diagnostics.Debug.WriteLine($"Error processing selected route: {ex.Message}");
+            try
+            {
+                // best-effort: show filename if possible
+                var selectedRoute = (dynamic)selectedItem;
+                TitleLabel.Text = Path.GetFileNameWithoutExtension((string)selectedRoute.FullPath);
+            }
+            catch { }
 
-        NextButton.IsEnabled = (e.SelectedItem is not null);
+            DistanceLabel.Text = "--";
+            ElevationLabel.Text = "--";
+            DateLabel.Text = string.Empty;
+            RouteVideo.Source = null;
+        }
     }
 
     private (string Title, decimal Distance, decimal Elevation, DateTime Date) GetRouteDetails(string fullPath)

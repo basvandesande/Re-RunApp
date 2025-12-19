@@ -1,6 +1,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:controls="clr-namespace:Re_RunApp.Views.Controls"
              x:Class="Re_RunApp.Views.RouteSelectionScreen"
              Title="Select Route"
              BackgroundColor="White">
@@ -112,19 +113,18 @@
                HorizontalOptions="End"
                Rotation="3"
                ZIndex="1"> 
-            <Grid RowDefinitions="Auto,*">
-                <!-- Video -->
-                <toolkit:MediaElement x:Name="RouteVideo"
-                                      Grid.Row="0"
-                                      ShouldAutoPlay="True"
-                                      Aspect="AspectFill"
-                                      ShouldLoopPlayback="True"
-                                      ShouldShowPlaybackControls="False"
-                                      ShouldMute="True"
-                                      Source="embed://nomedia.mp4"
-                                      HeightRequest="120"
-                                      WidthRequest="200"
-                                      BackgroundColor="Transparent" />
+            <Grid RowDefinitions="Auto,Auto">
+                <!-- Aspect-ratio container ensures consistent polaroid proportions -->
+                <controls:AspectRatioContainer Ratio="0.5625" Grid.Row="0" HorizontalOptions="Center">
+                    <toolkit:MediaElement x:Name="RouteVideo"
+                                          ShouldAutoPlay="True"
+                                          Aspect="AspectFill"
+                                          ShouldLoopPlayback="True"
+                                          ShouldShowPlaybackControls="False"
+                                          ShouldMute="True"
+                                          Source="embed://nomedia.mp4"
+                                          BackgroundColor="Transparent" />
+                </controls:AspectRatioContainer>
 
                 <!-- Text below the video -->
                 <Label Text="27-08-2025"
