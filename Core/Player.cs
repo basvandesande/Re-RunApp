@@ -232,18 +232,62 @@ internal class Player
 
     private void UpdateGpxStatistics()
     {
-        for (int i=0; i< _trackPointTimestamps.Count; i++)
+        // Map collected timestamps to track points
+        var trackPoints = _gpx.Gpx.trk.trkseg;
+
+        DateTime? lastAssigned = null;
+        int assigned = 0;
+
+        for (int i = 0; i < _trackPointTimestamps.Count && i < trackPoints.Length; i++)
         {
             var (time, hr) = _trackPointTimestamps[i];
-            var trackPoint = _gpx.Gpx.trk.trkseg[i];
-            trackPoint.time = time;
+            trackPoints[i].time = time;
+            lastAssigned = time;
+            assigned++;
+
             if (hr.HasValue)
             {
-                if (trackPoint.extensions == null) trackPoint.extensions = new();
-                if (trackPoint.extensions.TrackPointExtension == null) trackPoint.extensions.TrackPointExtension = new();
-                trackPoint.extensions.TrackPointExtension.hr = (byte)hr.Value;
+                if (trackPoints[i].extensions == null) trackPoints[i].extensions = new();
+                if (trackPoints[i].extensions.TrackPointExtension == null) trackPoints[i].extensions.TrackPointExtension = new();
+                trackPoints[i].extensions.TrackPointExtension.hr = (byte)hr.Value;
             }
         }
+
+        // If we didn't collect timestamps for trailing points, fill them forward monotonically
+        if (assigned > 0)
+        {
+            DateTime fillTime = lastAssigned!.Value;
+            for (int i = assigned; i < trackPoints.Length; i++)
+            {
+                // increment by 1 second to keep monotonic increasing times
+                fillTime = fillTime.AddSeconds(1);
+                trackPoints[i].time = fillTime;
+            }
+        }
+        else if (trackPoints.Length > 0)
+        {
+            // No timestamps collected at all - set all points to now (monotonic)
+            DateTime now = DateTime.UtcNow;
+            for (int i = 0; i < trackPoints.Length; i++)
+            {
+                trackPoints[i].time = now.AddSeconds(i);
+            }
+        }
+
+        // Ensure metadata.time is set to the first trackpoint time (more reliable)
+        try
+        {
+            if (_gpx.Gpx.metadata == null) _gpx.Gpx.metadata = new gpxMetadata();
+            if (_gpx.Gpx.trk.trkseg != null && _gpx.Gpx.trk.trkseg.Length > 0)
+            {
+                _gpx.Gpx.metadata.time = trackPoints[0].time;
+            }
+            else
+            {
+                _gpx.Gpx.metadata.time = DateTime.UtcNow;
+            }
+        }
+        catch { }
     }
 
     private async Task AdjustTreadmillAsync(Track track, Track? previousTrack)

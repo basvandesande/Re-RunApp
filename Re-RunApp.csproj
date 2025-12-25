@@ -45,7 +45,7 @@
 	  <PackageCertificateKeyFile>Re-RunApp_TemporaryKey.pfx</PackageCertificateKeyFile>
 	  <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
 	  <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
-	  <AppxSymbolPackageEnabled>False</AppxSymbolPackageEnabled>
+	  <AppxSymbolPackageEnabled>True</AppxSymbolPackageEnabled>
 	  <GenerateTestArtifacts>False</GenerateTestArtifacts>
 	  <AppInstallerUri>\\diskstation\backup</AppInstallerUri>
 	  <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
