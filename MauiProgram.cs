@@ -29,6 +29,14 @@ public static class MauiProgram
                 fonts.AddFont("PermanentMarker-Regular.ttf", "PermanentMarker");
             });
 
+        // Add unhandled exception logging
+        AppDomain.CurrentDomain.UnhandledException += (s, e) => {
+            var ex = e.ExceptionObject as Exception;
+            System.Diagnostics.Debug.WriteLine($"Unhandled exception: {ex?.ToString()}");
+            // Log to file or telemetry service
+        };
+
+
 #if DEBUG
         builder.Logging.AddDebug();
 #endif

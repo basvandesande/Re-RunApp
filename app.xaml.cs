@@ -16,6 +16,14 @@ public partial class App : Application
         _ = InitializeAsync();
     }
 
+    protected override Window CreateWindow(IActivationState? activationState)
+    {
+        // Create the main window and set its page to AppShell.
+        var window = new Window(new AppShell());
+        return window;
+    }
+
+
     private async Task InitializeAsync()
     {
         // Try to restore access using persisted FutureAccessList token (if present).
@@ -32,7 +40,12 @@ public partial class App : Application
         //PrepareFolderAndDefaultFile();
 
         // Now show UI
-        MainPage = new AppShell();
+        // Instead of MainPage = new AppShell();
+        // Use the recommended approach to set the root page:
+        if (Windows.Count > 0)
+        {
+            Windows[0].Page = new AppShell();
+        }
     }
 
     private void PrepareFolderAndDefaultFile()

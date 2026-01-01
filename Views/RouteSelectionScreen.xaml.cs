@@ -242,18 +242,37 @@ public partial class RouteSelectionScreen : ContentPage
         gpxProcessor.LoadGpxData(fullPath);
         gpxProcessor.GetRun();
 
-        return (gpxProcessor.Gpx.trk.name, gpxProcessor.TotalDistanceInMeters, gpxProcessor.TotalElevationInMeters, gpxProcessor.Gpx.metadata.time);
+        // Safely access possibly-null properties
+        var gpx = gpxProcessor.Gpx;
+        var trk = gpx?.trk;
+        var metadata = gpx?.metadata;
+
+        string title = trk?.name ?? "Unknown";
+        decimal distance = gpxProcessor.TotalDistanceInMeters;
+        decimal elevation = gpxProcessor.TotalElevationInMeters;
+        DateTime date = metadata?.time ?? DateTime.MinValue;
+
+        return (title, distance, elevation, date);
     }
     
     private async void OnNextClicked(object sender, EventArgs e)
     {
         if (RouteListView.SelectedItem is not null)
         {
-            var selectedRoute = (dynamic)RouteListView.SelectedItem;
-            string selectedGpxFilePath = selectedRoute.FullPath;
+            try
+            {
 
-            // Pass the selected GPX file path to the RouteDetailsScreen
-            await Navigation.PushAsync(new RouteDetailsScreen(selectedGpxFilePath));
+                var selectedRoute = (dynamic)RouteListView.SelectedItem;
+                string selectedGpxFilePath = selectedRoute.FullPath;
+
+                // Pass the selected GPX file path to the RouteDetailsScreen
+                await Navigation.PushAsync(new RouteDetailsScreen(selectedGpxFilePath));
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert("Error", $"Could not navigate to route details: {ex.Message}", "OK");
+                System.Diagnostics.Debug.WriteLine($"Navigation error: {ex}");
+            }
         }
     }
  

@@ -8,7 +8,7 @@ using OxyPlot.Series;
 internal class GraphPlotter
 {
 
-    private GpxProcessor _gpx;
+    private GpxProcessor? _gpx;
     private int _width = 1920;
     private int _height = 1080;
     private bool _minimal = false;

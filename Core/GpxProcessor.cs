@@ -32,7 +32,8 @@ internal class GpxProcessor
             using (FileStream fileStream = new(filePath, FileMode.Open))
             using (StreamReader reader = new(fileStream))
             {
-                _gpx = (gpx)serializer.Deserialize(reader);
+                var deserialized = serializer.Deserialize(reader);
+                _gpx = deserialized as gpx ?? throw new Exception("Deserialization returned null GPX object");
             }
         }
         catch (Exception e)
@@ -58,7 +59,7 @@ internal class GpxProcessor
             }
         }
 
-        if (maxIndex > -1 && _gpx != null)
+        if (maxIndex > -1 && _gpx != null && _gpx.trk != null && _gpx.trk.trkseg != null)
         {
             _gpx.trk.trkseg = _gpx.trk.trkseg.Where((x, i) => i <= maxIndex).ToArray();
         }
@@ -69,11 +70,15 @@ internal class GpxProcessor
     {
         if (_gpx == null) return;
         _gpx.creator = "Re-Run - running app";
+        if (_gpx.metadata == null)
+            _gpx.metadata = new gpxMetadata();
         _gpx.metadata.time = _startTime;
         if (_gpx.metadata.link == null)  _gpx.metadata.link = new gpxMetadataLink();
-      
+
         _gpx.metadata.link.href = "https://azurecodingarchitect.com";
         _gpx.metadata.link.text = "Posted by the Re-Run app!";
+
+        if (_gpx.trk == null) _gpx.trk = new gpxTrk();
         _gpx.trk.name = $"#Treadmill - {_gpx.trk.name}";
         _gpx.trk.type = "running";
     }
@@ -95,8 +100,10 @@ internal class GpxProcessor
 
             // rebuild a new underlying gpx with the remaining segments
             Track lastTrack = tracks[lastIndex];
-            _gpx.trk.trkseg = [.. _gpx.trk.trkseg.Skip(lastTrack.GpxLastIndex+1)];
-
+            if (_gpx?.trk?.trkseg != null)
+            {
+                _gpx.trk.trkseg = [.. _gpx.trk.trkseg.Skip(lastTrack.GpxLastIndex + 1)];
+            }
             tracks = ProcessGpxSegments(_gpx);
             tracks = CreateNewTracks(tracks);
         }
@@ -159,11 +166,16 @@ internal class GpxProcessor
     }
 
 
-    private List<Track> ProcessGpxSegments(gpx gpxData)
+    private List<Track> ProcessGpxSegments(gpx? gpxData)
     {
+
         TotalElevationInMeters = 0;
         List<Track> tracks = [];
         decimal totalRunDistance = DISTANCE_OFFSET_START;
+
+        // Add null checks for gpxData, gpxData.trk, and gpxData.trk.trkseg
+        if (gpxData == null || gpxData.trk == null || gpxData.trk.trkseg == null)
+            return tracks;
 
         for (int index = 0; index < gpxData.trk.trkseg.Length; index++)
         {
@@ -174,7 +186,6 @@ internal class GpxProcessor
             totalRunDistance += distanceInMeters;
 
             TotalElevationInMeters += elevationInMeters >= 0 ? elevationInMeters : 0;
-
 
             tracks.Add(new Track
             {
@@ -311,9 +322,19 @@ internal class GpxProcessor
 
     private static double ToRadians(double angle) => angle * (Math.PI / 180);
 
-    public int FindMinimumElevation() => _gpx == null ? 0 : (int)_gpx.trk.trkseg.Min(t => t.ele);
+    public int FindMinimumElevation()
+    {
+        if (_gpx?.trk?.trkseg == null || _gpx.trk.trkseg.Length == 0)
+            return 0;
+        return (int)_gpx.trk.trkseg.Min(t => t.ele);
+    }
 
-    public int FindMaximumElevation() => _gpx == null ? 0 : (int)_gpx.trk.trkseg.Max(t => t.ele);
+    public int FindMaximumElevation()
+    {
+        if (_gpx?.trk?.trkseg == null || _gpx.trk.trkseg.Length == 0)
+            return 0;
+        return (int)_gpx.trk.trkseg.Max(t => t.ele);
+    }
 
     public Track? FindTrack(decimal distance) => _gpx == null ? null : _tracks.FirstOrDefault(t => t.TrackStartDistanceInMeters <= distance && t.TotalDistanceInMeters > distance);
 

@@ -92,6 +92,14 @@ public partial class SummaryScreen : ContentPage
         // Clear any existing content in the popup
         PopupContent.Children.Clear();
 
+        // Ensure StravaSettings is not null before dereferencing
+        if (Runtime.StravaSettings == null)
+        {
+            // Optionally, show an error or return early
+            _ = ShowErrorPage("Strava settings are not configured.");
+            return;
+        }
+
         // Create and add the WebView for Strava authentication
         var webView = new WebView
         {
@@ -108,8 +116,14 @@ public partial class SummaryScreen : ContentPage
         WebViewPopup.IsVisible = true;
     }
 
-    private async void WebView_Navigating(object sender, WebNavigatingEventArgs e)
+    private async void WebView_Navigating(object? sender, WebNavigatingEventArgs e)
     {
+        // Ensure StravaSettings is not null before dereferencing
+        if (Runtime.StravaSettings == null)
+        {
+            await ShowErrorPage("Strava settings are not configured.");
+            return;
+        }
 
         // Intercept the redirect to localhost BEFORE it loads
         if (e.Url.StartsWith(Runtime.StravaSettings.RedirectUrl) && !_isProcessingCallback)
@@ -318,6 +332,11 @@ public partial class SummaryScreen : ContentPage
     {
         try
         {
+            // Ensure StravaSettings is not null before dereferencing
+            if (Runtime.StravaSettings == null)
+            {
+                return null;
+            }
             using var client = new HttpClient();
             var values = new Dictionary<string, string>
                 {
@@ -339,7 +358,7 @@ public partial class SummaryScreen : ContentPage
             var tokenData = JsonSerializer.Deserialize<StravaTokenResponse>(responseString);
             return tokenData?.AccessToken;
         }
-        catch (Exception ex)
+        catch //(Exception ex)
         {
             return null;
         }

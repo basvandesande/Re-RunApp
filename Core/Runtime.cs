@@ -278,6 +278,9 @@ internal class Runtime
 
     public static decimal GetSpeed(decimal incline)
     {
+        if (RunSettings == null)
+            throw new InvalidOperationException("RunSettings must be initialized before calling GetSpeed.");
+
         if (incline < 0)
             return (decimal)RunSettings.Speed0to5 + 0.5m;
         if (incline <= 5)

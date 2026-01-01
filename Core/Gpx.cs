@@ -1,4 +1,6 @@
-﻿namespace Re_RunApp.Core;
+﻿using System.Net.Http.Headers;
+
+namespace Re_RunApp.Core;
 
 /// <remarks/>
 [Serializable()]
@@ -7,13 +9,13 @@
 [System.Xml.Serialization.XmlRoot(Namespace = "http://www.topografix.com/GPX/1/1", IsNullable = false)]
 public partial class gpx
 {
-    private gpxMetadata metadataField;
-    private gpxTrk trkField;
-    private string creatorField;
+    private gpxMetadata? metadataField;
+    private gpxTrk? trkField;
+    private string? creatorField;
     private decimal versionField;
 
     /// <remarks/>
-    public gpxMetadata metadata
+    public gpxMetadata? metadata
     {
         get
         {
@@ -26,7 +28,7 @@ public partial class gpx
     }
 
     /// <remarks/>
-    public gpxTrk trk
+    public gpxTrk? trk
     {
         get
         {
@@ -44,7 +46,7 @@ public partial class gpx
     {
         get
         {
-            return creatorField;
+            return creatorField ?? string.Empty;
         }
         set
         {
@@ -74,7 +76,7 @@ public partial class gpx
 public partial class gpxMetadata
 {
 
-    private gpxMetadataLink linkField;
+    private gpxMetadataLink? linkField;
 
     private DateTime timeField;
 
@@ -83,7 +85,7 @@ public partial class gpxMetadata
     {
         get
         {
-            return linkField;
+            return linkField = new gpxMetadataLink();
         }
         set
         {
@@ -112,9 +114,9 @@ public partial class gpxMetadata
 public partial class gpxMetadataLink
 {
 
-    private string textField;
+    private string textField = string.Empty;
 
-    private string hrefField;
+    private string? hrefField;
 
     /// <remarks/>
     public string text
@@ -135,7 +137,7 @@ public partial class gpxMetadataLink
     {
         get
         {
-            return hrefField;
+            return hrefField ?? string.Empty;
         }
         set
         {
@@ -151,14 +153,14 @@ public partial class gpxMetadataLink
 public partial class gpxTrk
 {
 
-    private string nameField;
+    private string? nameField;
 
-    private string typeField;
+    private string? typeField;
 
-    private gpxTrkTrkpt[] trksegField;
+    private gpxTrkTrkpt[] trksegField = Array.Empty<gpxTrkTrkpt>();
 
     /// <remarks/>
-    public string name
+    public string? name
     {
         get
         {
@@ -171,7 +173,7 @@ public partial class gpxTrk
     }
 
     /// <remarks/>
-    public string type
+    public string? type
     {
         get
         {
@@ -209,7 +211,7 @@ public partial class gpxTrkTrkpt
 
     private DateTime timeField;
 
-    private gpxTrkTrkptExtensions extensionsField;
+    private gpxTrkTrkptExtensions? extensionsField;
 
     private double latField;
 
@@ -242,7 +244,7 @@ public partial class gpxTrkTrkpt
     }
 
     /// <remarks/>
-    public gpxTrkTrkptExtensions extensions
+    public gpxTrkTrkptExtensions? extensions
     {
         get
         {
@@ -290,11 +292,11 @@ public partial class gpxTrkTrkpt
 public partial class gpxTrkTrkptExtensions
 {
 
-    private TrackPointExtension trackPointExtensionField;
+    private TrackPointExtension? trackPointExtensionField;
 
     /// <remarks/>
     [System.Xml.Serialization.XmlElement(Namespace = "http://www.garmin.com/xmlschemas/TrackPointExtension/v1")]
-    public TrackPointExtension TrackPointExtension
+    public TrackPointExtension? TrackPointExtension
     {
         get
         {

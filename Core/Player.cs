@@ -14,9 +14,9 @@ internal class Player
 
     private CancellationTokenSource? _cancellationTokenSource;
 
-    public event Action<PlayerStatistics> OnTrackReady;
-    public event Action<decimal,decimal> OnTrackChange; 
-    public event Action<PlayerStatistics> OnStatisticsUpdate;
+    public event Action<PlayerStatistics>? OnTrackReady;
+    public event Action<decimal,decimal>? OnTrackChange; 
+    public event Action<PlayerStatistics>? OnStatisticsUpdate;
     private PlayerStatistics _playerStatistics = new();
 
     private decimal? _totalDistanceM = 0;
@@ -61,7 +61,8 @@ internal class Player
 
         if (_isPlaying)
         {
-            _totalDistanceM = (decimal)e.DistanceM;
+            // Fix: Check for null before casting
+            _totalDistanceM = e.DistanceM.HasValue ? (decimal)e.DistanceM.Value : 0;
 
             _playerStatistics.CurrentDistanceM = _totalDistanceM < _playerStatistics.CurrentDistanceM ?
                                                 _playerStatistics.CurrentDistanceM + _totalDistanceM :
@@ -69,7 +70,6 @@ internal class Player
 
             _playerStatistics.CurrentSpeedKMH = e.SpeedKMH;
 
-           
             // Forward the throttled update
             OnStatisticsUpdate?.Invoke(_playerStatistics);
         }
@@ -145,8 +145,11 @@ internal class Player
         Track current = _gpx.Tracks[index];
         Track previous = _gpx.Tracks[index];
 
-        // Calculate cumulative distances for the current track
-        var cumulativeDistances = CalculateCumulativeDistances(_gpx.Gpx.trk.trkseg);
+        // Safely get track points for cumulative distance calculation
+        var trackPoints = _gpx.Gpx?.trk?.trkseg;
+        var cumulativeDistances = trackPoints != null
+            ? CalculateCumulativeDistances(trackPoints)
+            : new List<double> { 0 };
 
         Console.WriteLine("Device is running...");
         
@@ -233,7 +236,10 @@ internal class Player
     private void UpdateGpxStatistics()
     {
         // Map collected timestamps to track points
-        var trackPoints = _gpx.Gpx.trk.trkseg;
+        var trackPoints = _gpx.Gpx?.trk?.trkseg;
+
+        if (trackPoints == null)
+            return;
 
         DateTime? lastAssigned = null;
         int assigned = 0;
@@ -247,8 +253,11 @@ internal class Player
 
             if (hr.HasValue)
             {
-                if (trackPoints[i].extensions == null) trackPoints[i].extensions = new();
-                if (trackPoints[i].extensions.TrackPointExtension == null) trackPoints[i].extensions.TrackPointExtension = new();
+                if (trackPoints[i].extensions == null)
+                    trackPoints[i].extensions = new gpxTrkTrkptExtensions();
+                if (trackPoints[i].extensions.TrackPointExtension == null)
+                    trackPoints[i].extensions.TrackPointExtension = new TrackPointExtension();
+                // Safe to dereference now
                 trackPoints[i].extensions.TrackPointExtension.hr = (byte)hr.Value;
             }
         }
@@ -274,11 +283,11 @@ internal class Player
             }
         }
 
-        // Ensure metadata.time is set to the first trackpoint time (more reliable)
-        try
+        // Ensure _gpx.Gpx and its nested properties are not null before accessing trk.trkseg
+        if (_gpx.Gpx != null)
         {
             if (_gpx.Gpx.metadata == null) _gpx.Gpx.metadata = new gpxMetadata();
-            if (_gpx.Gpx.trk.trkseg != null && _gpx.Gpx.trk.trkseg.Length > 0)
+            if (_gpx.Gpx.trk != null && _gpx.Gpx.trk.trkseg != null && _gpx.Gpx.trk.trkseg.Length > 0)
             {
                 _gpx.Gpx.metadata.time = trackPoints[0].time;
             }
@@ -287,7 +296,6 @@ internal class Player
                 _gpx.Gpx.metadata.time = DateTime.UtcNow;
             }
         }
-        catch { }
     }
 
     private async Task AdjustTreadmillAsync(Track track, Track? previousTrack)

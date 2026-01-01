@@ -18,7 +18,6 @@ public partial class ActivityScreen : ContentPage
     private bool _hasVideo = false;
     private bool _isFirstSegment=true;
     private bool _pulseActive = false;
-    private decimal? _nextAnimationDistance = null;
     private readonly decimal[] _milestones = { 0.25m, 0.5m, 0.75m, 0.993m };
     private int _nextMilestoneIndex = 0;
     private bool _simulate = false;
@@ -37,7 +36,9 @@ public partial class ActivityScreen : ContentPage
 
         if (simulate) _heartRate.Enabled = true; // Enable heart rate simulation if in simulation mode
 
-        _player = new Player(_gpxProcessor, _treadmill, _heartRate, Runtime.RunSettings);
+        // Ensure RunSettings is not null before passing to Player
+        var runSettings = Runtime.RunSettings ?? new RunSettings();
+        _player = new Player(_gpxProcessor, _treadmill, _heartRate, runSettings);
         _player.OnStatisticsUpdate += OnStatisticsUpdate;
         _player.OnTrackChange += OnTrackChange; 
         _player.OnTrackReady += OnTrackReady;
@@ -46,7 +47,6 @@ public partial class ActivityScreen : ContentPage
         this.Unloaded += ActivityScreen_Unloaded;
 
         RouteVideo.MediaOpened += OnMediaOpened;
-
     }
 
     private void ActivityScreen_Loaded(object? sender, EventArgs e)
@@ -58,7 +58,7 @@ public partial class ActivityScreen : ContentPage
 
         PlotView.Model = _graphPlotter.PlotGraph(_gpxProcessor, false);
 
-        this.Title = _gpxProcessor?.Gpx?.trk.name;
+        this.Title = _gpxProcessor?.Gpx?.trk?.name ?? string.Empty;
 
         string videoPath = Path.ChangeExtension(_gpxFilePath, ".mp4");
         _hasVideo = File.Exists(videoPath);

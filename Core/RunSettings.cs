@@ -8,7 +8,7 @@ public class RunSettings
     public double Speed11to12 { get; set; }
     public double Speed13to15 { get; set; }
     public bool AutoSpeedControl { get; set; }
-    public string Name { get; set; }
+    public string Name { get; set; } = string.Empty;
     public bool Favourite { get; set; }
     public Intensity Level { get; set; } = Intensity.Moderate;
     public decimal TotalDistance { get; set; } = 0;

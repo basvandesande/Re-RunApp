@@ -92,7 +92,7 @@ public partial class MainPage : ContentPage
         base.OnDisappearing();
     }
 
-    private async void OnDisclaimerCheckedChanged(object sender, CheckedChangedEventArgs e)
+    private void OnDisclaimerCheckedChanged(object sender, CheckedChangedEventArgs e)
     {
         StartButton.IsEnabled = e.Value;
     }

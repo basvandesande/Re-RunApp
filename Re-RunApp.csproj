@@ -56,6 +56,14 @@
 	  <GenerateTemporaryStoreCertificate>True</GenerateTemporaryStoreCertificate>
 	</PropertyGroup>
 
+	<PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
+	  <!-- Force specific Windows App Runtime version -->
+	  <UseWindowsAppSDK>true</UseWindowsAppSDK>
+	  <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+	  <!-- Ensure x64 build for Surface Go 3 -->
+	  <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+	</PropertyGroup>
+
 	<ItemGroup>
 		<PackageReference Include="CommunityToolkit.Maui" Version="12.0.0" />
 		<PackageReference Include="CommunityToolkit.Maui.MediaElement" Version="6.0.2" />
