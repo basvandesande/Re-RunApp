@@ -13,49 +13,78 @@ public partial class SummaryScreen : ContentPage
     private WebView? _webView;
     private bool _isProcessingCallback = false;
 
-    private static readonly string SCOPE = "activity:write,activity:read";
+    // Add thread safety fields
+    private readonly SemaphoreSlim _authSemaphore = new SemaphoreSlim(1, 1);
+    private bool _disposed = false;
+    private CancellationTokenSource? _cancellationTokenSource;
 
+    private static readonly string SCOPE = "activity:write,activity:read";
 
     public SummaryScreen(PlayerStatistics statistics, string updatedGpxData)
     {
         _statistics = statistics ?? throw new ArgumentNullException(nameof(statistics));
         _updatedGpxData = updatedGpxData ?? throw new ArgumentNullException(nameof(updatedGpxData));
+        _cancellationTokenSource = new CancellationTokenSource();
         InitializeComponent();
+
+        this.Unloaded += SummaryScreen_Unloaded;
+    }
+
+    private void SummaryScreen_Unloaded(object? sender, EventArgs e)
+    {
+        if (!_disposed)
+        {
+            _disposed = true;
+            _pulseActive = false;
+            _cancellationTokenSource?.Cancel();
+
+            DisconnectWebView();
+            _authSemaphore?.Dispose();
+            _cancellationTokenSource?.Dispose();
+        }
     }
 
     protected override void OnAppearing()
     {
         base.OnAppearing();
-        StartStatisticsPulse();
 
-        int avgHeartRate = 0;
-        int maxHeartRate = 0;
-        if (_statistics.HeartRateSamples.Count > 0)
+        if (_disposed) return;
+
+        // Start pulse animation - fire and forget
+        _ = StartStatisticsPulseAsync();
+
+        // Thread-safe UI updates
+        MainThread.BeginInvokeOnMainThread(() =>
         {
-            avgHeartRate = (int)_statistics.HeartRateSamples.Average();
-            maxHeartRate = _statistics.HeartRateSamples.Max();
-        }
+            if (_disposed) return;
 
-        TimeSpan avgSpeedMinKm = TimeSpan.FromMinutes(0);
-        if (_statistics.CurrentDistanceM.HasValue && _statistics.SecondsElapsed > 0)
-        {
-            var avgSpeedKmh = (decimal)_statistics.CurrentDistanceM.Value / (decimal)_statistics.SecondsElapsed * 3.6m;
+            int avgHeartRate = 0;
+            int maxHeartRate = 0;
+            if (_statistics.HeartRateSamples.Count > 0)
+            {
+                avgHeartRate = (int)_statistics.HeartRateSamples.Average();
+                maxHeartRate = _statistics.HeartRateSamples.Max();
+            }
 
-            avgSpeedMinKm=TimeSpan.FromMinutes(60 / (double)avgSpeedKmh);
-        }
+            TimeSpan avgSpeedMinKm = TimeSpan.FromMinutes(0);
+            if (_statistics.CurrentDistanceM.HasValue && _statistics.SecondsElapsed > 0)
+            {
+                var avgSpeedKmh = (decimal)_statistics.CurrentDistanceM.Value / (decimal)_statistics.SecondsElapsed * 3.6m;
+                avgSpeedMinKm = TimeSpan.FromMinutes(60 / (double)avgSpeedKmh);
+            }
 
-        AscendLabel.Text = $"{_statistics.TotalInclinationM:N0}";
-        AverageHeartRateLabel.Text = avgHeartRate > 0 ? $"{avgHeartRate}" : "--";
-        MaxHeartRateLabel.Text = maxHeartRate > 0 ? $"{maxHeartRate}" : "--";
-        AverageSpeedLabel.Text = $"{avgSpeedMinKm:mm\\:ss}";
-        DistanceLabel.Text = $"{_statistics.CurrentDistanceM:N0}";
-        DurationLabel.Text = $"{TimeSpan.FromSeconds(_statistics.SecondsElapsed):hh\\:mm\\:ss}";
-        TitleLabel.Text = $"#Treadmill - {Runtime.RunSettings?.Name}";
+            AscendLabel.Text = $"{_statistics.TotalInclinationM:N0}";
+            AverageHeartRateLabel.Text = avgHeartRate > 0 ? $"{avgHeartRate}" : "--";
+            MaxHeartRateLabel.Text = maxHeartRate > 0 ? $"{maxHeartRate}" : "--";
+            AverageSpeedLabel.Text = $"{avgSpeedMinKm:mm\\:ss}";
+            DistanceLabel.Text = $"{_statistics.CurrentDistanceM:N0}";
+            DurationLabel.Text = $"{TimeSpan.FromSeconds(_statistics.SecondsElapsed):hh\\:mm\\:ss}";
+            TitleLabel.Text = $"#Treadmill - {Runtime.RunSettings?.Name}";
 
-
-        var enable = (Runtime.StravaSettings != null && !string.IsNullOrEmpty(Runtime.StravaSettings.ClientId) && !string.IsNullOrEmpty(Runtime.StravaSettings.ClientSecret));
-        StravaCheckbox.IsChecked = enable;
-        StravaCheckbox.IsEnabled = enable;
+            var enable = (Runtime.StravaSettings != null && !string.IsNullOrEmpty(Runtime.StravaSettings.ClientId) && !string.IsNullOrEmpty(Runtime.StravaSettings.ClientSecret));
+            StravaCheckbox.IsChecked = enable;
+            StravaCheckbox.IsEnabled = enable;
+        });
     }
 
     protected override void OnDisappearing()
@@ -66,10 +95,12 @@ public partial class SummaryScreen : ContentPage
 
     private async void OnExitClicked(object sender, EventArgs e)
     {
+        if (_disposed) return;
+
         // post to strava if requested, otherwise bail out
         if (StravaCheckbox.IsChecked == true)
         {
-            StartAuthentication();
+            await StartAuthenticationAsync();
         }
         else
         {
@@ -77,17 +108,62 @@ public partial class SummaryScreen : ContentPage
         }
     }
 
-    private async void StartStatisticsPulse()
+    private async Task StartStatisticsPulseAsync()
     {
-        while (_pulseActive)
+        try
         {
-            await StatisticsImage.ScaleTo(1.02, 1400, Easing.SinInOut);
-            await StatisticsImage.ScaleTo(0.98, 1400, Easing.SinInOut);
+            var token = _cancellationTokenSource?.Token ?? CancellationToken.None;
+
+            while (_pulseActive && !token.IsCancellationRequested && !_disposed)
+            {
+                if (StatisticsImage != null && !_disposed)
+                {
+                    await StatisticsImage.ScaleTo(1.02, 1400, Easing.SinInOut);
+                    if (_pulseActive && !_disposed)
+                    {
+                        await StatisticsImage.ScaleTo(0.98, 1400, Easing.SinInOut);
+                    }
+                }
+
+                if (!_disposed)
+                {
+                    await Task.Delay(50, token);
+                }
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Expected when cancelled
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error in pulse animation: {ex}");
         }
     }
 
+    private async Task StartAuthenticationAsync()
+    {
+        if (!await _authSemaphore.WaitAsync(100))
+        {
+            return; // Prevent multiple concurrent authentication attempts
+        }
 
-    private void StartAuthentication()
+        try
+        {
+            await MainThread.InvokeOnMainThreadAsync(() =>
+            {
+                if (_disposed) return;
+
+                StartAuthenticationSync();
+            });
+        }
+        finally
+        {
+            _authSemaphore.Release();
+        }
+    }
+
+    private void StartAuthenticationSync()
     {
         // Clear any existing content in the popup
         PopupContent.Children.Clear();
@@ -95,22 +171,22 @@ public partial class SummaryScreen : ContentPage
         // Ensure StravaSettings is not null before dereferencing
         if (Runtime.StravaSettings == null)
         {
-            // Optionally, show an error or return early
+            // Fire and forget error display - keep your pattern
             _ = ShowErrorPage("Strava settings are not configured.");
             return;
         }
 
         // Create and add the WebView for Strava authentication
-        var webView = new WebView
+        _webView = new WebView
         {
             BackgroundColor = Colors.White,
             Source = $"https://www.strava.com/oauth/authorize?client_id={Runtime.StravaSettings.ClientId}&redirect_uri={Runtime.StravaSettings.RedirectUrl}&response_type=code&scope={SCOPE}"
         };
 
         // Attach the Navigating event to handle redirects
-        webView.Navigating += WebView_Navigating;
+        _webView.Navigating += WebView_Navigating;
 
-        PopupContent.Children.Add(webView);
+        PopupContent.Children.Add(_webView);
 
         // Show the popup
         WebViewPopup.IsVisible = true;
@@ -118,10 +194,12 @@ public partial class SummaryScreen : ContentPage
 
     private async void WebView_Navigating(object? sender, WebNavigatingEventArgs e)
     {
+        if (_disposed) return;
+
         // Ensure StravaSettings is not null before dereferencing
         if (Runtime.StravaSettings == null)
         {
-            await ShowErrorPage("Strava settings are not configured.");
+            _ = ShowErrorPage("Strava settings are not configured."); // Keep fire-and-forget
             return;
         }
 
@@ -141,45 +219,45 @@ public partial class SummaryScreen : ContentPage
                 if (!string.IsNullOrEmpty(authorizationCode))
                 {
                     // Show loading message while processing
-                    await ShowLoadingPage();
+                    _ = ShowLoadingPage(); // Keep fire-and-forget
 
                     var accessToken = await ExchangeAuthorizationCodeForTokenAsync(authorizationCode);
 
                     if (!string.IsNullOrEmpty(accessToken))
                     {
                         // Post activity to Strava
-                        //var activityResult = await PostActivityToStravaAsync(accessToken);
                         var activityResult = await UploadGpxToStravaAsync(accessToken);
 
                         if (activityResult)
                         {
-                            await ShowSuccessPage();
+                            _ = ShowSuccessPage(); // Keep fire-and-forget
                         }
                         else
                         {
-                            await ShowErrorPage("Failed to post activity to Strava");
+                            _ = ShowErrorPage("Failed to post activity to Strava"); // Keep fire-and-forget
                         }
                     }
                     else
                     {
-                        await ShowErrorPage("Failed to get access token");
+                        _ = ShowErrorPage("Failed to get access token"); // Keep fire-and-forget
                     }
                 }
                 else if (uri.GetQueryParameter("error") != null)
                 {
                     var error = uri.GetQueryParameter("error");
-                    await ShowErrorPage($"Authentication failed: {error}");
+                    _ = ShowErrorPage($"Authentication failed: {error}"); // Keep fire-and-forget
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error processing callback: {ex.Message}");
-                await ShowErrorPage("Authentication failed");
+                _ = ShowErrorPage("Authentication failed"); // Keep fire-and-forget
             }
             finally
             {
                 // Disconnect the WebView event to prevent further navigation handling
                 DisconnectWebView();
+                _isProcessingCallback = false;
             }
         }
         // Allow all other navigation (like going to Strava's auth page)
@@ -187,10 +265,17 @@ public partial class SummaryScreen : ContentPage
 
     private void DisconnectWebView()
     {
-        if (_webView != null)
+        try
         {
-            _webView.Navigating -= WebView_Navigating;
-            _webView = null;
+            if (_webView != null)
+            {
+                _webView.Navigating -= WebView_Navigating;
+                _webView = null;
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error disconnecting WebView: {ex}");
         }
     }
 
@@ -198,7 +283,8 @@ public partial class SummaryScreen : ContentPage
     {
         await MainThread.InvokeOnMainThreadAsync(() =>
         {
-            // Clear the popup content
+            if (_disposed) return;
+
             PopupContent.Children.Clear();
 
             PopupContent.Children.Add(new StackLayout
@@ -206,21 +292,19 @@ public partial class SummaryScreen : ContentPage
                 VerticalOptions = LayoutOptions.Center,
                 HorizontalOptions = LayoutOptions.Center,
                 Children =
+                {
+                    new ActivityIndicator { IsRunning = true, Color = Colors.Blue },
+                    new Label
                     {
-                        new ActivityIndicator { IsRunning = true, Color = Colors.Blue },
-                        new Label
-                        {
-                            Text = "Processing authentication and posting activity...",
-                            HorizontalOptions = LayoutOptions.Center,
-                            Margin = new Thickness(20),
-                            FontSize = 28
-                        }
+                        Text = "Processing authentication and posting activity...",
+                        HorizontalOptions = LayoutOptions.Center,
+                        Margin = new Thickness(20),
+                        FontSize = 28
                     }
+                }
             });
 
-            // Ensure the popup is visible
             WebViewPopup.IsVisible = true;
-
         });
     }
 
@@ -228,10 +312,10 @@ public partial class SummaryScreen : ContentPage
     {
         await MainThread.InvokeOnMainThreadAsync(() =>
         {
-            // Clear the popup content
+            if (_disposed) return;
+
             PopupContent.Children.Clear();
 
-            // Add success content to the popup
             PopupContent.Children.Add(new StackLayout
             {
                 VerticalOptions = LayoutOptions.Center,
@@ -264,14 +348,16 @@ public partial class SummaryScreen : ContentPage
                         Text = "Done",
                         Command = new Command(async () =>
                         {
-                            WebViewPopup.IsVisible = false; // Hide the popup
-                            await Shell.Current.GoToAsync("//MainPage");
+                            if (!_disposed)
+                            {
+                                WebViewPopup.IsVisible = false;
+                                await Shell.Current.GoToAsync("//MainPage");
+                            }
                         })
                     }
                 }
             });
 
-            // Ensure the popup is visible
             WebViewPopup.IsVisible = true;
         });
     }
@@ -280,10 +366,10 @@ public partial class SummaryScreen : ContentPage
     {
         await MainThread.InvokeOnMainThreadAsync(() =>
         {
-            // Clear the popup content
+            if (_disposed) return;
+
             PopupContent.Children.Clear();
 
-            // Add error content to the popup
             PopupContent.Children.Add(new StackLayout
             {
                 VerticalOptions = LayoutOptions.Center,
@@ -316,14 +402,16 @@ public partial class SummaryScreen : ContentPage
                         Text = "Exit",
                         Command = new Command(async () =>
                         {
-                            WebViewPopup.IsVisible = false; // Hide the popup
-                            await Shell.Current.GoToAsync("//MainPage");
+                            if (!_disposed)
+                            {
+                                WebViewPopup.IsVisible = false;
+                                await Shell.Current.GoToAsync("//MainPage");
+                            }
                         })
                     }
                 }
             });
 
-            // Ensure the popup is visible
             WebViewPopup.IsVisible = true;
         });
     }
@@ -337,14 +425,15 @@ public partial class SummaryScreen : ContentPage
             {
                 return null;
             }
+
             using var client = new HttpClient();
             var values = new Dictionary<string, string>
-                {
-                    { "client_id", Runtime.StravaSettings.ClientId },
-                    { "client_secret", Runtime.StravaSettings.ClientSecret },
-                    { "code", authorizationCode },
-                    { "grant_type", "authorization_code" }
-                };
+            {
+                { "client_id", Runtime.StravaSettings.ClientId },
+                { "client_secret", Runtime.StravaSettings.ClientSecret },
+                { "code", authorizationCode },
+                { "grant_type", "authorization_code" }
+            };
 
             var content = new FormUrlEncodedContent(values);
             var response = await client.PostAsync("https://www.strava.com/oauth/token", content);
@@ -358,60 +447,11 @@ public partial class SummaryScreen : ContentPage
             var tokenData = JsonSerializer.Deserialize<StravaTokenResponse>(responseString);
             return tokenData?.AccessToken;
         }
-        catch //(Exception ex)
+        catch
         {
             return null;
         }
     }
-
-    //private async Task<bool> PostActivityToStravaAsync(string accessToken)
-    //{
-    //    try
-    //    {
-    //        using var client = new HttpClient();
-    //        client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
-
-    //        var activity = new StravaActivity
-    //        {
-    //            Name = $"#Treadmill - {Runtime.RunSettings?.Name}",
-    //            Type = "Run",
-    //            SportType = "VirtualRun",
-    //            StartDateLocal = _statistics.StartTime.ToString("yyyy-MM-ddTHH:mm:ssZ"),
-    //            ElapsedTime =  (int)_statistics.SecondsElapsed,
-    //            Distance = (int)_statistics.CurrentDistanceM,
-    //            Description = "Posted from the Re-Run App!",
-    //        };
-
-
-    //        string json = JsonSerializer.Serialize(activity, new JsonSerializerOptions
-    //        {
-    //            WriteIndented = true
-    //        });
-    //        var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
-
-    //        var response = await client.PostAsync("https://www.strava.com/api/v3/activities", content);
-    //        var responseString = await response.Content.ReadAsStringAsync();
-
-    //        Console.WriteLine($"Activity post response: {responseString}");
-
-    //        if (response.IsSuccessStatusCode)
-    //        {
-    //            var activityResponse = JsonSerializer.Deserialize<StravaActivityResponse>(responseString);
-    //            Console.WriteLine($"Activity created with ID: {activityResponse?.Id}");
-    //            return true;
-    //        }
-    //        else
-    //        {
-    //            Console.WriteLine($"Failed to post activity: {responseString}");
-    //            return false;
-    //        }
-    //    }
-    //    catch (Exception ex)
-    //    {
-    //        Console.WriteLine($"Error posting activity: {ex.Message}");
-    //        return false;
-    //    }
-    //}
 
     private async Task<bool> UploadGpxToStravaAsync(string accessToken)
     {
@@ -421,7 +461,7 @@ public partial class SummaryScreen : ContentPage
             client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
 
             using var form = new MultipartFormDataContent();
-            using var gpxStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(_updatedGpxData)); 
+            using var gpxStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(_updatedGpxData));
             using var fileContent = new StreamContent(gpxStream);
 
             fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/octet-stream");
