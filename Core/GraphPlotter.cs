@@ -90,7 +90,8 @@ internal class GraphPlotter
         double maxElevation = gpx.FindMaximumElevation();
         int elevationScale = maxElevation > 100 ? 100 : 10;
 
-        plotModel.Background = OxyColor.FromArgb(128,0xFF,0xFF,0xFF);
+        // Normal white background since overlay Frame provides transparency
+        plotModel.Background = OxyColor.FromArgb(255,255,255,255);
 
         plotModel.Axes.Add(new LinearAxis
         {

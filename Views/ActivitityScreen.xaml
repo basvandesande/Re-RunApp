@@ -3,101 +3,109 @@
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              xmlns:oxy="clr-namespace:OxyPlot.Maui.Skia;assembly=OxyPlot.Maui.Skia"
              x:Class="Re_RunApp.Views.ActivityScreen"
-             Title="Activity"
+             Title=""
+             Shell.NavBarIsVisible="False"
              BackgroundColor="White">
     <Grid RowDefinitions="3.7*,1.5*,Auto" ColumnSpacing="0" RowSpacing="0" Padding="0">
-        <!-- Middle: Route Video with Overlay -->
-        <Grid Grid.Row="0">
-            <!-- Video -->
-            <Frame x:Name="VideoFrame" Padding="0" BackgroundColor="#000" CornerRadius="0" HasShadow="False">
-                <toolkit:MediaElement x:Name="RouteVideo"
-                                      ShouldAutoPlay="false"
-                                      Aspect="AspectFill"
-                                      ShouldLoopPlayback="False"
-                                      ShouldShowPlaybackControls="False"
-                                      ShouldMute="True"
-                                      HorizontalOptions="CenterAndExpand"  
-                                      Source="embed://default.mp4"         
-                                      Speed="0.5"
-                                      VerticalOptions="Center" ShouldKeepScreenOn="True" />
-            </Frame>
+        
+        <!-- Single Video Background for entire screen -->
+        <toolkit:MediaElement x:Name="RouteVideo"
+                              Grid.RowSpan="3"
+                              ShouldAutoPlay="false"
+                              Aspect="AspectFill"
+                              ShouldLoopPlayback="False"
+                              ShouldShowPlaybackControls="False"
+                              ShouldMute="True"
+                              HorizontalOptions="FillAndExpand"
+                              VerticalOptions="FillAndExpand"
+                              Source="embed://default.mp4"
+                              Speed="0.5"
+                              ShouldKeepScreenOn="True" />
 
-            <!-- Overlay: Semi-transparent Statistics Bar -->
-            <Frame BackgroundColor="#60101010"  
-                   Padding="10"
-                   CornerRadius="0"
-                   VerticalOptions="Start"
-                   HorizontalOptions="FillAndExpand"
-                   Margin="0">
-                <Grid ColumnDefinitions="2.2*,2*, 2*, 2*,2*" RowDefinitions="Auto,Auto" ColumnSpacing="10">
-                    <StackLayout Grid.Column="0" Spacing="2">
-                        <Label Text="Distance meters" FontAttributes="None" FontSize="14" TextColor="White" HorizontalTextAlignment="Center" />
-                        <Label x:Name="DistanceLabel" Text="0 / 0" FontAttributes="Bold" FontSize="30" TextColor="Orange" HorizontalTextAlignment="Center" FontFamily="OpenSansBold"/>
-                    </StackLayout>
-                    <StackLayout Grid.Column="1" Grid.Row="0" Spacing="2">
-                        <Label Text="Segment remaining meters" FontAttributes="None" FontSize="14" TextColor="White" HorizontalTextAlignment="Center"/>
-                        <Label x:Name="SegmentLabel" Text="0" FontAttributes="Bold" FontSize="30" TextColor="Orange" HorizontalTextAlignment="Center" FontFamily="OpenSansBold"/>
-                    </StackLayout>
-                    <StackLayout Grid.Column="2" Grid.Row="0" Spacing="2">
-                        <Label Text="Total ascend meters" FontAttributes="None" FontSize="14" TextColor="White" HorizontalTextAlignment="Center"/>
-                        <Label x:Name="AscendLabel" Text="0" FontAttributes="Bold" FontSize="30" TextColor="Orange" HorizontalTextAlignment="Center" FontFamily="OpenSansBold"/>
-                    </StackLayout>
-                    <StackLayout Grid.Column="3" Spacing="2">
-                        <Label Text="Heartrate BPM" FontAttributes="None" FontSize="14" TextColor="White" HorizontalTextAlignment="Center"/>
-                        <Label x:Name="HeartrateLabel" Text="0" FontAttributes="Bold" FontSize="30" TextColor="Orange" HorizontalTextAlignment="Center" FontFamily="OpenSansBold"/>
-                    </StackLayout>
-                    <StackLayout Grid.Column="4" Grid.Row="0" Spacing="2">
-                        <Label Text="Speed Min/KM" FontAttributes="None" FontSize="14" TextColor="White" HorizontalTextAlignment="Center"/>
-                        <Label x:Name="SpeedLabel" Text="00:00" FontAttributes="Bold" FontSize="30" TextColor="Orange" HorizontalTextAlignment="Center" FontFamily="OpenSansBold"/>
-                    </StackLayout>
-                </Grid>
-            </Frame>
-
-            <!-- Rewind and Forward Buttons -->
-            <Grid HorizontalOptions="End" VerticalOptions="End" Margin="10">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-
-                <!-- Rewind Button -->
-                <Button x:Name="RewindButton"
-                        Text="&lt;&lt;"
-                        WidthRequest="50"
-                        HeightRequest="50"
-                        BackgroundColor="Gray"
-                        TextColor="White"
-                        CornerRadius="5"
-                        Clicked="OnRewindClicked"
-                        Grid.Column="0" />
-
-                <!-- Forward Button -->
-                <Button x:Name="ForwardButton"
-                        Text="&gt;&gt;"
-                        WidthRequest="50"
-                        HeightRequest="50"
-                        BackgroundColor="Gray"
-                        TextColor="White"
-                        CornerRadius="5"
-                        Clicked="OnForwardClicked"
-                        Grid.Column="1"
-                        Margin="5,0,0,0" />
+        <!-- Top Area: Statistics Overlay -->
+        <Frame Grid.Row="0"
+               BackgroundColor="#60101010"  
+               Padding="10"
+               CornerRadius="0"
+               VerticalOptions="Start"
+               HorizontalOptions="FillAndExpand"
+               Margin="0">
+            <Grid ColumnDefinitions="2.2*,2*, 2*, 2*,2*" RowDefinitions="Auto,Auto" ColumnSpacing="10">
+                <StackLayout Grid.Column="0" Spacing="2">
+                    <Label Text="Distance meters" FontAttributes="None" FontSize="14" TextColor="White" HorizontalTextAlignment="Center" />
+                    <Label x:Name="DistanceLabel" Text="0 / 0" FontAttributes="Bold" FontSize="30" TextColor="#FF6600" HorizontalTextAlignment="Center" FontFamily="OpenSansBold"/>
+                </StackLayout>
+                <StackLayout Grid.Column="1" Grid.Row="0" Spacing="2">
+                    <Label Text="Segment remaining meters" FontAttributes="None" FontSize="14" TextColor="White" HorizontalTextAlignment="Center"/>
+                    <Label x:Name="SegmentLabel" Text="0" FontAttributes="Bold" FontSize="30" TextColor="#FF6600" HorizontalTextAlignment="Center" FontFamily="OpenSansBold"/>
+                </StackLayout>
+                <StackLayout Grid.Column="2" Grid.Row="0" Spacing="2">
+                    <Label Text="Total ascend meters" FontAttributes="None" FontSize="14" TextColor="White" HorizontalTextAlignment="Center"/>
+                    <Label x:Name="AscendLabel" Text="0" FontAttributes="Bold" FontSize="30" TextColor="#FF6600" HorizontalTextAlignment="Center" FontFamily="OpenSansBold"/>
+                </StackLayout>
+                <StackLayout Grid.Column="3" Spacing="2">
+                    <Label Text="Heartrate BPM" FontAttributes="None" FontSize="14" TextColor="White" HorizontalTextAlignment="Center"/>
+                    <Label x:Name="HeartrateLabel" Text="0" FontAttributes="Bold" FontSize="30" TextColor="#FF6600" HorizontalTextAlignment="Center" FontFamily="OpenSansBold"/>
+                </StackLayout>
+                <StackLayout Grid.Column="4" Grid.Row="0" Spacing="2">
+                    <Label Text="Speed Min/KM" FontAttributes="None" FontSize="14" TextColor="White" HorizontalTextAlignment="Center"/>
+                    <Label x:Name="SpeedLabel" Text="00:00" FontAttributes="Bold" FontSize="30" TextColor="#FF6600" HorizontalTextAlignment="Center" FontFamily="OpenSansBold"/>
+                </StackLayout>
             </Grid>
+        </Frame>
 
-            <Image x:Name="StartPulseImage"
-                   Source="start.png"
-                   Opacity="0.7"
-                   IsVisible="False"
-                   HorizontalOptions="Center"
-                   VerticalOptions="Center"
-                   WidthRequest="600"
-                   HeightRequest="250"
-                   InputTransparent="True" />
+        <!-- Rewind and Forward Buttons -->
+        <Grid Grid.Row="0" HorizontalOptions="End" VerticalOptions="End" Margin="10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Rewind Button -->
+            <Button x:Name="RewindButton"
+                    Text="&lt;&lt;"
+                    WidthRequest="50"
+                    HeightRequest="50"
+                    BackgroundColor="Gray"
+                    TextColor="White"
+                    CornerRadius="5"
+                    Clicked="OnRewindClicked"
+                    Grid.Column="0" />
+
+            <!-- Forward Button -->
+            <Button x:Name="ForwardButton"
+                    Text="&gt;&gt;"
+                    WidthRequest="50"
+                    HeightRequest="50"
+                    BackgroundColor="Gray"
+                    TextColor="White"
+                    CornerRadius="5"
+                    Clicked="OnForwardClicked"
+                    Grid.Column="1"
+                    Margin="5,0,0,0" />
         </Grid>
 
-        <!-- Below Video: Route Map -->
-        <Frame Grid.Row="1" Padding="0" Margin="0" BackgroundColor="#e0e0e0" CornerRadius="0" HasShadow="False">
-            <oxy:PlotView x:Name="PlotView" VerticalOptions="FillAndExpand"  HorizontalOptions="FillAndExpand"  />
+        <!-- Pulse Animation Image -->
+        <Image x:Name="StartPulseImage"
+               Grid.Row="0"
+               Source="start.png"
+               Opacity="0.7"
+               IsVisible="False"
+               HorizontalOptions="Center"
+               VerticalOptions="Center"
+               WidthRequest="600"
+               HeightRequest="250"
+               InputTransparent="True" />
+
+        <!-- Chart Overlay (over same video) -->
+        <Frame Grid.Row="1"
+               BackgroundColor="#C0F0F0F0"  
+               Padding="5"
+               CornerRadius="0"
+               HorizontalOptions="FillAndExpand"
+               VerticalOptions="FillAndExpand"
+               Margin="0">
+            <oxy:PlotView x:Name="PlotView" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand" />
         </Frame>
 
         <!-- Bottom: Buttons -->
