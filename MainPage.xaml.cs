@@ -61,8 +61,22 @@ public partial class MainPage : ContentPage
                     if (!string.IsNullOrEmpty(picked))
                     {
                         Runtime.SetUserAppFolder(picked);
+                        
+                        // Now that user has selected a folder, prepare default files
+                        if (Application.Current is App app)
+                        {
+                            app.PrepareDefaultFilesAfterFolderSelection();
+                        }
                     }
                 }
+            }
+        }
+        else
+        {
+            // User folder is already persisted, but ensure default files exist
+            if (Application.Current is App app)
+            {
+                app.PrepareDefaultFilesAfterFolderSelection();
             }
         }
 

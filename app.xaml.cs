@@ -37,8 +37,8 @@ public partial class App : Application
             // non-fatal, continue with defaults
         }
 
-        // Ensure default files are copied to data folder on first run
-        PrepareFolderAndDefaultFile();
+        // Don't prepare default files here - wait until user has chosen data folder
+        // PrepareFolderAndDefaultFile() will be called from MainPage after folder selection
 
         // Now show UI
         // Instead of MainPage = new AppShell();
@@ -47,6 +47,12 @@ public partial class App : Application
         {
             Windows[0].Page = new AppShell();
         }
+    }
+
+    // Public method to prepare default files after folder selection
+    public void PrepareDefaultFilesAfterFolderSelection()
+    {
+        PrepareFolderAndDefaultFile();
     }
 
     private void PrepareFolderAndDefaultFile()
