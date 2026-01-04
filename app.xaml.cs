@@ -37,7 +37,8 @@ public partial class App : Application
             // non-fatal, continue with defaults
         }
 
-        //PrepareFolderAndDefaultFile();
+        // Ensure default files are copied to data folder on first run
+        PrepareFolderAndDefaultFile();
 
         // Now show UI
         // Instead of MainPage = new AppShell();
@@ -50,39 +51,70 @@ public partial class App : Application
 
     private void PrepareFolderAndDefaultFile()
     {
-        string folder = Runtime.GetAppFolder();
-
-        if (!Directory.Exists(folder))
+        try
         {
-            Directory.CreateDirectory(folder);
+            string folder = Runtime.GetAppFolder();
+            System.Diagnostics.Debug.WriteLine($"Preparing folder: {folder}");
+
+            if (!Directory.Exists(folder))
+            {
+                Directory.CreateDirectory(folder);
+                System.Diagnostics.Debug.WriteLine($"Created folder: {folder}");
+            }
+
+            string gpxFilePath = Path.Combine(folder, "Climbing from Prato to Gomagoi.gpx");
+            string resourceName = "Re_RunApp.Resources.Files.prato-gomagoi.gpx";
+            CopyEmbeddedResourceToFile(resourceName, gpxFilePath);
+
+            string videoFilePath = Path.Combine(folder, "Climbing from Prato to Gomagoi.mp4");
+            string videoName = "Re_RunApp.Resources.Raw.prato-gomagoi.mp4";
+            CopyEmbeddedResourceToFile(videoName, videoFilePath);
+
+            System.Diagnostics.Debug.WriteLine("Default files preparation completed successfully");
         }
-
-        string gpxFilePath = Path.Combine(folder, "Climbing from Prato to Gomagoi.gpx");
-        string resourceName = "Re_RunApp.Resources.Files.prato-gomagoi.gpx";
-        CopyEmbeddedResourceToFile(resourceName, gpxFilePath);
-
-        string videoFilePath = Path.Combine(folder, "Climbing from Prato to Gomagoi.mp4");
-        string videoName = "Re_RunApp.Resources.Raw.prato-gomagoi.mp4";
-        CopyEmbeddedResourceToFile(videoName, videoFilePath);
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error preparing default files: {ex.Message}");
+        }
     }
-
 
     private void CopyEmbeddedResourceToFile(string resourceName, string destinationPath)
     {
-        if (!File.Exists(destinationPath))
+        try
         {
-            var assembly = Assembly.GetExecutingAssembly();
-
-            using (Stream? stream = assembly.GetManifestResourceStream(resourceName))
+            if (!File.Exists(destinationPath))
             {
-                if (stream != null)
+                var assembly = Assembly.GetExecutingAssembly();
+                System.Diagnostics.Debug.WriteLine($"Attempting to copy resource '{resourceName}' to '{destinationPath}'");
+
+                using (Stream? stream = assembly.GetManifestResourceStream(resourceName))
                 {
-                    using (var fileStream = new FileStream(destinationPath, FileMode.Create, FileAccess.Write))
+                    if (stream != null)
                     {
-                        stream.CopyTo(fileStream);
+                        using (var fileStream = new FileStream(destinationPath, FileMode.Create, FileAccess.Write))
+                        {
+                            stream.CopyTo(fileStream);
+                        }
+                        System.Diagnostics.Debug.WriteLine($"Successfully copied '{resourceName}' to '{destinationPath}'");
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Warning: Embedded resource '{resourceName}' not found in assembly");
+                        
+                        // Debug: List all available resources
+                        var availableResources = assembly.GetManifestResourceNames();
+                        System.Diagnostics.Debug.WriteLine($"Available embedded resources: {string.Join(", ", availableResources)}");
                     }
                 }
             }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine($"File already exists, skipping: {destinationPath}");
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error copying embedded resource '{resourceName}': {ex.Message}");
         }
     }
 
