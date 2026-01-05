@@ -29,7 +29,8 @@
                CornerRadius="0"
                VerticalOptions="Start"
                HorizontalOptions="FillAndExpand"
-               Margin="0">
+               Margin="0"
+               HasShadow="False">
             <Grid ColumnDefinitions="2.2*,2*, 2*, 2*,2*" RowDefinitions="Auto,Auto" ColumnSpacing="10">
                 <StackLayout Grid.Column="0" Spacing="2">
                     <Label Text="Distance meters" FontAttributes="None" FontSize="14" TextColor="White" HorizontalTextAlignment="Center" />
@@ -98,15 +99,11 @@
                InputTransparent="True" />
 
         <!-- Chart Overlay (over same video) -->
-        <Frame Grid.Row="1"
-               BackgroundColor="#C0F0F0F0"  
-               Padding="5"
-               CornerRadius="0"
-               HorizontalOptions="FillAndExpand"
-               VerticalOptions="FillAndExpand"
-               Margin="0">
-            <oxy:PlotView x:Name="PlotView" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand" />
-        </Frame>
+        <oxy:PlotView x:Name="PlotView" 
+                      Grid.Row="1"
+                      VerticalOptions="FillAndExpand" 
+                      HorizontalOptions="FillAndExpand"
+                      BackgroundColor="#40101010" />
 
         <!-- Bottom: Buttons -->
         <StackLayout Grid.Row="2" Orientation="Horizontal" Spacing="0">

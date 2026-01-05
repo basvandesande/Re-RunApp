@@ -56,6 +56,13 @@ public partial class RouteDetailsScreen : ContentPage
 
         try
         {
+            // Create a new cancellation token source if needed
+            if (_cancellationTokenSource == null || _cancellationTokenSource.IsCancellationRequested)
+            {
+                _cancellationTokenSource?.Dispose();
+                _cancellationTokenSource = new CancellationTokenSource();
+            }
+            
             var token = _cancellationTokenSource?.Token ?? CancellationToken.None;
             if (token.IsCancellationRequested) return;
 
@@ -111,6 +118,17 @@ public partial class RouteDetailsScreen : ContentPage
         {
             // Expected when page is navigated away - ignore
         }
+        catch (ObjectDisposedException)
+        {
+            // CancellationTokenSource was disposed - recreate and try again if not disposed
+            if (!_disposed)
+            {
+                System.Diagnostics.Debug.WriteLine("CancellationTokenSource was disposed, recreating...");
+                _cancellationTokenSource?.Dispose();
+                _cancellationTokenSource = new CancellationTokenSource();
+                // Don't retry automatically to avoid infinite loops
+            }
+        }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"Error in OnAppearing: {ex}");
@@ -118,6 +136,21 @@ public partial class RouteDetailsScreen : ContentPage
             {
                 await DisplayAlert("Error", "An error occurred while initializing the route details.", "OK");
             }
+        }
+    }
+
+    protected override void OnDisappearing()
+    {
+        base.OnDisappearing();
+        
+        // Cancel operations but don't dispose resources yet
+        try
+        {
+            _cancellationTokenSource?.Cancel();
+        }
+        catch (ObjectDisposedException)
+        {
+            // Already disposed, ignore
         }
     }
 

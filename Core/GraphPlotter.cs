@@ -90,8 +90,8 @@ internal class GraphPlotter
         double maxElevation = gpx.FindMaximumElevation();
         int elevationScale = maxElevation > 100 ? 100 : 10;
 
-        // Normal white background since overlay Frame provides transparency
-        plotModel.Background = OxyColor.FromArgb(255,255,255,255);
+        // Transparent background for video overlay
+        plotModel.Background = OxyColors.Transparent;
 
         plotModel.Axes.Add(new LinearAxis
         {
@@ -179,8 +179,8 @@ internal class GraphPlotter
       
         var areaSeries = new AreaSeries
         {
-            Color = OxyColor.FromAColor(128, OxyColors.LightSkyBlue),
-            Fill = OxyColor.FromAColor(128, OxyColors.LightSkyBlue),
+            Color = OxyColor.FromAColor(40, OxyColors.LightSkyBlue),
+            Fill = OxyColor.FromAColor(40, OxyColors.LightSkyBlue),
             StrokeThickness = 1
         };
         areaSeries.Points.Add(new DataPoint(0, 0));

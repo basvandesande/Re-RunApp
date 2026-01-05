@@ -109,8 +109,28 @@ public partial class ActivityScreen : ContentPage
     {
         base.OnDisappearing();
 
-        // Unsubscribe from the MediaOpened event
-        RouteVideo.MediaOpened -= OnMediaOpened;
+        try
+        {
+            // Stop any running animations
+            _pulseActive = false;
+
+            // Unsubscribe from the MediaOpened event
+            if (RouteVideo != null)
+            {
+                RouteVideo.MediaOpened -= OnMediaOpened;
+                
+                // Stop video playback when leaving the page
+                RouteVideo.Pause();
+            }
+
+            // Stop the player if it's running
+            _player?.StopAsync().ConfigureAwait(false);
+
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error in ActivityScreen OnDisappearing: {ex}");
+        }
     }
 
     private void ActivityScreen_Unloaded(object? sender, EventArgs e)
