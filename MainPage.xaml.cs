@@ -35,10 +35,9 @@ public partial class MainPage : ContentPage
         // ensure we have a pulse on return :)
         _pulseActive = true;
         StartLogoPulse();
-     
-        var version = AppInfo.Current.VersionString;
-        var build = AppInfo.Current.BuildString;
-        var year = (DateTime.Now.Year == 2025) ? "2025" : $"2025-{DateTime.Now.Year}";
+
+        var version = $"{AppInfo.Current.Version.Major}.{AppInfo.Current.Version.Minor}.{AppInfo.Current.Version.Build}";
+        var year = $"2025-{DateTime.Now.Year}";
         VersionLabel.Text = $"Version {version}  //  © {year} Bas van de Sande  //  RunningApps.eu";
 
         if (!Runtime.IsUserFolderPersisted())

@@ -74,7 +74,7 @@ public partial class RouteDetailsScreen : ContentPage
             {
                 try
                 {
-                    if (token.IsCancellationRequested) return;
+                    //if (token.IsCancellationRequested) return;
                     
                     var graphPlotter = new GraphPlotter();
                     var plotModel = graphPlotter.PlotGraph(_gpxProcessor, false);
@@ -82,7 +82,7 @@ public partial class RouteDetailsScreen : ContentPage
                     // Update UI on main thread safely
                     await MainThread.InvokeOnMainThreadAsync(() =>
                     {
-                        if (!token.IsCancellationRequested && !_disposed)
+                        //if (!token.IsCancellationRequested && !_disposed)
                         {
                             PlotView.Model = plotModel;
                         }

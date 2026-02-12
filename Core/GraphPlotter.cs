@@ -54,7 +54,7 @@ internal class GraphPlotter
             var nextSeries = new AreaSeries
             {
                 Color = OxyColor.FromAColor(255, OxyColors.OrangeRed),
-                Fill = OxyColor.FromAColor(32, OxyColors.Black),
+                Fill = OxyColor.FromAColor(32, OxyColors.Yellow),
                 StrokeThickness = 1
             };
             nextSeries.Points.Add(new DataPoint((double)meters, 0));
@@ -135,7 +135,7 @@ internal class GraphPlotter
                 var areaSeries = new AreaSeries
                 {
                     Color = OxyColors.Black,
-                    Fill = OxyColors.LightGray,
+                    Fill = OxyColor.FromAColor(40, OxyColors.LightGray),
                     StrokeThickness = 1
                 };
 
